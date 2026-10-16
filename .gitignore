@@ -4,6 +4,10 @@
 *.pem
 *.key
 
+# Local conversation log
+conv.md
+
+
 # Data & Models (never commit datasets or weights)
 data/
 models/
