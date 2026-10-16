@@ -156,7 +156,11 @@ def compute_fingerprint(
                 p01 = all_nums[int(0.01 * (n - 1))]
                 p50 = all_nums[int(0.50 * (n - 1))]
                 p99 = all_nums[int(0.99 * (n - 1))]
-                numeric_quantiles[col] = {"p01": round(p01, 2), "p50": round(p50, 2), "p99": round(p99, 2)}
+                numeric_quantiles[col] = {
+                    "p01": round(p01, 2),
+                    "p50": round(p50, 2),
+                    "p99": round(p99, 2),
+                }
         else:
             dtype = "string"
 
@@ -537,7 +541,10 @@ class DriftStore:
             try:
                 with psycopg.connect(self.postgres_dsn, autocommit=True) as conn:
                     with conn.cursor() as cur:
-                        cur.execute("SELECT source, suggestion FROM drift_event WHERE event_id = %s", (event_id,))
+                        cur.execute(
+                            "SELECT source, suggestion FROM drift_event WHERE event_id = %s",
+                            (event_id,),
+                        )
                         row = cur.fetchone()
                         if row and row[1]:
                             src = row[0]
@@ -550,13 +557,18 @@ class DriftStore:
                                 """,
                                 (src, sugg["old_name"], sugg["new_name"], approved_by, now),
                             )
-                            cur.execute("UPDATE drift_event SET status = 'approved' WHERE event_id = %s", (event_id,))
+                            cur.execute(
+                                "UPDATE drift_event SET status = 'approved' WHERE event_id = %s",
+                                (event_id,),
+                            )
                             return True
             except Exception:
                 pass
 
         con = duckdb.connect(self.fallback_path.as_posix())
-        row = con.execute("SELECT source, suggestion FROM drift_event WHERE event_id = ?", (event_id,)).fetchone()
+        row = con.execute(
+            "SELECT source, suggestion FROM drift_event WHERE event_id = ?", (event_id,)
+        ).fetchone()
         if row and row[1]:
             src = row[0]
             sugg = json.loads(row[1])
@@ -564,7 +576,9 @@ class DriftStore:
                 "INSERT INTO contract_override VALUES (?, ?, ?, ?, ?)",
                 (src, sugg["old_name"], sugg["new_name"], approved_by, now),
             )
-            con.execute("UPDATE drift_event SET status = 'approved' WHERE event_id = ?", (event_id,))
+            con.execute(
+                "UPDATE drift_event SET status = 'approved' WHERE event_id = ?", (event_id,)
+            )
             con.close()
             return True
         con.close()
@@ -577,7 +591,10 @@ class DriftStore:
             try:
                 with psycopg.connect(self.postgres_dsn, autocommit=True) as conn:
                     with conn.cursor() as cur:
-                        cur.execute("SELECT old_column, new_column FROM contract_override WHERE source = %s", (source,))
+                        cur.execute(
+                            "SELECT old_column, new_column FROM contract_override WHERE source = %s",
+                            (source,),
+                        )
                         for old_c, new_c in cur.fetchall():
                             overrides[f"{source}:{old_c}"] = new_c
                 return overrides
@@ -586,7 +603,9 @@ class DriftStore:
 
         if self.fallback_path.exists():
             con = duckdb.connect(self.fallback_path.as_posix())
-            rows = con.execute("SELECT old_column, new_column FROM contract_override WHERE source = ?", (source,)).fetchall()
+            rows = con.execute(
+                "SELECT old_column, new_column FROM contract_override WHERE source = ?", (source,)
+            ).fetchall()
             for old_c, new_c in rows:
                 overrides[f"{source}:{old_c}"] = new_c
             con.close()

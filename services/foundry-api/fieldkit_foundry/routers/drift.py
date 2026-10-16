@@ -39,7 +39,9 @@ async def list_drift_events(
     source: str | None = Query(None, description="Filter by data source"),
     run_id: str | None = Query(None, description="Filter by ingest run ID"),
     severity: str | None = Query(None, description="Filter by severity: BLOCK, WARN"),
-    status: str | None = Query(None, description="Filter by status: open, suggested, approved, rejected"),
+    status: str | None = Query(
+        None, description="Filter by status: open, suggested, approved, rejected"
+    ),
 ) -> list[dict[str, Any]]:
     """List detected schema and statistical drift events with governance status."""
     store = DriftStore()

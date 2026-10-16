@@ -112,8 +112,12 @@ class IngestPipeline:
                 drift_events = rule_engine.evaluate(current=fp, contract_columns=contract_cols)
 
                 # Propose column rename suggestion if a required column is removed and an unexpected one added
-                removed_events = [e for e in drift_events if e.event_type == DriftEventType.COLUMN_REMOVED]
-                added_events = [e for e in drift_events if e.event_type == DriftEventType.COLUMN_ADDED]
+                removed_events = [
+                    e for e in drift_events if e.event_type == DriftEventType.COLUMN_REMOVED
+                ]
+                added_events = [
+                    e for e in drift_events if e.event_type == DriftEventType.COLUMN_ADDED
+                ]
 
                 if removed_events and added_events:
                     for rem_e in removed_events:
@@ -121,8 +125,14 @@ class IngestPipeline:
                             old_col = rem_e.column_name
                             new_col = add_e.column_name
                             old_dtype = contract_cols.get(old_col, {}).get("type", "str")
-                            new_dtype = next((c["dtype"] for c in fp.columns if c["name"] == new_col), "string")
-                            new_samples = [str(r.get(new_col, "")) for r in batch.records[:20] if r.get(new_col)]
+                            new_dtype = next(
+                                (c["dtype"] for c in fp.columns if c["name"] == new_col), "string"
+                            )
+                            new_samples = [
+                                str(r.get(new_col, ""))
+                                for r in batch.records[:20]
+                                if r.get(new_col)
+                            ]
                             try:
                                 suggestion = await self.llm_suggester.suggest_rename(
                                     source_name=source_id,
@@ -144,7 +154,9 @@ class IngestPipeline:
                 blocked_events = [e for e in drift_events if e.severity == DriftSeverity.BLOCK]
                 if blocked_events:
                     for be in blocked_events:
-                        print(f"    [DRIFT BLOCK] {be.event_type.value} on '{be.column_name}': {be.details.get('message')}")
+                        print(
+                            f"    [DRIFT BLOCK] {be.event_type.value} on '{be.column_name}': {be.details.get('message')}"
+                        )
                     self.quarantine_mgr.log_run_finish(
                         run_id=f"{self.run_id}_{source_id}",
                         rows_in=len(batch.records),
@@ -165,7 +177,9 @@ class IngestPipeline:
 
                 warn_events = [e for e in drift_events if e.severity == DriftSeverity.WARN]
                 for we in warn_events:
-                    print(f"    [DRIFT WARN] {we.event_type.value} on '{we.column_name}': {we.details.get('message')}")
+                    print(
+                        f"    [DRIFT WARN] {we.event_type.value} on '{we.column_name}': {we.details.get('message')}"
+                    )
 
                 # 3. Contract validation
                 if validator:
@@ -214,7 +228,12 @@ class IngestPipeline:
             }
 
 
-async def run_pipeline(source: str = "all", run_id: str | None = None) -> None:
+async def run_pipeline(
+    source: str = "all",
+    run_id: str | None = None,
+    with_er: bool = True,
+) -> None:
+
     start_time = time.perf_counter()
     pipeline = IngestPipeline(run_id=run_id)
 
@@ -350,6 +369,19 @@ async def run_pipeline(source: str = "all", run_id: str | None = None) -> None:
         )
         results.append(res)
 
+    # 7. Entity Resolution (Canonicalization of Suppliers)
+    if with_er and any(
+        r["source"] in ("erp_vendors", "planning_de_ham", "planning_de_str") for r in results
+    ):
+        print("[*] Running Supplier Entity Resolution & Canonicalization (packages/er)...")
+        from fieldkit_ingest.resolve import resolve_staged_suppliers
+
+        er_metrics = resolve_staged_suppliers(pipeline.staging, pipeline.run_id)
+        print(
+            f"    [+] Canonical Suppliers: {er_metrics['canonical_count']:,} resolved "
+            f"from {er_metrics['total_raw']:,} raw records ({er_metrics['clusters_count']:,} clusters) -> stg_canonical_suppliers"
+        )
+
     elapsed = time.perf_counter() - start_time
     total_in = sum(r["rows_in"] for r in results)
     total_ok = sum(r["rows_ok"] for r in results)
@@ -376,9 +408,20 @@ def main() -> None:
         help="Source to ingest: erp_vendors, excel, soap, purchase_orders, quality_incidents, or all",
     )
     parser.add_argument("--run-id", default=None, help="Explicit run ID for tracking and staging")
+    parser.add_argument(
+        "--skip-er",
+        action="store_true",
+        help="Skip entity resolution post-processing step",
+    )
     args = parser.parse_args()
 
-    asyncio.run(run_pipeline(source=args.source, run_id=args.run_id))
+    asyncio.run(
+        run_pipeline(
+            source=args.source,
+            run_id=args.run_id,
+            with_er=not args.skip_er,
+        )
+    )
 
 
 if __name__ == "__main__":

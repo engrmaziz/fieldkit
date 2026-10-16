@@ -191,6 +191,22 @@ async def main() -> None:
         print(f"  - Rename Suggestion Accuracy: {metrics['rename_accuracy']:.2%}")
         return
 
+    if args.profile in ("foundry-er", "er", "p1-er"):
+        from evals.p1.er_eval import evaluate_entity_resolution, write_er_report
+
+        metrics = await evaluate_entity_resolution()
+        report_path = write_er_report(metrics)
+        print(
+            f"\n[SUCCESS] Entity Resolution Evaluation Complete! Report generated at:\n  {report_path}"
+        )
+        print(f"  - Total Pairs: {metrics['total_pairs']}")
+        print(f"  - Hybrid F1: {metrics['hybrid_f1']:.4f} (Target: >= 0.92)")
+        print(
+            f"  - Precision: {metrics['hybrid_precision']:.4f} | Recall: {metrics['hybrid_recall']:.4f}"
+        )
+        print(f"  - Review Queue Rate: {metrics['review_queue_rate']:.2f}% (Target: <= 3.0%)")
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")

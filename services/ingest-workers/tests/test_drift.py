@@ -74,17 +74,29 @@ def test_drift_rule_column_removed_and_added() -> None:
     events = engine.evaluate(current=fp, contract_columns=contract)
 
     # Missing legal_name (required) -> BLOCK
-    req_removed = [e for e in events if e.event_type == DriftEventType.COLUMN_REMOVED and e.column_name == "legal_name"]
+    req_removed = [
+        e
+        for e in events
+        if e.event_type == DriftEventType.COLUMN_REMOVED and e.column_name == "legal_name"
+    ]
     assert len(req_removed) == 1
     assert req_removed[0].severity == DriftSeverity.BLOCK
 
     # Missing optional_notes (optional) -> WARN
-    opt_removed = [e for e in events if e.event_type == DriftEventType.COLUMN_REMOVED and e.column_name == "optional_notes"]
+    opt_removed = [
+        e
+        for e in events
+        if e.event_type == DriftEventType.COLUMN_REMOVED and e.column_name == "optional_notes"
+    ]
     assert len(opt_removed) == 1
     assert opt_removed[0].severity == DriftSeverity.WARN
 
     # Added new_company_name -> WARN
-    col_added = [e for e in events if e.event_type == DriftEventType.COLUMN_ADDED and e.column_name == "new_company_name"]
+    col_added = [
+        e
+        for e in events
+        if e.event_type == DriftEventType.COLUMN_ADDED and e.column_name == "new_company_name"
+    ]
     assert len(col_added) == 1
     assert col_added[0].severity == DriftSeverity.WARN
 
@@ -104,7 +116,11 @@ def test_drift_rule_dtype_changed() -> None:
     fp = compute_fingerprint(curr_records, source="pos", run_id="run_004")
 
     events = engine.evaluate(current=fp, contract_columns=contract)
-    dtype_events = [e for e in events if e.event_type == DriftEventType.DTYPE_CHANGED and e.column_name == "amount"]
+    dtype_events = [
+        e
+        for e in events
+        if e.event_type == DriftEventType.DTYPE_CHANGED and e.column_name == "amount"
+    ]
     assert len(dtype_events) == 1
     assert dtype_events[0].severity == DriftSeverity.BLOCK
 
@@ -128,7 +144,7 @@ def test_drift_rule_statistical_shifts() -> None:
     curr_records = [
         {"city": "Hamburg", "score": 50.0},
         {"city": "Warsaw", "score": 50.0},  # New enum
-        {"city": None, "score": None},      # Null spike
+        {"city": None, "score": None},  # Null spike
         {"city": None, "score": None},
     ]
     curr_fp = compute_fingerprint(curr_records, source="test", run_id="curr_run")
@@ -138,7 +154,11 @@ def test_drift_rule_statistical_shifts() -> None:
     null_spikes = [e for e in events if e.event_type == DriftEventType.NULL_RATE_SPIKE]
     assert len(null_spikes) >= 1
 
-    new_enums = [e for e in events if e.event_type == DriftEventType.NEW_ENUM_VALUE and e.column_name == "city"]
+    new_enums = [
+        e
+        for e in events
+        if e.event_type == DriftEventType.NEW_ENUM_VALUE and e.column_name == "city"
+    ]
     assert len(new_enums) == 1
     assert "Warsaw" in new_enums[0].details["new_values"]
 

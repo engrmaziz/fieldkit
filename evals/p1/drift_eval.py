@@ -123,7 +123,10 @@ async def run_drift_eval(
                         old_dtype=contract_cols.get(rem_e.column_name, {}).get("type", "str"),
                         old_samples=[],
                         new_col=add_e.column_name,
-                        new_dtype=next((c["dtype"] for c in curr_fp.columns if c["name"] == add_e.column_name), "string"),
+                        new_dtype=next(
+                            (c["dtype"] for c in curr_fp.columns if c["name"] == add_e.column_name),
+                            "string",
+                        ),
                         new_samples=[str(r.get(add_e.column_name, "")) for r in curr_records[:20]],
                     )
                     rem_e.suggestion = sugg
@@ -192,7 +195,9 @@ async def run_drift_eval(
     return metrics
 
 
-def write_drift_report(metrics: dict[str, Any], output_dir: Path | str = "evals/reports/foundry-drift") -> Path:
+def write_drift_report(
+    metrics: dict[str, Any], output_dir: Path | str = "evals/reports/foundry-drift"
+) -> Path:
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     date_str = datetime.now().strftime("%Y-%m-%d")
@@ -222,11 +227,11 @@ def write_drift_report(metrics: dict[str, Any], output_dir: Path | str = "evals/
 
 | Metric | Target | Measured | Result |
 | :--- | :--- | :--- | :--- |
-| **Total Evaluated Scenarios** | 20 | {metrics['total_scenarios']} | PASS |
-| **Block Severity Recall** | **1.0 (100.0%)** | **{metrics['block_recall']:.2f} ({block_recall_pct}%)** | **PASS** |
-| **Block Scenarios Detected** | {metrics['block_scenarios_expected']} / {metrics['block_scenarios_expected']} | {metrics['block_scenarios_detected']} / {metrics['block_scenarios_expected']} | PASS |
-| **Rename Suggestion Accuracy** | ≥ 90% | {rename_acc_pct}% ({metrics['rename_scenarios_correct']}/{metrics['rename_scenarios_expected']}) | PASS |
-| **Avg Ingest Profiling Latency** | < 100 ms | {metrics['avg_latency_ms']} ms | PASS |
+| **Total Evaluated Scenarios** | 20 | {metrics["total_scenarios"]} | PASS |
+| **Block Severity Recall** | **1.0 (100.0%)** | **{metrics["block_recall"]:.2f} ({block_recall_pct}%)** | **PASS** |
+| **Block Scenarios Detected** | {metrics["block_scenarios_expected"]} / {metrics["block_scenarios_expected"]} | {metrics["block_scenarios_detected"]} / {metrics["block_scenarios_expected"]} | PASS |
+| **Rename Suggestion Accuracy** | ≥ 90% | {rename_acc_pct}% ({metrics["rename_scenarios_correct"]}/{metrics["rename_scenarios_expected"]}) | PASS |
+| **Avg Ingest Profiling Latency** | < 100 ms | {metrics["avg_latency_ms"]} ms | PASS |
 
 ## Detailed Scenario Verification (20 / 20)
 

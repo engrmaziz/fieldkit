@@ -28,19 +28,41 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
 
     # 2. Base records for purchase_orders
     po_base = [
-        {"po_number": f"PO-{i:05d}", "vendor_id": f"V{i:04d}", "part_number": f"PART-{i % 10}", "quantity": 50, "unit_price": 45.50, "order_date": "2025-01-15", "status": "APPROVED"}
+        {
+            "po_number": f"PO-{i:05d}",
+            "vendor_id": f"V{i:04d}",
+            "part_number": f"PART-{i % 10}",
+            "quantity": 50,
+            "unit_price": 45.50,
+            "order_date": "2025-01-15",
+            "status": "APPROVED",
+        }
         for i in range(1, 51)
     ]
 
     # 3. Base records for quality_incidents
     inc_base = [
-        {"incident_id": f"INC-{i:05d}", "po_number": f"PO-{i:05d}", "defect_type": "BURR", "severity": "HIGH", "notes_de": f"Fehler {i}", "notes_en": f"Defect {i}"}
+        {
+            "incident_id": f"INC-{i:05d}",
+            "po_number": f"PO-{i:05d}",
+            "defect_type": "BURR",
+            "severity": "HIGH",
+            "notes_de": f"Fehler {i}",
+            "notes_en": f"Defect {i}",
+        }
         for i in range(1, 51)
     ]
 
     # 4. Base records for soap_certs
     soap_base = [
-        {"soap_vendor_id": f"SV-{i:04d}", "company_name": f"Supplier {i}", "status": "ACTIVE", "certificate_id": f"CERT-{i}", "issued_date": "2024-01-01", "expiry_date": "2026-01-01"}
+        {
+            "soap_vendor_id": f"SV-{i:04d}",
+            "company_name": f"Supplier {i}",
+            "status": "ACTIVE",
+            "certificate_id": f"CERT-{i}",
+            "issued_date": "2024-01-01",
+            "expiry_date": "2026-01-01",
+        }
         for i in range(1, 51)
     ]
 
@@ -53,7 +75,9 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "erp_vendors",
             "records": [{k: v for k, v in r.items() if k != "vendor_id"} for r in erp_base],
             "baseline": erp_base,
-            "expected_events": [{"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "vendor_id"}],
+            "expected_events": [
+                {"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "vendor_id"}
+            ],
         },
         {
             "id": "scenario_02_drop_po_number",
@@ -62,7 +86,9 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "purchase_orders",
             "records": [{k: v for k, v in r.items() if k != "po_number"} for r in po_base],
             "baseline": po_base,
-            "expected_events": [{"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "po_number"}],
+            "expected_events": [
+                {"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "po_number"}
+            ],
         },
         {
             "id": "scenario_03_drop_incident_id",
@@ -71,7 +97,9 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "quality_incidents",
             "records": [{k: v for k, v in r.items() if k != "incident_id"} for r in inc_base],
             "baseline": inc_base,
-            "expected_events": [{"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "incident_id"}],
+            "expected_events": [
+                {"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "incident_id"}
+            ],
         },
         {
             "id": "scenario_04_drop_order_date",
@@ -80,7 +108,9 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "purchase_orders",
             "records": [{k: v for k, v in r.items() if k != "order_date"} for r in po_base],
             "baseline": po_base,
-            "expected_events": [{"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "order_date"}],
+            "expected_events": [
+                {"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "order_date"}
+            ],
         },
         {
             "id": "scenario_05_drop_unit_price",
@@ -89,7 +119,9 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "purchase_orders",
             "records": [{k: v for k, v in r.items() if k != "unit_price"} for r in po_base],
             "baseline": po_base,
-            "expected_events": [{"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "unit_price"}],
+            "expected_events": [
+                {"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "unit_price"}
+            ],
         },
         {
             "id": "scenario_06_drop_soap_vendor_id",
@@ -98,19 +130,31 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "soap_certs",
             "records": [{k: v for k, v in r.items() if k != "soap_vendor_id"} for r in soap_base],
             "baseline": soap_base,
-            "expected_events": [{"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "soap_vendor_id"}],
+            "expected_events": [
+                {
+                    "event_type": "COLUMN_REMOVED",
+                    "severity": "BLOCK",
+                    "column_name": "soap_vendor_id",
+                }
+            ],
         },
-
         # Scenarios 7-10: Renamed columns (BLOCK / WARN with LLM rename suggestion)
         {
             "id": "scenario_07_rename_company_name",
             "name": "Rename company_name to firm_name in erp_vendors",
             "contract": "erp_vendors.yaml",
             "source": "erp_vendors",
-            "records": [{("firm_name" if k == "company_name" else k): v for k, v in r.items()} for r in erp_base],
+            "records": [
+                {("firm_name" if k == "company_name" else k): v for k, v in r.items()}
+                for r in erp_base
+            ],
             "baseline": erp_base,
             "expected_events": [
-                {"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "company_name"},
+                {
+                    "event_type": "COLUMN_REMOVED",
+                    "severity": "BLOCK",
+                    "column_name": "company_name",
+                },
                 {"event_type": "COLUMN_ADDED", "severity": "WARN", "column_name": "firm_name"},
             ],
             "expected_mapping": {"old_name": "company_name", "new_name": "firm_name"},
@@ -120,7 +164,10 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "name": "Rename order_date to bestelldatum in purchase_orders",
             "contract": "purchase_orders.yaml",
             "source": "purchase_orders",
-            "records": [{("bestelldatum" if k == "order_date" else k): v for k, v in r.items()} for r in po_base],
+            "records": [
+                {("bestelldatum" if k == "order_date" else k): v for k, v in r.items()}
+                for r in po_base
+            ],
             "baseline": po_base,
             "expected_events": [
                 {"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "order_date"},
@@ -133,7 +180,10 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "name": "Rename unit_price to einzelpreis in purchase_orders",
             "contract": "purchase_orders.yaml",
             "source": "purchase_orders",
-            "records": [{("einzelpreis" if k == "unit_price" else k): v for k, v in r.items()} for r in po_base],
+            "records": [
+                {("einzelpreis" if k == "unit_price" else k): v for k, v in r.items()}
+                for r in po_base
+            ],
             "baseline": po_base,
             "expected_events": [
                 {"event_type": "COLUMN_REMOVED", "severity": "BLOCK", "column_name": "unit_price"},
@@ -146,15 +196,21 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "name": "Rename optional street to adresse_strasse in erp_vendors",
             "contract": "erp_vendors.yaml",
             "source": "erp_vendors",
-            "records": [{("adresse_strasse" if k == "street" else k): v for k, v in r.items()} for r in erp_base],
+            "records": [
+                {("adresse_strasse" if k == "street" else k): v for k, v in r.items()}
+                for r in erp_base
+            ],
             "baseline": erp_base,
             "expected_events": [
                 {"event_type": "COLUMN_REMOVED", "severity": "WARN", "column_name": "street"},
-                {"event_type": "COLUMN_ADDED", "severity": "WARN", "column_name": "adresse_strasse"},
+                {
+                    "event_type": "COLUMN_ADDED",
+                    "severity": "WARN",
+                    "column_name": "adresse_strasse",
+                },
             ],
             "expected_mapping": {"old_name": "street", "new_name": "adresse_strasse"},
         },
-
         # Scenarios 11-14: Dtype changes / corruptions (BLOCK)
         {
             "id": "scenario_11_dtype_corrupt_unit_price",
@@ -163,7 +219,9 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "purchase_orders",
             "records": [{**r, "unit_price": "UNPRICED"} for r in po_base],
             "baseline": po_base,
-            "expected_events": [{"event_type": "DTYPE_CHANGED", "severity": "BLOCK", "column_name": "unit_price"}],
+            "expected_events": [
+                {"event_type": "DTYPE_CHANGED", "severity": "BLOCK", "column_name": "unit_price"}
+            ],
         },
         {
             "id": "scenario_12_dtype_corrupt_quantity",
@@ -172,7 +230,9 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "purchase_orders",
             "records": [{**r, "quantity": "FIFTY_PIECES"} for r in po_base],
             "baseline": po_base,
-            "expected_events": [{"event_type": "DTYPE_CHANGED", "severity": "BLOCK", "column_name": "quantity"}],
+            "expected_events": [
+                {"event_type": "DTYPE_CHANGED", "severity": "BLOCK", "column_name": "quantity"}
+            ],
         },
         {
             "id": "scenario_13_dtype_corrupt_unit_price_symbols",
@@ -181,7 +241,9 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "purchase_orders",
             "records": [{**r, "unit_price": "###"} for r in po_base],
             "baseline": po_base,
-            "expected_events": [{"event_type": "DTYPE_CHANGED", "severity": "BLOCK", "column_name": "unit_price"}],
+            "expected_events": [
+                {"event_type": "DTYPE_CHANGED", "severity": "BLOCK", "column_name": "unit_price"}
+            ],
         },
         {
             "id": "scenario_14_dtype_corrupt_quantity_unknown",
@@ -190,38 +252,52 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "purchase_orders",
             "records": [{**r, "quantity": "UNKNOWN"} for r in po_base],
             "baseline": po_base,
-            "expected_events": [{"event_type": "DTYPE_CHANGED", "severity": "BLOCK", "column_name": "quantity"}],
+            "expected_events": [
+                {"event_type": "DTYPE_CHANGED", "severity": "BLOCK", "column_name": "quantity"}
+            ],
         },
-
         # Scenarios 15-17: Null rate spikes (WARN)
         {
             "id": "scenario_15_null_rate_spike_city",
             "name": "City null rate spike > 30% in erp_vendors",
             "contract": "erp_vendors.yaml",
             "source": "erp_vendors",
-            "records": [{**r, "city": None if idx % 2 == 0 else r["city"]} for idx, r in enumerate(erp_base)],
+            "records": [
+                {**r, "city": None if idx % 2 == 0 else r["city"]} for idx, r in enumerate(erp_base)
+            ],
             "baseline": erp_base,
-            "expected_events": [{"event_type": "NULL_RATE_SPIKE", "severity": "WARN", "column_name": "city"}],
+            "expected_events": [
+                {"event_type": "NULL_RATE_SPIKE", "severity": "WARN", "column_name": "city"}
+            ],
         },
         {
             "id": "scenario_16_null_rate_spike_postal_code",
             "name": "Postal code null rate spike > 30% in erp_vendors",
             "contract": "erp_vendors.yaml",
             "source": "erp_vendors",
-            "records": [{**r, "postal_code": None if idx % 2 == 0 else r["postal_code"]} for idx, r in enumerate(erp_base)],
+            "records": [
+                {**r, "postal_code": None if idx % 2 == 0 else r["postal_code"]}
+                for idx, r in enumerate(erp_base)
+            ],
             "baseline": erp_base,
-            "expected_events": [{"event_type": "NULL_RATE_SPIKE", "severity": "WARN", "column_name": "postal_code"}],
+            "expected_events": [
+                {"event_type": "NULL_RATE_SPIKE", "severity": "WARN", "column_name": "postal_code"}
+            ],
         },
         {
             "id": "scenario_17_null_rate_spike_notes_de",
             "name": "Notes_de null rate spike > 40% in quality_incidents",
             "contract": "quality_incidents.yaml",
             "source": "quality_incidents",
-            "records": [{**r, "notes_de": None if idx % 2 == 0 else r["notes_de"]} for idx, r in enumerate(inc_base)],
+            "records": [
+                {**r, "notes_de": None if idx % 2 == 0 else r["notes_de"]}
+                for idx, r in enumerate(inc_base)
+            ],
             "baseline": inc_base,
-            "expected_events": [{"event_type": "NULL_RATE_SPIKE", "severity": "WARN", "column_name": "notes_de"}],
+            "expected_events": [
+                {"event_type": "NULL_RATE_SPIKE", "severity": "WARN", "column_name": "notes_de"}
+            ],
         },
-
         # Scenarios 18-19: Numeric distribution p50 shifts (WARN)
         {
             "id": "scenario_18_p50_shift_unit_price",
@@ -230,7 +306,9 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "purchase_orders",
             "records": [{**r, "unit_price": 250.0} for r in po_base],
             "baseline": po_base,
-            "expected_events": [{"event_type": "NUMERIC_P50_SHIFT", "severity": "WARN", "column_name": "unit_price"}],
+            "expected_events": [
+                {"event_type": "NUMERIC_P50_SHIFT", "severity": "WARN", "column_name": "unit_price"}
+            ],
         },
         {
             "id": "scenario_19_p50_shift_quantity",
@@ -239,18 +317,24 @@ def create_scenarios(base_dir: Path | str = "evals/p1/drift_scenarios") -> None:
             "source": "purchase_orders",
             "records": [{**r, "quantity": 500} for r in po_base],
             "baseline": po_base,
-            "expected_events": [{"event_type": "NUMERIC_P50_SHIFT", "severity": "WARN", "column_name": "quantity"}],
+            "expected_events": [
+                {"event_type": "NUMERIC_P50_SHIFT", "severity": "WARN", "column_name": "quantity"}
+            ],
         },
-
         # Scenario 20: New enum value (WARN)
         {
             "id": "scenario_20_new_enum_status",
             "name": "New enum value IN_DISPUTE appears in status",
             "contract": "purchase_orders.yaml",
             "source": "purchase_orders",
-            "records": [{**r, "status": "IN_DISPUTE" if idx < 10 else r["status"]} for idx, r in enumerate(po_base)],
+            "records": [
+                {**r, "status": "IN_DISPUTE" if idx < 10 else r["status"]}
+                for idx, r in enumerate(po_base)
+            ],
             "baseline": po_base,
-            "expected_events": [{"event_type": "NEW_ENUM_VALUE", "severity": "WARN", "column_name": "status"}],
+            "expected_events": [
+                {"event_type": "NEW_ENUM_VALUE", "severity": "WARN", "column_name": "status"}
+            ],
         },
     ]
 

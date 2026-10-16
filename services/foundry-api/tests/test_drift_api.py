@@ -42,7 +42,9 @@ def test_drift_events_and_approve(client: TestClient, monkeypatch: pytest.Monkey
         monkeypatch.setattr(DriftStore, "fallback_path", store.fallback_path, raising=False)
         monkeypatch.setattr(DriftStore, "save_events", store.save_events, raising=False)
         monkeypatch.setattr(DriftStore, "approve_mapping", store.approve_mapping, raising=False)
-        monkeypatch.setattr(DriftStore, "get_active_overrides", store.get_active_overrides, raising=False)
+        monkeypatch.setattr(
+            DriftStore, "get_active_overrides", store.get_active_overrides, raising=False
+        )
 
         event_id = f"drift_{uuid.uuid4().hex[:12]}"
         event = DriftEvent(

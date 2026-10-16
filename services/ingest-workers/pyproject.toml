@@ -20,6 +20,7 @@ dependencies = [
     "httpx>=0.28.0",
     "psycopg[binary]>=3.2.0",
     "fieldkit-llm",
+    "fieldkit-er",
 ]
 
 [project.scripts]
@@ -31,3 +32,4 @@ packages = ["fieldkit_ingest"]
 [tool.uv.sources]
 fieldkit-common = { workspace = true }
 fieldkit-llm = { workspace = true }
+fieldkit-er = { workspace = true }

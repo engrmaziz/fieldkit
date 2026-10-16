@@ -14,6 +14,7 @@ dependencies = [
     "psycopg[binary]>=3.2.0",
     "pyarrow>=18.0.0",
     "pyyaml>=6.0.2",
+    "splink>=4.0.0",
 ]
 
 
@@ -29,9 +30,11 @@ fieldkit-llm = { workspace = true }
 fieldkit-mock-soap = { workspace = true }
 fieldkit-ingest = { workspace = true }
 fieldkit-foundry-api = { workspace = true }
+fieldkit-er = { workspace = true }
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6.100.0",
     "mypy>=1.14.0",
     "pytest>=8.3.0",
     "pytest-asyncio>=0.25.0",
@@ -69,8 +72,10 @@ module = [
     "respx.*",
     "jose.*",
     "opentelemetry.*",
+    "pyarrow.*",
 ]
 ignore_missing_imports = true
+
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
