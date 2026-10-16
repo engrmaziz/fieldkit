@@ -1,0 +1,33 @@
+name: purchase_orders
+description: SAP Purchase Orders with mixed date formats and comma decimals
+columns:
+  po_number:
+    type: str
+    required: true
+    nullable: false
+  vendor_id:
+    type: str
+    required: true
+    nullable: false
+  part_number:
+    type: str
+    required: true
+    nullable: false
+  quantity:
+    type: int
+    required: true
+    nullable: false
+  unit_price:
+    type: float
+    required: true
+    nullable: false
+    locale: de
+  order_date:
+    type: date
+    required: true
+    nullable: false
+    date_formats: ["%d.%m.%Y", "%Y-%m-%d", "%m/%d/%y"]
+  status:
+    type: str
+    required: true
+    nullable: false

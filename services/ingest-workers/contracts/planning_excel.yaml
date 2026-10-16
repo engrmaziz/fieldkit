@@ -1,0 +1,32 @@
+name: planning_excel
+description: Plant level supplier planning spreadsheets (Hamburg and Stralsund)
+columns:
+  Lieferanten-Nr:
+    type: str
+    required: true
+    nullable: false
+  Firmenname:
+    type: str
+    required: true
+    nullable: false
+  Strasse / Hausnummer:
+    type: str
+    required: false
+    nullable: true
+  Ort:
+    type: str
+    required: false
+    nullable: true
+  PLZ / Land:
+    type: str
+    required: false
+    nullable: true
+  Kategorie:
+    type: str
+    required: false
+    nullable: true
+  Planvolumen (EUR):
+    type: float
+    required: false
+    nullable: true
+    locale: de

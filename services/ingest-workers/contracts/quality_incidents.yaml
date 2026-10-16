@@ -1,0 +1,27 @@
+name: quality_incidents
+description: Factory quality defect inspection logs
+columns:
+  incident_id:
+    type: str
+    required: true
+    nullable: false
+  po_number:
+    type: str
+    required: true
+    nullable: false
+  defect_type:
+    type: str
+    required: true
+    nullable: false
+  severity:
+    type: str
+    required: true
+    nullable: false
+  notes_de:
+    type: str
+    required: false
+    nullable: true
+  notes_en:
+    type: str
+    required: false
+    nullable: true

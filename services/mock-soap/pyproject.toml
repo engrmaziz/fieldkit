@@ -1,0 +1,14 @@
+[project]
+name = "fieldkit-mock-soap"
+version = "0.1.0"
+description = "Fieldkit Mock SOAP 1.1 Service for Halden Supplier Certificates"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+]
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }

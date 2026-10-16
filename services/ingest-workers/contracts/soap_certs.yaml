@@ -1,0 +1,33 @@
+name: soap_seed
+description: Legacy SOAP API ISO 9001 audit certificates
+columns:
+  soap_vendor_id:
+    type: str
+    required: true
+    nullable: false
+  company_name:
+    type: str
+    required: false
+    nullable: true
+  status:
+    type: str
+    required: true
+    nullable: false
+  standard:
+    type: str
+    required: false
+    nullable: true
+  certificate_id:
+    type: str
+    required: false
+    nullable: true
+  issued_date:
+    type: date
+    required: false
+    nullable: true
+    date_formats: ["%Y-%m-%d", "%d.%m.%Y"]
+  expiry_date:
+    type: date
+    required: false
+    nullable: true
+    date_formats: ["%Y-%m-%d", "%d.%m.%Y"]

@@ -25,3 +25,8 @@ def init_tracer(service_name: str, endpoint: str | None = None) -> trace.Tracer:
 
     trace.set_tracer_provider(provider)
     return trace.get_tracer(service_name)
+
+
+def get_tracer(service_name: str) -> trace.Tracer:
+    """Get or create an OpenTelemetry tracer for the given service name."""
+    return trace.get_tracer(service_name)

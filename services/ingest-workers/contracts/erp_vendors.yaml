@@ -1,0 +1,35 @@
+name: erp_vendors
+description: Halden SAP ERP Vendor Master export
+columns:
+  vendor_id:
+    type: str
+    required: true
+    nullable: false
+  company_name:
+    type: str
+    required: true
+    nullable: false
+  street:
+    type: str
+    required: false
+    nullable: true
+  city:
+    type: str
+    required: false
+    nullable: true
+  postal_code:
+    type: str
+    required: false
+    nullable: true
+  country:
+    type: str
+    required: true
+    nullable: false
+  payment_terms:
+    type: str
+    required: false
+    nullable: true
+  currency:
+    type: str
+    required: true
+    nullable: false

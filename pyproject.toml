@@ -5,9 +5,15 @@ description = "Fieldkit: Forward-Deployed AI Platform"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "charset-normalizer>=3.4.0",
     "duckdb>=1.1.0",
+    "httpx>=0.28.0",
+    "minio>=7.2.0",
     "openpyxl>=3.1.5",
+    "pandera>=0.22.0",
+    "psycopg[binary]>=3.2.0",
     "pyarrow>=18.0.0",
+    "pyyaml>=6.0.2",
 ]
 
 
@@ -20,6 +26,8 @@ members = [
 [tool.uv.sources]
 fieldkit-common = { workspace = true }
 fieldkit-llm = { workspace = true }
+fieldkit-mock-soap = { workspace = true }
+fieldkit-ingest = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -45,7 +53,7 @@ select = [
     "UP",  # pyupgrade
     "ASYNC", # flake8-async
 ]
-ignore = ["E501", "B008", "ASYNC109"]
+ignore = ["E501", "B008", "ASYNC109", "ASYNC240"]
 
 
 [tool.mypy]

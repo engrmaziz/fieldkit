@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fieldkit-ingest"
+version = "0.1.0"
+description = "Fieldkit Ingest Workers: Connectors, Landing Zone, and Data Contracts"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "duckdb>=1.1.0",
+    "openpyxl>=3.1.5",
+    "pyarrow>=18.0.0",
+    "pandera>=0.22.0",
+    "charset-normalizer>=3.4.0",
+    "minio>=7.2.0",
+    "pyyaml>=6.0.2",
+    "httpx>=0.28.0",
+    "psycopg[binary]>=3.2.0",
+]
+
+[project.scripts]
+fieldkit-ingest = "fieldkit_ingest.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fieldkit_ingest"]
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }
