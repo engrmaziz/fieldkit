@@ -4,7 +4,12 @@ version = "0.1.0"
 description = "Fieldkit: Forward-Deployed AI Platform"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "duckdb>=1.1.0",
+    "openpyxl>=3.1.5",
+    "pyarrow>=18.0.0",
+]
+
 
 [tool.uv.workspace]
 members = [
@@ -60,5 +65,5 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-testpaths = ["packages", "services"]
+testpaths = ["packages", "services", "tests"]
 pythonpath = ["."]

@@ -19,6 +19,7 @@ models/
 *.zip
 *.csv
 *.parquet
+!evals/**/*.parquet
 
 
 # Python
