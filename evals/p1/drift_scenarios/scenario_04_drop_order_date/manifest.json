@@ -1,0 +1,14 @@
+{
+  "id": "scenario_04_drop_order_date",
+  "name": "Drop required order_date in purchase_orders",
+  "contract": "purchase_orders.yaml",
+  "source": "purchase_orders",
+  "expected_events": [
+    {
+      "event_type": "COLUMN_REMOVED",
+      "severity": "BLOCK",
+      "column_name": "order_date"
+    }
+  ],
+  "expected_mapping": null
+}

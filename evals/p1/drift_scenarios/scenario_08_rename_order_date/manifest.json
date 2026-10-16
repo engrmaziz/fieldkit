@@ -1,0 +1,22 @@
+{
+  "id": "scenario_08_rename_order_date",
+  "name": "Rename order_date to bestelldatum in purchase_orders",
+  "contract": "purchase_orders.yaml",
+  "source": "purchase_orders",
+  "expected_events": [
+    {
+      "event_type": "COLUMN_REMOVED",
+      "severity": "BLOCK",
+      "column_name": "order_date"
+    },
+    {
+      "event_type": "COLUMN_ADDED",
+      "severity": "WARN",
+      "column_name": "bestelldatum"
+    }
+  ],
+  "expected_mapping": {
+    "old_name": "order_date",
+    "new_name": "bestelldatum"
+  }
+}

@@ -11,6 +11,7 @@ resolution-markers = [
 members = [
     "fieldkit",
     "fieldkit-common",
+    "fieldkit-foundry-api",
     "fieldkit-hello",
     "fieldkit-ingest",
     "fieldkit-llm",
@@ -615,6 +616,33 @@ requires-dist = [
 ]
 
 [[package]]
+name = "fieldkit-foundry-api"
+version = "0.1.0"
+source = { editable = "services/foundry-api" }
+dependencies = [
+    { name = "duckdb" },
+    { name = "fastapi" },
+    { name = "fieldkit-common" },
+    { name = "fieldkit-ingest" },
+    { name = "fieldkit-llm" },
+    { name = "psycopg", extra = ["binary"] },
+    { name = "pydantic" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "duckdb", specifier = ">=1.1.0" },
+    { name = "fastapi", specifier = ">=0.115.0" },
+    { name = "fieldkit-common", editable = "packages/common" },
+    { name = "fieldkit-ingest", editable = "services/ingest-workers" },
+    { name = "fieldkit-llm", editable = "packages/llm" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2.0" },
+    { name = "pydantic", specifier = ">=2.10.0" },
+    { name = "uvicorn", specifier = ">=0.34.0" },
+]
+
+[[package]]
 name = "fieldkit-hello"
 version = "0.1.0"
 source = { editable = "services/hello" }
@@ -643,6 +671,7 @@ dependencies = [
     { name = "charset-normalizer" },
     { name = "duckdb" },
     { name = "fieldkit-common" },
+    { name = "fieldkit-llm" },
     { name = "httpx" },
     { name = "minio" },
     { name = "openpyxl" },
@@ -657,6 +686,7 @@ requires-dist = [
     { name = "charset-normalizer", specifier = ">=3.4.0" },
     { name = "duckdb", specifier = ">=1.1.0" },
     { name = "fieldkit-common", editable = "packages/common" },
+    { name = "fieldkit-llm", editable = "packages/llm" },
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "minio", specifier = ">=7.2.0" },
     { name = "openpyxl", specifier = ">=3.1.5" },

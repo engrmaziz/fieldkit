@@ -1,0 +1,14 @@
+{
+  "id": "scenario_15_null_rate_spike_city",
+  "name": "City null rate spike > 30% in erp_vendors",
+  "contract": "erp_vendors.yaml",
+  "source": "erp_vendors",
+  "expected_events": [
+    {
+      "event_type": "NULL_RATE_SPIKE",
+      "severity": "WARN",
+      "column_name": "city"
+    }
+  ],
+  "expected_mapping": null
+}

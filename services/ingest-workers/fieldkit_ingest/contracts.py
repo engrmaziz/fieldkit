@@ -19,10 +19,15 @@ class ValidationResult:
 class ContractValidator:
     """Validates raw records against source YAML contracts with date/decimal normalization."""
 
-    def __init__(self, contract_path: str | Path) -> None:
+    def __init__(
+        self,
+        contract_path: str | Path,
+        overrides: dict[str, str] | None = None,
+    ) -> None:
         self.contract_path = Path(contract_path)
         self.config = self._load_contract()
         self.columns = self.config.get("columns", {})
+        self.overrides = overrides or {}
 
     def _load_contract(self) -> dict[str, Any]:
         if not self.contract_path.exists():
@@ -72,6 +77,11 @@ class ContractValidator:
         for row in records:
             row_ref = f"{source_name}:row_{row.get('_source_row_num', '?')}"
             cleaned_row = dict(row)
+            if self.overrides:
+                for expected_col, actual_col in self.overrides.items():
+                    if actual_col in cleaned_row and expected_col not in cleaned_row:
+                        cleaned_row[expected_col] = cleaned_row[actual_col]
+
             rejection_reasons: list[str] = []
 
             for col_name, spec in self.columns.items():
@@ -81,7 +91,7 @@ class ContractValidator:
                 locale = spec.get("locale", "en")
                 date_formats = spec.get("date_formats", ["%Y-%m-%d", "%d.%m.%Y", "%m/%d/%y"])
 
-                val = row.get(col_name)
+                val = cleaned_row.get(col_name)
 
                 # Required check
                 if required and (val is None or str(val).strip() == ""):

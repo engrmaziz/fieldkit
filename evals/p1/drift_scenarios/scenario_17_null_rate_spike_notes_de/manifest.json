@@ -1,0 +1,14 @@
+{
+  "id": "scenario_17_null_rate_spike_notes_de",
+  "name": "Notes_de null rate spike > 40% in quality_incidents",
+  "contract": "quality_incidents.yaml",
+  "source": "quality_incidents",
+  "expected_events": [
+    {
+      "event_type": "NULL_RATE_SPIKE",
+      "severity": "WARN",
+      "column_name": "notes_de"
+    }
+  ],
+  "expected_mapping": null
+}

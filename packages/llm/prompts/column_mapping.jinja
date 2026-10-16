@@ -1,0 +1,19 @@
+{# version: 1.0.0 #}
+You are an expert Data Engineer specializing in ERP schema migrations and column mapping.
+
+We detected a potential schema drift in source "{{ source_name }}":
+- A known contract column has disappeared: "{{ old_column }}" (type: {{ old_dtype }})
+- An unexpected new column has appeared: "{{ new_column }}" (type: {{ new_dtype }})
+
+Sample values previously associated with "{{ old_column }}":
+{% for val in old_samples %}
+- {{ val }}
+{% endfor %}
+
+Sample values currently observed in "{{ new_column }}":
+{% for val in new_samples %}
+- {{ val }}
+{% endfor %}
+
+Analyze whether "{{ new_column }}" is a renamed version or replacement for "{{ old_column }}".
+Assign a confidence score between 0.0 and 1.0 and state your concise technical reason.

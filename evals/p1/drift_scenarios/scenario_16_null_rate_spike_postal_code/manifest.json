@@ -1,0 +1,14 @@
+{
+  "id": "scenario_16_null_rate_spike_postal_code",
+  "name": "Postal code null rate spike > 30% in erp_vendors",
+  "contract": "erp_vendors.yaml",
+  "source": "erp_vendors",
+  "expected_events": [
+    {
+      "event_type": "NULL_RATE_SPIKE",
+      "severity": "WARN",
+      "column_name": "postal_code"
+    }
+  ],
+  "expected_mapping": null
+}

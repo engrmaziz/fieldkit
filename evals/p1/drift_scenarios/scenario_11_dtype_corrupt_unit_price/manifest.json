@@ -1,0 +1,14 @@
+{
+  "id": "scenario_11_dtype_corrupt_unit_price",
+  "name": "Corrupt unit_price with non-numeric string values",
+  "contract": "purchase_orders.yaml",
+  "source": "purchase_orders",
+  "expected_events": [
+    {
+      "event_type": "DTYPE_CHANGED",
+      "severity": "BLOCK",
+      "column_name": "unit_price"
+    }
+  ],
+  "expected_mapping": null
+}

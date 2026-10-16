@@ -1,0 +1,22 @@
+{
+  "id": "scenario_10_rename_street",
+  "name": "Rename optional street to adresse_strasse in erp_vendors",
+  "contract": "erp_vendors.yaml",
+  "source": "erp_vendors",
+  "expected_events": [
+    {
+      "event_type": "COLUMN_REMOVED",
+      "severity": "WARN",
+      "column_name": "street"
+    },
+    {
+      "event_type": "COLUMN_ADDED",
+      "severity": "WARN",
+      "column_name": "adresse_strasse"
+    }
+  ],
+  "expected_mapping": {
+    "old_name": "street",
+    "new_name": "adresse_strasse"
+  }
+}

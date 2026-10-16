@@ -1,0 +1,14 @@
+{
+  "id": "scenario_02_drop_po_number",
+  "name": "Drop required po_number in purchase_orders",
+  "contract": "purchase_orders.yaml",
+  "source": "purchase_orders",
+  "expected_events": [
+    {
+      "event_type": "COLUMN_REMOVED",
+      "severity": "BLOCK",
+      "column_name": "po_number"
+    }
+  ],
+  "expected_mapping": null
+}

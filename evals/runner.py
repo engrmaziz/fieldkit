@@ -7,9 +7,13 @@ Executes reproducible evaluation suites and outputs metric reports to:
 import argparse
 import asyncio
 import subprocess
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
+
+# Ensure repository root is in sys.path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fieldkit_llm.client import LLMClient
 from pydantic import BaseModel
@@ -175,6 +179,18 @@ async def main() -> None:
     args = parser.parse_args()
 
     print(f"Running evaluation benchmark for profile: '{args.profile}'...")
+
+    if args.profile in ("foundry-drift", "drift", "p1-drift"):
+        from evals.p1.drift_eval import run_drift_eval, write_drift_report
+
+        metrics = await run_drift_eval()
+        report_path = write_drift_report(metrics)
+        print(f"\n[SUCCESS] Drift Evaluation Complete! Report generated at:\n  {report_path}")
+        print(f"  - Scenarios: {metrics['total_scenarios']}")
+        print(f"  - Block Detection Recall: {metrics['block_recall']:.2f}")
+        print(f"  - Rename Suggestion Accuracy: {metrics['rename_accuracy']:.2%}")
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")

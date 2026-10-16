@@ -1,0 +1,22 @@
+{
+  "id": "scenario_07_rename_company_name",
+  "name": "Rename company_name to firm_name in erp_vendors",
+  "contract": "erp_vendors.yaml",
+  "source": "erp_vendors",
+  "expected_events": [
+    {
+      "event_type": "COLUMN_REMOVED",
+      "severity": "BLOCK",
+      "column_name": "company_name"
+    },
+    {
+      "event_type": "COLUMN_ADDED",
+      "severity": "WARN",
+      "column_name": "firm_name"
+    }
+  ],
+  "expected_mapping": {
+    "old_name": "company_name",
+    "new_name": "firm_name"
+  }
+}

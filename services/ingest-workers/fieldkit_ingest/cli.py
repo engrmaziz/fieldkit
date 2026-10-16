@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import json
 import time
+from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,14 @@ from fieldkit_ingest.connectors.base import Connector, IngestContext
 from fieldkit_ingest.connectors.csv_connector import CsvConnector
 from fieldkit_ingest.connectors.excel_connector import ExcelConnector
 from fieldkit_ingest.contracts import ContractValidator
+from fieldkit_ingest.drift import (
+    DriftEventType,
+    DriftRuleEngine,
+    DriftSeverity,
+    DriftStore,
+    LLMRenameSuggester,
+    compute_fingerprint,
+)
 from fieldkit_ingest.landing import LandingZone
 from fieldkit_ingest.quarantine import QuarantineManager
 from fieldkit_ingest.staging import StagingStore
@@ -44,6 +53,8 @@ class IngestPipeline:
         self.landing = LandingZone()
         self.staging = StagingStore(run_id=self.run_id)
         self.quarantine_mgr = QuarantineManager()
+        self.drift_store = DriftStore()
+        self.llm_suggester = LLMRenameSuggester()
         self.contracts_dir = get_contracts_dir()
 
     async def ingest_source(
@@ -60,11 +71,21 @@ class IngestPipeline:
             self.quarantine_mgr.log_run_start(f"{self.run_id}_{source_id}", source_id)
             ctx = IngestContext(run_id=self.run_id, source_name=source_id, batch_size=5000)
 
+            # Drift detection & override resolution
+            active_overrides_raw = self.drift_store.get_active_overrides(source_id)
+            overrides_for_source = {
+                k.split(":", 1)[1]: v
+                for k, v in active_overrides_raw.items()
+                if k.startswith(f"{source_id}:")
+            }
+
             validator = None
+            contract_cols: dict[str, Any] = {}
             if contract_file:
                 c_path = self.contracts_dir / contract_file
                 if c_path.exists():
-                    validator = ContractValidator(c_path)
+                    validator = ContractValidator(c_path, overrides=overrides_for_source)
+                    contract_cols = validator.columns
 
             total_in = 0
             total_ok = 0
@@ -85,7 +106,68 @@ class IngestPipeline:
 
                 total_in += len(batch.records)
 
-                # 2. Contract validation
+                # 2. Schema and statistical drift detection
+                fp = compute_fingerprint(batch.records, source=source_id, run_id=self.run_id)
+                rule_engine = DriftRuleEngine(overrides=active_overrides_raw)
+                drift_events = rule_engine.evaluate(current=fp, contract_columns=contract_cols)
+
+                # Propose column rename suggestion if a required column is removed and an unexpected one added
+                removed_events = [e for e in drift_events if e.event_type == DriftEventType.COLUMN_REMOVED]
+                added_events = [e for e in drift_events if e.event_type == DriftEventType.COLUMN_ADDED]
+
+                if removed_events and added_events:
+                    for rem_e in removed_events:
+                        for add_e in added_events:
+                            old_col = rem_e.column_name
+                            new_col = add_e.column_name
+                            old_dtype = contract_cols.get(old_col, {}).get("type", "str")
+                            new_dtype = next((c["dtype"] for c in fp.columns if c["name"] == new_col), "string")
+                            new_samples = [str(r.get(new_col, "")) for r in batch.records[:20] if r.get(new_col)]
+                            try:
+                                suggestion = await self.llm_suggester.suggest_rename(
+                                    source_name=source_id,
+                                    old_col=old_col,
+                                    old_dtype=old_dtype,
+                                    old_samples=[],
+                                    new_col=new_col,
+                                    new_dtype=new_dtype,
+                                    new_samples=new_samples,
+                                )
+                                rem_e.suggestion = suggestion
+                                rem_e.status = "suggested"
+                            except Exception:
+                                pass
+
+                if drift_events:
+                    self.drift_store.save_events(drift_events)
+
+                blocked_events = [e for e in drift_events if e.severity == DriftSeverity.BLOCK]
+                if blocked_events:
+                    for be in blocked_events:
+                        print(f"    [DRIFT BLOCK] {be.event_type.value} on '{be.column_name}': {be.details.get('message')}")
+                    self.quarantine_mgr.log_run_finish(
+                        run_id=f"{self.run_id}_{source_id}",
+                        rows_in=len(batch.records),
+                        rows_ok=0,
+                        rows_quarantined=0,
+                        status="BLOCKED_DRIFT",
+                    )
+                    return {
+                        "source": source_id,
+                        "rows_in": len(batch.records),
+                        "rows_ok": 0,
+                        "rows_quarantined": 0,
+                        "newly_landed": newly_landed,
+                        "staging_table": staging_table,
+                        "blocked": True,
+                        "drift_events": [asdict(e) for e in drift_events],
+                    }
+
+                warn_events = [e for e in drift_events if e.severity == DriftSeverity.WARN]
+                for we in warn_events:
+                    print(f"    [DRIFT WARN] {we.event_type.value} on '{we.column_name}': {we.details.get('message')}")
+
+                # 3. Contract validation
                 if validator:
                     res = validator.validate_batch(
                         records=batch.records,
@@ -101,11 +183,11 @@ class IngestPipeline:
                 total_ok += len(valid_recs)
                 total_quarantined += len(quarantine_recs)
 
-                # 3. Route quarantine
+                # 4. Route quarantine
                 if quarantine_recs:
                     self.quarantine_mgr.record_quarantine(quarantine_recs)
 
-                # 4. Write valid records to staging DuckDB
+                # 5. Write valid records to staging DuckDB
                 if valid_recs:
                     self.staging.write_records(staging_table, valid_recs)
 
@@ -128,6 +210,7 @@ class IngestPipeline:
                 "rows_quarantined": total_quarantined,
                 "newly_landed": newly_landed,
                 "staging_table": staging_table,
+                "blocked": False,
             }
 
 

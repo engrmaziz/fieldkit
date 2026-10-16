@@ -1,0 +1,14 @@
+{
+  "id": "scenario_20_new_enum_status",
+  "name": "New enum value IN_DISPUTE appears in status",
+  "contract": "purchase_orders.yaml",
+  "source": "purchase_orders",
+  "expected_events": [
+    {
+      "event_type": "NEW_ENUM_VALUE",
+      "severity": "WARN",
+      "column_name": "status"
+    }
+  ],
+  "expected_mapping": null
+}

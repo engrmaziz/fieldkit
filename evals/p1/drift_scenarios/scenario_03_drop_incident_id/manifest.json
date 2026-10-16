@@ -1,0 +1,14 @@
+{
+  "id": "scenario_03_drop_incident_id",
+  "name": "Drop required incident_id in quality_incidents",
+  "contract": "quality_incidents.yaml",
+  "source": "quality_incidents",
+  "expected_events": [
+    {
+      "event_type": "COLUMN_REMOVED",
+      "severity": "BLOCK",
+      "column_name": "incident_id"
+    }
+  ],
+  "expected_mapping": null
+}

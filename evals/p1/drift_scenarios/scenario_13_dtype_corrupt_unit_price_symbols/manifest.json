@@ -1,0 +1,14 @@
+{
+  "id": "scenario_13_dtype_corrupt_unit_price_symbols",
+  "name": "Corrupt unit_price with non-parseable symbols",
+  "contract": "purchase_orders.yaml",
+  "source": "purchase_orders",
+  "expected_events": [
+    {
+      "event_type": "DTYPE_CHANGED",
+      "severity": "BLOCK",
+      "column_name": "unit_price"
+    }
+  ],
+  "expected_mapping": null
+}

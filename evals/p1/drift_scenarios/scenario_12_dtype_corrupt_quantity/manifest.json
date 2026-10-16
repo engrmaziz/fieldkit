@@ -1,0 +1,14 @@
+{
+  "id": "scenario_12_dtype_corrupt_quantity",
+  "name": "Corrupt quantity integer with string words",
+  "contract": "purchase_orders.yaml",
+  "source": "purchase_orders",
+  "expected_events": [
+    {
+      "event_type": "DTYPE_CHANGED",
+      "severity": "BLOCK",
+      "column_name": "quantity"
+    }
+  ],
+  "expected_mapping": null
+}

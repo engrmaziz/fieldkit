@@ -1,0 +1,14 @@
+{
+  "id": "scenario_14_dtype_corrupt_quantity_unknown",
+  "name": "Corrupt quantity with UNKNOWN strings",
+  "contract": "purchase_orders.yaml",
+  "source": "purchase_orders",
+  "expected_events": [
+    {
+      "event_type": "DTYPE_CHANGED",
+      "severity": "BLOCK",
+      "column_name": "quantity"
+    }
+  ],
+  "expected_mapping": null
+}

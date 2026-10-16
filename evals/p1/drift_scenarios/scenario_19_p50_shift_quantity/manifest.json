@@ -1,0 +1,14 @@
+{
+  "id": "scenario_19_p50_shift_quantity",
+  "name": "Quantity median p50 shifts > 50%",
+  "contract": "purchase_orders.yaml",
+  "source": "purchase_orders",
+  "expected_events": [
+    {
+      "event_type": "NUMERIC_P50_SHIFT",
+      "severity": "WARN",
+      "column_name": "quantity"
+    }
+  ],
+  "expected_mapping": null
+}

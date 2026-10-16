@@ -1,0 +1,14 @@
+{
+  "id": "scenario_01_drop_vendor_id",
+  "name": "Drop required vendor_id column in erp_vendors",
+  "contract": "erp_vendors.yaml",
+  "source": "erp_vendors",
+  "expected_events": [
+    {
+      "event_type": "COLUMN_REMOVED",
+      "severity": "BLOCK",
+      "column_name": "vendor_id"
+    }
+  ],
+  "expected_mapping": null
+}

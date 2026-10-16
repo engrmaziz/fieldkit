@@ -19,6 +19,7 @@ dependencies = [
     "pyyaml>=6.0.2",
     "httpx>=0.28.0",
     "psycopg[binary]>=3.2.0",
+    "fieldkit-llm",
 ]
 
 [project.scripts]
@@ -29,3 +30,4 @@ packages = ["fieldkit_ingest"]
 
 [tool.uv.sources]
 fieldkit-common = { workspace = true }
+fieldkit-llm = { workspace = true }

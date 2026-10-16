@@ -28,6 +28,7 @@ fieldkit-common = { workspace = true }
 fieldkit-llm = { workspace = true }
 fieldkit-mock-soap = { workspace = true }
 fieldkit-ingest = { workspace = true }
+fieldkit-foundry-api = { workspace = true }
 
 [dependency-groups]
 dev = [
