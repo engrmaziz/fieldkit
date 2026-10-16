@@ -1,0 +1,28 @@
+{
+  "name": "Fieldkit Codespace",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts",
+      "pnpmVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.23"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [3000, 8000, 8001, 8002, 8003, 8004, 8005, 8006, 8007, 8080, 11434],
+  "postCreateCommand": "curl -fsSL https://astral.sh/uv/install.sh | sh && curl -fsSL https://ollama.com/install.sh | sh && ollama serve & sleep 5 && ollama pull qwen2.5:3b && ollama pull nomic-embed-text && make setup",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "charliermarsh.ruff",
+        "ms-python.mypy-type-checker",
+        "ms-python.python",
+        "golang.go",
+        "tamasfe.even-better-toml"
+      ]
+    }
+  }
+}

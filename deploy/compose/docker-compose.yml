@@ -1,0 +1,234 @@
+services:
+  # ============================================================================
+  # Profile: core (Shared Infrastructure)
+  # ============================================================================
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: fieldkit-postgres
+    profiles: ["core", "all"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fieldkit}
+      POSTGRES_USER: ${POSTGRES_USER:-fieldkit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fieldkit_dev_insecure}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fieldkit}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fieldkit-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: fieldkit-redis
+    profiles: ["core", "all"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - fieldkit-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: fieldkit-keycloak
+    profiles: ["core", "all"]
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8080
+    ports:
+      - "${PORT_KEYCLOAK:-8080}:8080"
+    volumes:
+      - ../keycloak:/opt/keycloak/data/import:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: 127.0.0.1\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK' || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fieldkit-net
+
+  # ============================================================================
+  # Profile: hello (Bootstrap verification service)
+  # ============================================================================
+  hello:
+    build:
+      context: ../..
+      dockerfile: services/hello/Dockerfile
+    container_name: fieldkit-hello
+    profiles: ["hello", "all"]
+    environment:
+      ENVIRONMENT: development
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      KEYCLOAK_URL: http://keycloak:8080
+    ports:
+      - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fieldkit-net
+
+  # ============================================================================
+  # Profile: foundry (Project 1: Mini Foundry)
+  # ============================================================================
+  foundry-api:
+    image: alpine:latest
+    container_name: fieldkit-foundry-api
+    profiles: ["foundry", "all"]
+    command: ["sleep", "infinity"]
+    ports:
+      - "${PORT_FOUNDRY:-8001}:8001"
+    networks:
+      - fieldkit-net
+
+  # ============================================================================
+  # Profile: assistant (Project 2: RAG + NL2SQL)
+  # ============================================================================
+  assistant-api:
+    image: alpine:latest
+    container_name: fieldkit-assistant-api
+    profiles: ["assistant", "all"]
+    command: ["sleep", "infinity"]
+    ports:
+      - "${PORT_ASSISTANT:-8002}:8002"
+    networks:
+      - fieldkit-net
+
+  # ============================================================================
+  # Profile: copilot (Project 3: Ops Copilot)
+  # ============================================================================
+  copilot:
+    image: alpine:latest
+    container_name: fieldkit-copilot
+    profiles: ["copilot", "all"]
+    command: ["sleep", "infinity"]
+    ports:
+      - "${PORT_COPILOT:-8003}:8003"
+    networks:
+      - fieldkit-net
+
+  # ============================================================================
+  # Profile: docai (Project 4: Doc Intelligence)
+  # ============================================================================
+  docai:
+    image: alpine:latest
+    container_name: fieldkit-docai
+    profiles: ["docai", "all"]
+    command: ["sleep", "infinity"]
+    ports:
+      - "${PORT_DOCAI:-8004}:8004"
+    networks:
+      - fieldkit-net
+
+  # ============================================================================
+  # Profile: vision (Project 5 & 6: Video Analytics & Defect Inspection)
+  # ============================================================================
+  vision-edge:
+    image: alpine:latest
+    container_name: fieldkit-vision-edge
+    profiles: ["vision", "all"]
+    command: ["sleep", "infinity"]
+    ports:
+      - "${PORT_VISION:-8005}:8005"
+    networks:
+      - fieldkit-net
+
+  # ============================================================================
+  # Profile: observe (Project 7: LLM Observability & Anomaly Alerting)
+  # ============================================================================
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3-alpine
+    container_name: fieldkit-clickhouse
+    profiles: ["observe", "all"]
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - fieldkit-net
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.1.2
+    container_name: fieldkit-redpanda
+    profiles: ["observe", "all"]
+    command:
+      - redpanda
+      - start
+      - --smp 1
+      - --memory 512M
+      - --overprovisioned
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "19092:19092"
+    networks:
+      - fieldkit-net
+
+  tracehub:
+    image: alpine:latest
+    container_name: fieldkit-tracehub
+    profiles: ["observe", "all"]
+    command: ["sleep", "infinity"]
+    ports:
+      - "${PORT_TRACEHUB:-8006}:8006"
+    networks:
+      - fieldkit-net
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: fieldkit-grafana
+    profiles: ["observe", "deploy", "all"]
+    ports:
+      - "3001:3001"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - fieldkit-net
+
+  # ============================================================================
+  # Profile: deploy (Project 8: Air-gapped & Workflow Engine)
+  # ============================================================================
+  workflow-engine:
+    image: alpine:latest
+    container_name: fieldkit-workflow-engine
+    profiles: ["deploy", "all"]
+    command: ["sleep", "infinity"]
+    ports:
+      - "${PORT_WORKFLOW:-8007}:8007"
+    networks:
+      - fieldkit-net
+
+  prometheus:
+    image: prom/prometheus:v2.54.0
+    container_name: fieldkit-prometheus
+    profiles: ["deploy", "all"]
+    ports:
+      - "9090:9090"
+    networks:
+      - fieldkit-net
+
+networks:
+  fieldkit-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  clickhouse_data:

@@ -1,0 +1,64 @@
+[project]
+name = "fieldkit"
+version = "0.1.0"
+description = "Fieldkit: Forward-Deployed AI Platform"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+    "packages/*",
+    "services/*",
+]
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }
+fieldkit-llm = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
+    "respx>=0.22.0",
+    "ruff>=0.9.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ASYNC", # flake8-async
+]
+ignore = ["E501", "B008", "ASYNC109"]
+
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "respx.*",
+    "jose.*",
+    "opentelemetry.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["packages", "services"]
+pythonpath = ["."]

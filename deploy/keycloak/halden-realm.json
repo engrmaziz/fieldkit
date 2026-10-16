@@ -1,0 +1,90 @@
+{
+  "realm": "halden",
+  "enabled": true,
+  "displayName": "Halden Industrie GmbH",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "roles": {
+    "realm": [
+      { "name": "admin", "description": "Full administrative access" },
+      { "name": "analyst", "description": "Data analysis and reporting" },
+      { "name": "quality", "description": "Quality assurance and defect review" },
+      { "name": "support", "description": "Customer support and ops copilot" },
+      { "name": "legal", "description": "Legal counsel and contract review" },
+      { "name": "viewer", "description": "Read-only viewer" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "console",
+      "name": "Fieldkit Web Console",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"]
+    },
+    {
+      "clientId": "api",
+      "name": "Fieldkit API Services",
+      "enabled": true,
+      "bearerOnly": true
+    }
+  ],
+  "users": [
+    {
+      "username": "jana",
+      "enabled": true,
+      "email": "jana.weber@halden.de",
+      "firstName": "Jana",
+      "lastName": "Weber",
+      "credentials": [{ "type": "password", "value": "jana", "temporary": false }],
+      "realmRoles": ["admin"],
+      "attributes": { "plant": ["DE-HAM"] }
+    },
+    {
+      "username": "mehmet",
+      "enabled": true,
+      "email": "mehmet.yilmaz@halden.de",
+      "firstName": "Mehmet",
+      "lastName": "Yilmaz",
+      "credentials": [{ "type": "password", "value": "mehmet", "temporary": false }],
+      "realmRoles": ["quality"],
+      "attributes": { "plant": ["DE-HAM"] }
+    },
+    {
+      "username": "lukas",
+      "enabled": true,
+      "email": "lukas.bauer@halden.de",
+      "firstName": "Lukas",
+      "lastName": "Bauer",
+      "credentials": [{ "type": "password", "value": "lukas", "temporary": false }],
+      "realmRoles": ["support"],
+      "attributes": { "plant": ["DE-STR"] }
+    },
+    {
+      "username": "sofia",
+      "enabled": true,
+      "email": "sofia.schmidt@halden.de",
+      "firstName": "Sofia",
+      "lastName": "Schmidt",
+      "credentials": [{ "type": "password", "value": "sofia", "temporary": false }],
+      "realmRoles": ["legal"],
+      "attributes": { "plant": ["PL-WRO"] }
+    },
+    {
+      "username": "viewer",
+      "enabled": true,
+      "email": "guest.viewer@halden.de",
+      "firstName": "Guest",
+      "lastName": "Viewer",
+      "credentials": [{ "type": "password", "value": "viewer", "temporary": false }],
+      "realmRoles": ["viewer"],
+      "attributes": { "plant": ["DE-HAM"] }
+    }
+  ]
+}

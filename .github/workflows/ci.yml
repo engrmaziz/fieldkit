@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify AGENTS.md and CLAUDE.md consistency
+        run: |
+          diff -u AGENTS.md CLAUDE.md || (echo "AGENTS.md and CLAUDE.md must be identical!" && exit 1)
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Run Makefile Check
+        run: |
+          make setup
+          make check
