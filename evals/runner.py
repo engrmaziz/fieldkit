@@ -180,6 +180,14 @@ async def main() -> None:
 
     print(f"Running evaluation benchmark for profile: '{args.profile}'...")
 
+    if args.profile in ("foundry", "p1", "mini-foundry"):
+        from evals.p1.foundry_eval import run_master_foundry_eval, write_master_foundry_report
+
+        metrics = await run_master_foundry_eval()
+        report_path = write_master_foundry_report(metrics)
+        print(f"\n[SUCCESS] Project 1 Master Evaluation Complete! Master report generated at:\n  {report_path}")
+        return
+
     if args.profile in ("foundry-drift", "drift", "p1-drift"):
         from evals.p1.drift_eval import run_drift_eval, write_drift_report
 
