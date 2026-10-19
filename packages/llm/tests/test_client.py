@@ -195,3 +195,36 @@ def test_prompt_template_missing_version_raises(tmp_path: Path) -> None:
 
     with pytest.raises(PromptVersionError):
         load_and_render_prompt(template_file, name="Jana")
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_otel_genai_semconv_and_pii_events(tmp_cache: Path) -> None:
+    client = LLMClient(
+        base_url="http://mock-ollama:11434",
+        cache_dir=tmp_cache,
+        cache_enabled=False,
+    )
+
+    respx.post("http://mock-ollama:11434/api/generate").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "response": "Answer with sensitive email user@halden.de included",
+                "prompt_eval_count": 15,
+                "eval_count": 8,
+            },
+        )
+    )
+
+    result = await client.generate(
+        prompt="Tell me about DE89370400440532013000 and user@halden.de",
+        task="rag_qa",
+        prompt_version="1.0.0",
+        route="rag",
+        plant="DE-HAM",
+    )
+    assert result.prompt_tokens == 15
+    assert result.completion_tokens == 8
+    assert "user@halden.de" in result.text
+

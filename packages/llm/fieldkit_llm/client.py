@@ -14,6 +14,7 @@ import asyncio
 import hashlib
 import json
 import math
+import os
 import random
 import re
 import time
@@ -23,6 +24,7 @@ from typing import Any, TypeVar
 
 import httpx
 from fieldkit_common.logging import get_logger
+from fieldkit_common.otel import sanitize_and_truncate
 from fieldkit_common.settings import get_common_settings
 from opentelemetry import trace
 from pydantic import BaseModel, ValidationError
@@ -141,11 +143,14 @@ class LLMClient:
         format_param: Any | None = None,
         max_retries: int = 3,
         is_chat: bool = False,
+        route: str | None = None,
+        plant: str | None = None,
     ) -> LLMResult:
         """Call Ollama /api/generate with retries, jitter, tracing, and caching.
 
         Enforces:
         - OTel span with task, model, prompt_version, latency, and tokens
+        - GenAI semantic convention attributes and fieldkit telemetry tags
         - Temperature 0 default for extraction/SQL/classification
         - Seed passing for reproducible evals
         - Cache bypass for user-facing chat
@@ -177,6 +182,26 @@ class LLMClient:
             span.set_attribute("llm.is_chat", is_chat)
             if seed is not None:
                 span.set_attribute("llm.seed", seed)
+
+            # GenAI Semantic Conventions (OTel P7 compliance)
+            span.set_attribute("gen_ai.system", "ollama")
+            span.set_attribute("gen_ai.request.model", target_model)
+            span.set_attribute("gen_ai.request.temperature", temperature)
+            span.set_attribute("fieldkit.task", task)
+            span.set_attribute("fieldkit.prompt_version", prompt_version)
+            if route:
+                span.set_attribute("fieldkit.route", route)
+            if plant:
+                span.set_attribute("fieldkit.plant", plant)
+            if seed is not None:
+                span.set_attribute("gen_ai.request.seed", seed)
+
+            trace_content = os.environ.get("FIELDKIT_TRACE_CONTENT", "true").lower() != "false"
+            if trace_content:
+                span.add_event(
+                    "gen_ai.prompt",
+                    {"content": sanitize_and_truncate(prompt, max_bytes=4096)},
+                )
 
             now = time.time()
             if now < self._offline_circuit_open_until:
@@ -219,6 +244,15 @@ class LLMClient:
                     span.set_attribute("llm.completion_tokens", eval_count)
                     span.set_attribute("llm.latency_ms", elapsed_ms)
                     span.set_attribute("llm.cached", False)
+
+                    # GenAI token usage semantic conventions
+                    span.set_attribute("gen_ai.usage.input_tokens", prompt_eval_count)
+                    span.set_attribute("gen_ai.usage.output_tokens", eval_count)
+                    if trace_content:
+                        span.add_event(
+                            "gen_ai.completion",
+                            {"content": sanitize_and_truncate(output_text, max_bytes=4096)},
+                        )
 
                     result = LLMResult(
                         text=output_text,
@@ -282,6 +316,8 @@ class LLMClient:
         seed: int | None = None,
         timeout: float | None = None,
         is_chat: bool = False,
+        route: str | None = None,
+        plant: str | None = None,
     ) -> T:
         """Enforce strict structured output using Pydantic JSON schema.
 
@@ -302,6 +338,8 @@ class LLMClient:
             format_param=schema,
             max_retries=3,
             is_chat=is_chat,
+            route=route,
+            plant=plant,
         )
 
         try:

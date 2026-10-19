@@ -42,6 +42,7 @@ fieldkit-ontology = { workspace = true }
 fieldkit-retrieval = { workspace = true }
 fieldkit-nl2sql = { workspace = true }
 fieldkit-assistant-api = { workspace = true }
+fieldkit-tracehub = { workspace = true }
 
 [dependency-groups]
 

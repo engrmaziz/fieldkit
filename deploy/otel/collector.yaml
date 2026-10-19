@@ -1,0 +1,63 @@
+# OpenTelemetry Collector Configuration for Fieldkit (Project 7: Tracehub)
+# Features: OTLP Receivers, Tail Sampling, and Kafka Exporter to Redpanda
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 75
+    spike_limit_percentage: 20
+
+  tail_sampling:
+    decision_wait: 5s
+    num_traces: 10000
+    expected_new_traces_per_sec: 2000
+    policies:
+      # 1. Keep 100% of all error traces
+      - name: errors-100-percent
+        type: status_code
+        status_code: { status_codes: [ERROR] }
+
+      # 2. Keep 100% of slow traces (> 5s latency)
+      - name: latency-5s-100-percent
+        type: latency
+        latency: { threshold_ms: 5000 }
+
+      # 3. Retain 20% of baseline nominal traces
+      - name: baseline-probabilistic-20-percent
+        type: probabilistic
+        probabilistic: { sampling_percentage: 20.0 }
+
+  batch:
+    send_batch_size: 256
+    timeout: 1s
+
+exporters:
+  kafka:
+    brokers:
+      - redpanda:9092
+    topic: otel.spans
+    encoding: otlp_json
+
+  debug:
+    verbosity: basic
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, tail_sampling, batch]
+      exporters: [kafka]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888

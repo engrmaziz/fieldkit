@@ -228,6 +228,35 @@ services:
     networks:
       - fieldkit-net
 
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:v2.5.2
+    container_name: fieldkit-redpanda-console
+    profiles: ["observe", "all"]
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+    ports:
+      - "8085:8080"
+    depends_on:
+      - redpanda
+    networks:
+      - fieldkit-net
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.100.0
+    container_name: fieldkit-otel-collector
+    profiles: ["observe", "all"]
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ../otel/collector.yaml:/etc/otelcol/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8888:8888"
+    depends_on:
+      - redpanda
+    networks:
+      - fieldkit-net
+
   tracehub:
     image: alpine:latest
     container_name: fieldkit-tracehub
@@ -235,6 +264,16 @@ services:
     command: ["sleep", "infinity"]
     ports:
       - "${PORT_TRACEHUB:-8006}:8006"
+    networks:
+      - fieldkit-net
+
+  ntfy:
+    image: binwiederhier/ntfy:v2.11.0
+    container_name: fieldkit-ntfy
+    profiles: ["observe", "all"]
+    command: ["serve"]
+    ports:
+      - "8090:80"
     networks:
       - fieldkit-net
 
