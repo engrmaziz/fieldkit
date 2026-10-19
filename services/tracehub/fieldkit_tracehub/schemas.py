@@ -246,3 +246,92 @@ class EvalComparisonResponse(BaseModel):
     total_improvements: int
     total_unchanged: int
 
+
+# ============================================================================
+# A/B Experiments Schemas
+# ============================================================================
+
+class ExperimentVariant(BaseModel):
+    """Single variant arm in an online A/B experiment."""
+
+    name: str
+    model: str
+    prompt_version: str
+    pct: int = Field(ge=0, le=100, description="Percentage of traffic allocated (0-100)")
+
+
+class ExperimentCreate(BaseModel):
+    """Payload to create or update an A/B experiment."""
+
+    name: str
+    task: str
+    variants: list[ExperimentVariant]
+    status: str = "active"
+    description: str = ""
+
+
+class ExperimentRecord(BaseModel):
+    """Stored definition and state of an A/B experiment."""
+
+    name: str
+    task: str
+    variants: list[ExperimentVariant]
+    status: str
+    description: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class ExperimentConfigResponse(BaseModel):
+    """Lightweight config response cached by LLM clients for variant routing."""
+
+    name: str
+    task: str
+    status: str
+    variants: list[ExperimentVariant]
+
+
+class ExperimentResolveRequest(BaseModel):
+    """Request payload to deterministically assign a user to an experiment variant."""
+
+    user_id: str
+
+
+class ExperimentResolveResponse(BaseModel):
+    """Resolved model and prompt version assignment for a user."""
+
+    experiment_name: str
+    variant_name: str
+    model: str
+    prompt_version: str
+    user_id: str
+
+
+class VariantMetricResult(BaseModel):
+    """Observed operational and feedback telemetry for a specific variant arm."""
+
+    variant_name: str
+    model: str
+    prompt_version: str
+    total_spans: int
+    p50_latency_ms: float
+    p95_latency_ms: float
+    error_rate: float
+    avg_tokens: float
+    feedback_thumbs_up: int
+    feedback_thumbs_down: int
+    satisfaction_rate: float
+
+
+class ExperimentResultsResponse(BaseModel):
+    """Aggregated evaluation telemetry and automated stop-rule status for an A/B test."""
+
+    experiment_name: str
+    status: str
+    task: str
+    variants: list[VariantMetricResult]
+    stop_rule_triggered: bool
+    stop_rule_reason: str | None = None
+    metric_deltas: dict[str, MetricDeltaWithCI] = Field(default_factory=dict)
+
+

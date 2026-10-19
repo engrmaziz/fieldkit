@@ -12,7 +12,7 @@ from fieldkit_common.otel import init_tracer
 from pydantic import BaseModel
 
 from fieldkit_tracehub.config import settings
-from fieldkit_tracehub.routers import evals, prompts, traces
+from fieldkit_tracehub.routers import evals, experiments, prompts, traces
 
 setup_logging(service_name=settings.service_name)
 logger = get_logger("tracehub")
@@ -62,6 +62,7 @@ app.add_middleware(
 app.include_router(traces.router)
 app.include_router(prompts.router)
 app.include_router(evals.router)
+app.include_router(experiments.router)
 
 
 @app.get("/healthz", response_model=HealthResponse)

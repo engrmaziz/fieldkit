@@ -57,6 +57,8 @@ class LLMResult(BaseModel):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     cached: bool = False
+    experiment: str | None = None
+    experiment_variant: str | None = None
 
 
 class LLMClient:
@@ -145,6 +147,8 @@ class LLMClient:
         is_chat: bool = False,
         route: str | None = None,
         plant: str | None = None,
+        experiment: str | None = None,
+        experiment_variant: str | None = None,
     ) -> LLMResult:
         """Call Ollama /api/generate with retries, jitter, tracing, and caching.
 
@@ -193,6 +197,10 @@ class LLMClient:
                 span.set_attribute("fieldkit.route", route)
             if plant:
                 span.set_attribute("fieldkit.plant", plant)
+            if experiment:
+                span.set_attribute("fieldkit.experiment", experiment)
+            if experiment_variant:
+                span.set_attribute("fieldkit.variant", experiment_variant)
             if seed is not None:
                 span.set_attribute("gen_ai.request.seed", seed)
 
@@ -263,6 +271,8 @@ class LLMClient:
                         prompt_tokens=prompt_eval_count,
                         completion_tokens=eval_count,
                         cached=False,
+                        experiment=experiment,
+                        experiment_variant=experiment_variant,
                     )
                     self._set_cache(cache_key, result, is_chat=is_chat)
                     return result
@@ -318,6 +328,8 @@ class LLMClient:
         is_chat: bool = False,
         route: str | None = None,
         plant: str | None = None,
+        experiment: str | None = None,
+        experiment_variant: str | None = None,
     ) -> T:
         """Enforce strict structured output using Pydantic JSON schema.
 
@@ -340,6 +352,8 @@ class LLMClient:
             is_chat=is_chat,
             route=route,
             plant=plant,
+            experiment=experiment,
+            experiment_variant=experiment_variant,
         )
 
         try:

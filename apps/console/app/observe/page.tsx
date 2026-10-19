@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import TraceWaterfallDrawer, { TraceTreeResponse } from "@/components/observe/TraceWaterfallDrawer";
 import PromptRegistryView from "@/components/observe/PromptRegistryView";
 import EvalRunsView from "@/components/observe/EvalRunsView";
+import ExperimentsView from "@/components/observe/ExperimentsView";
 import {
   Activity,
   Layers,
@@ -21,6 +22,7 @@ import {
   FileCode2,
   BarChart3,
   GitCompare,
+  FlaskConical,
 } from "lucide-react";
 
 interface TraceSummary {
@@ -40,7 +42,7 @@ interface TraceSummary {
 }
 
 export default function ObservePage() {
-  const [activeTab, setActiveTab] = useState<"traces" | "prompts" | "evals">("traces");
+  const [activeTab, setActiveTab] = useState<"traces" | "prompts" | "evals" | "experiments">("traces");
   const [traces, setTraces] = useState<TraceSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState<string>("");
@@ -345,6 +347,21 @@ export default function ObservePage() {
               95% CI
             </span>
           </button>
+
+          <button
+            onClick={() => setActiveTab("experiments")}
+            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-mono font-medium border-b-2 transition-all ${
+              activeTab === "experiments"
+                ? "border-cyan-400 text-cyan-400 bg-slate-900/40"
+                : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700"
+            }`}
+          >
+            <FlaskConical className="w-4 h-4" />
+            <span>A/B Experiments</span>
+            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-indigo-950 text-indigo-400 border border-indigo-800/80">
+              Split Traffic
+            </span>
+          </button>
         </div>
 
         {/* Traces Tab Content */}
@@ -536,6 +553,9 @@ export default function ObservePage() {
 
         {/* Eval Runs Tab Content */}
         {activeTab === "evals" && <EvalRunsView onSelectTrace={handleSelectTrace} />}
+
+        {/* A/B Experiments Tab Content */}
+        {activeTab === "experiments" && <ExperimentsView />}
       </main>
 
       {/* Trace Waterfall Drawer */}

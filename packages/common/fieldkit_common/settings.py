@@ -27,6 +27,9 @@ class CommonSettings(BaseSettings):
     ollama_embed_model: str = "nomic-embed-text"
     ollama_timeout_seconds: int = 60
 
+    # Tracehub (Project 7)
+    tracehub_url: str = "http://localhost:8006"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
