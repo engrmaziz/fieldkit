@@ -22,7 +22,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/foundry/explorer", label: "Foundry", icon: Database, active: pathname?.startsWith("/foundry") },
-    { href: "/assistant", label: "Assistant", icon: Bot, badge: "P2", active: false },
+    { href: "/assistant", label: "Assistant", icon: Bot, badge: "P2", active: pathname?.startsWith("/assistant") },
     { href: "/copilot", label: "Copilot", icon: Wrench, badge: "P3", active: false },
     { href: "/docai", label: "Doc AI", icon: FileText, badge: "P4", active: false },
   ];

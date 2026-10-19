@@ -104,6 +104,8 @@ class SQLExecutor:
                 sub in err_lower
                 for sub in (
                     "connection refused",
+                    "refused",
+                    "winerror",
                     "cannot connect",
                     "offline",
                     "does not exist",

@@ -113,3 +113,75 @@ export interface PropertyLineageResponse {
   history: PropertyLineageHistoryItem[];
   transforms: LineageTransform[];
 }
+
+// ==========================================
+// P2 Assistant Console Types
+// ==========================================
+
+export interface ChunkCitation {
+  citation_index: number;
+  chunk_id: string;
+  title: string;
+  heading_path: string[];
+  content: string;
+  allowed_roles: string[];
+  allowed_plants?: string[] | null;
+}
+
+export interface SentenceVerification {
+  sentence_index: number;
+  text: string;
+  citations: number[];
+  valid_citations: number[];
+  overlap_score: number;
+  numeric_match: boolean;
+  is_supported: boolean;
+  flag?: string | null;
+}
+
+export interface VerificationResult {
+  is_supported: boolean;
+  supported_ratio: number;
+  unsupported_count: number;
+  sentence_verifications?: SentenceVerification[];
+}
+
+export interface UnifiedAssistantResponse {
+  query: string;
+  rewritten_query: string;
+  route: "rag" | "sql" | "both" | string;
+  confidence: number;
+  answer: string;
+  citations: ChunkCitation[];
+  sql?: string | null;
+  tables_used: string[];
+  columns: string[];
+  rows: Record<string, any>[];
+  row_count: number;
+  verification?: VerificationResult | null;
+  cached: boolean;
+  session_id?: string | null;
+  trace_id?: string | null;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: "user" | "assistant";
+  content: string;
+  timestamp: string;
+  route?: "rag" | "sql" | "both" | string;
+  confidence?: number;
+  rewritten_query?: string;
+  citations?: ChunkCitation[];
+  sql?: string | null;
+  tables_used?: string[];
+  columns?: string[];
+  rows?: Record<string, any>[];
+  row_count?: number;
+  verification?: VerificationResult | null;
+  cached?: boolean;
+  trace_id?: string | null;
+  isStreaming?: boolean;
+  feedback?: "up" | "down" | null;
+}
+

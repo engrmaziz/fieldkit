@@ -5,16 +5,23 @@ import { UserPrincipal } from "./types";
 
 export const DEMO_USERS: UserPrincipal[] = [
   {
-    username: "jana",
-    name: "Jana Weber",
-    roles: ["admin", "analyst"],
+    username: "sofia",
+    name: "Sofia Schmidt",
+    roles: ["admin", "legal"],
     plant: null,
-    email: "jana.weber@halden.de",
+    email: "sofia.schmidt@halden.pl",
+  },
+  {
+    username: "elena",
+    name: "Elena Rostova",
+    roles: ["procurement"],
+    plant: "DE-HAM",
+    email: "elena.rostova@halden.de",
   },
   {
     username: "mehmet",
     name: "Mehmet Yilmaz",
-    roles: ["quality", "analyst"],
+    roles: ["quality"],
     plant: "DE-HAM",
     email: "mehmet.yilmaz@halden.de",
   },
@@ -26,11 +33,18 @@ export const DEMO_USERS: UserPrincipal[] = [
     email: "lukas.bauer@halden.de",
   },
   {
-    username: "sofia",
-    name: "Sofia Schmidt",
-    roles: ["legal"],
-    plant: "PL-WRO",
-    email: "sofia.schmidt@halden.pl",
+    username: "viewer",
+    name: "Guest Viewer",
+    roles: ["viewer"],
+    plant: "DE-HAM",
+    email: "guest.viewer@halden.de",
+  },
+  {
+    username: "jana",
+    name: "Jana Weber",
+    roles: ["admin", "analyst"],
+    plant: null,
+    email: "jana.weber@halden.de",
   },
 ];
 
@@ -67,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getAuthHeaders = (): Record<string, string> => {
-    // Generate simulated standard base64 dev token with claims
+    // Generate standard unverified JWT token with claims
     const claims = {
       sub: currentUser.username,
       preferred_username: currentUser.username,
@@ -75,9 +89,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       realm_access: { roles: currentUser.roles },
       plant: currentUser.plant,
     };
-    const token = btoa(JSON.stringify(claims));
+    const b64Header = btoa(JSON.stringify({ alg: "none", typ: "JWT" }));
+    const b64Payload = btoa(JSON.stringify(claims));
+    const token = `${b64Header}.${b64Payload}.`;
     return {
-      Authorization: `Bearer dev_${token}`,
+      Authorization: `Bearer ${token}`,
       "X-User-Plant": currentUser.plant || "",
       "X-User-Role": currentUser.roles[0] || "viewer",
     };
