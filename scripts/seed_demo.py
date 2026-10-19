@@ -57,7 +57,9 @@ async def run_foundry_demo() -> None:
     print("      * Mehmet Yilmaz (HAM):    mehmet / mehmet (Plant: DE-HAM)")
     print("      * Lukas Bauer (STR):      lukas / lukas (Plant: DE-STR)")
     print("      * Sofia Schmidt (WRO):    sofia / sofia (Plant: PL-WRO)")
-    print(f"  - Master Eval Report:    evals/reports/foundry/{datetime.now().strftime('%Y-%m-%d')}.md\n")
+    print(
+        f"  - Master Eval Report:    evals/reports/foundry/{datetime.now().strftime('%Y-%m-%d')}.md\n"
+    )
 
 
 async def run_hello_demo() -> None:
@@ -74,7 +76,9 @@ async def run_hello_demo() -> None:
             else:
                 print(f"  [INFO] Keycloak container starting up (HTTP {resp.status_code}).")
     except Exception:
-        print("  [INFO] Keycloak container not running or starting (run 'make up P=hello' to launch).")
+        print(
+            "  [INFO] Keycloak container not running or starting (run 'make up P=hello' to launch)."
+        )
 
     print("\n[2/3] Testing Fieldkit LLM Pipeline & Prompt Versioning...")
     client = LLMClient()

@@ -1,0 +1,30 @@
+[project]
+name = "fieldkit-assistant-api"
+version = "0.1.0"
+description = "Fieldkit Enterprise RAG & NL2SQL Assistant Service"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "fieldkit-llm",
+    "fieldkit-ontology",
+    "fieldkit-retrieval",
+    "fieldkit-nl2sql",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic-settings>=2.6.0",
+    "asyncpg>=0.30.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fieldkit_assistant"]
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }
+fieldkit-llm = { workspace = true }
+fieldkit-ontology = { workspace = true }
+fieldkit-retrieval = { workspace = true }
+fieldkit-nl2sql = { workspace = true }

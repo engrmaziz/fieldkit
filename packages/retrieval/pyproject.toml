@@ -1,0 +1,22 @@
+[project]
+name = "fieldkit-retrieval"
+version = "0.1.0"
+description = "Fieldkit RAG retrieval: structure-aware chunking, parsers, and permission-aware search"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "fieldkit-llm",
+    "pymupdf>=2.0.0",
+    "selectolax>=1.0.0",
+    "tiktoken>=0.7.0",
+    "pydantic>=2.0.0",
+    "sqlalchemy>=2.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }
+fieldkit-llm = { workspace = true }

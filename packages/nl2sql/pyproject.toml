@@ -1,0 +1,23 @@
+[project]
+name = "fieldkit-nl2sql"
+version = "0.1.0"
+description = "Fieldkit NL2SQL package for schema linking, SQL generation, and AST validation"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "fieldkit-llm",
+    "fieldkit-ontology",
+    "sqlglot>=26.0.0",
+    "pydantic>=2.0.0",
+    "sqlalchemy>=2.0.0",
+    "pyyaml>=6.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }
+fieldkit-llm = { workspace = true }
+fieldkit-ontology = { workspace = true }

@@ -1,0 +1,33 @@
+# Few-shot question to SQL library for Halden Industrie ontology queries
+# Used by packages/nl2sql/generator.py for nearest-neighbor few-shot in-context learning
+
+queries:
+  - id: sql-001
+    question: "List all suppliers located in Germany."
+    sql: "SELECT id, name, city, country, reliability_score FROM suppliers WHERE country = 'DE';"
+    tags: ["supplier", "filter", "basic"]
+
+  - id: sql-002
+    question: "How many purchase orders were placed in plant DE-HAM last quarter?"
+    sql: "SELECT COUNT(*) AS total_orders FROM purchase_orders WHERE plant = 'DE-HAM' AND order_date >= '2026-07-01' AND order_date <= '2026-09-30';"
+    tags: ["orders", "plant", "aggregate"]
+
+  - id: sql-003
+    question: "Top 5 suppliers by late deliveries to Hamburg."
+    sql: "SELECT s.id, s.name, COUNT(sh.id) AS late_shipment_count FROM suppliers s JOIN purchase_orders po ON s.id = po.supplier_id JOIN shipments sh ON po.id = sh.order_id WHERE po.plant = 'DE-HAM' AND sh.actual_delivery_date > sh.estimated_delivery_date GROUP BY s.id, s.name ORDER BY late_shipment_count DESC LIMIT 5;"
+    tags: ["supplier", "shipment", "late", "join", "ranking"]
+
+  - id: sql-004
+    question: "What is the average defect rate of parts supplied by Mueller Hydraulik?"
+    sql: "SELECT s.name, AVG(qi.defect_rate) AS avg_defect_rate, COUNT(qi.id) AS total_incidents FROM suppliers s JOIN parts p ON s.id = p.supplier_id JOIN quality_incidents qi ON p.id = qi.part_id WHERE s.name ILIKE '%Mueller Hydraulik%' GROUP BY s.name;"
+    tags: ["quality", "defect", "supplier", "join"]
+
+  - id: sql-005
+    question: "Show quality incidents with critical severity for plant Stuttgart."
+    sql: "SELECT qi.id, qi.incident_date, qi.defect_type, qi.severity, qi.description, qi.plant FROM quality_incidents qi WHERE qi.plant = 'DE-STR' AND qi.severity = 'critical' ORDER BY qi.incident_date DESC LIMIT 50;"
+    tags: ["quality", "incident", "filter", "plant"]
+
+  - id: sql-006
+    question: "Total spend by supplier across all plants in 2026."
+    sql: "SELECT s.id, s.name, SUM(po.total_amount) AS total_spend FROM suppliers s JOIN purchase_orders po ON s.id = po.supplier_id WHERE po.order_date >= '2026-01-01' GROUP BY s.id, s.name ORDER BY total_spend DESC LIMIT 20;"
+    tags: ["spend", "aggregate", "supplier"]

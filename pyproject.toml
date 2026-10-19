@@ -17,8 +17,11 @@ dependencies = [
     "splink>=4.0.0",
     "sqlalchemy[asyncio]>=2.0.0",
     "alembic>=1.14.0",
-
     "asyncpg>=0.30.0",
+    "tiktoken>=0.14.0",
+    "selectolax>=1.0.1",
+    "pymupdf>=2.0",
+    "sqlglot>=26.0.0",
 ]
 
 
@@ -36,6 +39,9 @@ fieldkit-ingest = { workspace = true }
 fieldkit-foundry-api = { workspace = true }
 fieldkit-er = { workspace = true }
 fieldkit-ontology = { workspace = true }
+fieldkit-retrieval = { workspace = true }
+fieldkit-nl2sql = { workspace = true }
+fieldkit-assistant-api = { workspace = true }
 
 [dependency-groups]
 

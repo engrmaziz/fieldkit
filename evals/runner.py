@@ -185,7 +185,9 @@ async def main() -> None:
 
         metrics = await run_master_foundry_eval()
         report_path = write_master_foundry_report(metrics)
-        print(f"\n[SUCCESS] Project 1 Master Evaluation Complete! Master report generated at:\n  {report_path}")
+        print(
+            f"\n[SUCCESS] Project 1 Master Evaluation Complete! Master report generated at:\n  {report_path}"
+        )
         return
 
     if args.profile in ("foundry-drift", "drift", "p1-drift"):

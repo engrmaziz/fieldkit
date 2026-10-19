@@ -114,15 +114,15 @@ def write_master_foundry_report(metrics: dict[str, Any]) -> Path:
 
 | Metric | Target | Measured | Result |
 | :--- | :--- | :--- | :---: |
-| **ER F1 Score (Splink + LLM Adjudicator)** | ≥ 0.92 | **{er['hybrid_f1']:.4f}** | **{er_status}** |
-| **ER Review Queue Rate** | ≤ 3.0% of candidate pairs | **{er['review_queue_rate']:.2f}%** | **{er_rq_status}** |
-| **Schema Drift Detection Recall (Block Severity)** | 1.00 (100%) | **{drift['block_recall']:.2f}** (13/13) | **{drift_status}** |
-| **LLM Column Rename Suggestion Accuracy** | ≥ 90% | **{drift['rename_accuracy']:.2%}** (4/4) | **PASS** |
-| **Foundry API P95 Latency (Concurrent Load)** | < 150 ms | **{api['p95_latency_ms']} ms** | **{api_status}** |
-| **Foundry API P50 Latency** | < 100 ms | **{api['p50_latency_ms']} ms** | **PASS** |
-| **Foundry API Error Rate** | 0.0% | **{api['error_rate_pct']:.2f}%** | **PASS** |
-| **Foundry API Throughput** | ≥ 100 req/s | **{api['throughput_rps']} req/s** | **PASS** |
-| **Ingestion Pipeline Staging Throughput** | ≥ 20,000 rows/s | **{metrics['ingest_throughput_rows_sec']:,} rows/s** | **PASS** |
+| **ER F1 Score (Splink + LLM Adjudicator)** | ≥ 0.92 | **{er["hybrid_f1"]:.4f}** | **{er_status}** |
+| **ER Review Queue Rate** | ≤ 3.0% of candidate pairs | **{er["review_queue_rate"]:.2f}%** | **{er_rq_status}** |
+| **Schema Drift Detection Recall (Block Severity)** | 1.00 (100%) | **{drift["block_recall"]:.2f}** (13/13) | **{drift_status}** |
+| **LLM Column Rename Suggestion Accuracy** | ≥ 90% | **{drift["rename_accuracy"]:.2%}** (4/4) | **PASS** |
+| **Foundry API P95 Latency (Concurrent Load)** | < 150 ms | **{api["p95_latency_ms"]} ms** | **{api_status}** |
+| **Foundry API P50 Latency** | < 100 ms | **{api["p50_latency_ms"]} ms** | **PASS** |
+| **Foundry API Error Rate** | 0.0% | **{api["error_rate_pct"]:.2f}%** | **PASS** |
+| **Foundry API Throughput** | ≥ 100 req/s | **{api["throughput_rps"]} req/s** | **PASS** |
+| **Ingestion Pipeline Staging Throughput** | ≥ 20,000 rows/s | **{metrics["ingest_throughput_rows_sec"]:,} rows/s** | **PASS** |
 | **Re-Run Idempotency** | 0 new files, 0 updated rows | **0 new, 0 updated** | **{idempotency_status}** |
 | **Plant RLS Data Leaks** | 0 leaks | **0 leaks** | **{rls_status}** |
 
@@ -134,8 +134,8 @@ def write_master_foundry_report(metrics: dict[str, Any]) -> Path:
 - Evaluated on `evals/p1/gold_pairs.parquet` (2,000 labeled pairs: 1,000 matches + 1,000 hard negatives).
 - Splink 4 Fellegi-Sunter comparisons with Jaro-Winkler (0.95, 0.88, 0.70) and token-set algorithms.
 - LLM Adjudicator (`packages/llm`) evaluated ambiguous pairs in grey zone $[0.35, 0.85)$.
-- Hybrid Precision: **{er['hybrid_precision']:.4f}** | Recall: **{er['hybrid_recall']:.4f}** | F1: **{er['hybrid_f1']:.4f}**.
-- Human review queue rate held to **{er['review_queue_rate']:.2f}%**, well under the 3.0% ceiling.
+- Hybrid Precision: **{er["hybrid_precision"]:.4f}** | Recall: **{er["hybrid_recall"]:.4f}** | F1: **{er["hybrid_f1"]:.4f}**.
+- Human review queue rate held to **{er["review_queue_rate"]:.2f}%**, well under the 3.0% ceiling.
 
 ### 2.2 Schema Drift Detection & Column Rename Suggestions (M3)
 - Evaluated across 20 scripted scenarios in `evals/p1/drift_scenarios/` (dropped columns, renamed headers, type corruptions, null spikes, and numeric distribution shifts).
@@ -144,7 +144,7 @@ def write_master_foundry_report(metrics: dict[str, Any]) -> Path:
 
 ### 2.3 Foundry API & Typed Query DSL (M6)
 - Tested under concurrent load across search, keyset pagination, depth-2 graph traversal, and typed DSL queries.
-- P95 latency achieved **{api['p95_latency_ms']} ms** (exceeding SLA threshold of < 150 ms).
+- P95 latency achieved **{api["p95_latency_ms"]} ms** (exceeding SLA threshold of < 150 ms).
 - Constant-time keyset cursor pagination on `(created_at, id)` composite indices.
 - Zero raw SQL string concatenation; all queries compiled safely from `ontology.yaml` metadata.
 
