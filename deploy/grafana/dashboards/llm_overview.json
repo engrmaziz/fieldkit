@@ -1,0 +1,390 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Operational Overview & Real-Time Ingest",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 1000 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT sum(call_count) AS total_spans FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Spans Ingested",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 800 },
+              { "color": "red", "value": 1500 }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT quantilesMerge(0.95)(latency_quantiles)[1] AS p95 FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime",
+          "refId": "A"
+        }
+      ],
+      "title": "P95 End-to-End Latency",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1.0 },
+              { "color": "red", "value": 5.0 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT (sum(error_count) / max2(1, sum(call_count))) * 100.0 AS error_rate FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime",
+          "refId": "A"
+        }
+      ],
+      "title": "Global Error Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "purple", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT sum(total_input_tokens + total_output_tokens) AS total_tokens FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Tokens Consumed",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "Latency Quantiles & Throughput Trends",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Latency (ms)",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": false
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p99" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p50" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 14, "x": 0, "y": 6 },
+      "id": 5,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT window_start AS time, quantilesMerge(0.5)(latency_quantiles)[1] AS p50, quantilesMerge(0.9)(latency_quantiles)[1] AS p90, quantilesMerge(0.95)(latency_quantiles)[1] AS p95, quantilesMerge(0.99)(latency_quantiles)[1] AS p99 FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY window_start ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Latency Quantiles (P50, P90, P95, P99)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "gradientMode": "opacity",
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 10, "x": 14, "y": 6 },
+      "id": 6,
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT window_start AS time, sum(call_count) AS requests, sum(error_count) AS errors FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY window_start ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Request & Error Throughput",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 102,
+      "title": "Token Consumption & Dimensional Distribution",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 20 },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 10, "x": 0, "y": 15 },
+      "id": 7,
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT window_start AS time, sum(total_input_tokens) AS input_tokens, sum(total_output_tokens) AS output_tokens FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY window_start ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Token Generation Rate (Input vs Output)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 7, "x": 10, "y": 15 },
+      "id": 8,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT model, sum(total_input_tokens + total_output_tokens) AS tokens FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY model ORDER BY tokens DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Token Usage by Model",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 7, "x": 17, "y": 15 },
+      "id": 9,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["percent", "value"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT task, sum(call_count) AS requests FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY task ORDER BY requests DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Traffic Share by Task",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 103,
+      "title": "High-Latency Spans Deep Dive",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": { "align": "auto", "displayMode": "auto" },
+          "mappings": []
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "duration_ms" }, "properties": [{ "id": "unit", "value": "ms" }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "show": false },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT start_time, trace_id, service, task, model, duration_ms, status, plant FROM fieldkit_tracehub.spans WHERE start_time >= $__fromTime AND start_time <= $__toTime AND duration_ms > 1000 ORDER BY duration_ms DESC LIMIT 25",
+          "refId": "A"
+        }
+      ],
+      "title": "Slow Spans Sample (>1000 ms)",
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["fieldkit", "llm", "p7", "clickhouse"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"]
+  },
+  "timezone": "browser",
+  "title": "Fieldkit — LLM Overview & GenAI Operations",
+  "uid": "fieldkit-llm-overview",
+  "version": 1
+}

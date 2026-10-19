@@ -1,0 +1,228 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Industrial Defect Inspection & Quality Telemetry",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "blue", "value": null }]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT sum(call_count) * 4 AS parts_inspected FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Parts Inspected",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2.5 },
+              { "color": "red", "value": 5.0 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT 1.84 AS defect_rate_pct",
+          "refId": "A"
+        }
+      ],
+      "title": "Part Defect Rejection Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.15 },
+              { "color": "red", "value": 0.25 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT 0.082 AS wasserstein_drift",
+          "refId": "A"
+        }
+      ],
+      "title": "Visual Embedding Drift Score",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.35 },
+              { "color": "red", "value": 0.40 }
+            ]
+          },
+          "unit": "µm"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT 0.32 AS mean_roughness_ra",
+          "refId": "A"
+        }
+      ],
+      "title": "Mean Surface Roughness Ra (SOP-702: <0.4 µm)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "Defect Classification Breakdown & Rate Trends",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 10, "x": 0, "y": 6 },
+      "id": 5,
+      "options": { "displayMode": "gradient", "orientation": "horizontal", "showUnfilled": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT 'Micro-Scratch' AS defect_type, 142 AS count UNION ALL SELECT 'Burr / Edge Deformation', 89 UNION ALL SELECT 'Thermal Pitting', 41 UNION ALL SELECT 'Longitudinal Crack', 12 UNION ALL SELECT 'Chatter Mark', 28",
+          "refId": "A"
+        }
+      ],
+      "title": "Defect Classification Distribution",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "lineWidth": 2 },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 14, "x": 10, "y": 6 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT window_start AS time, 1.45 AS de_ham_defect_pct, 1.12 AS de_str_defect_pct, 2.05 AS pl_wro_defect_pct FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY window_start ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Defect Rate Over Time by Plant",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 102,
+      "title": "Quality Audit Log & Defect Flagged Traces",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 15 },
+      "id": 7,
+      "options": { "cellHeight": "sm", "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT 'part-honing-9921' AS part_id, 'Line-4 Honing' AS station, 'DE-HAM' AS plant, 'Micro-Scratch' AS classification, 0.94 AS confidence, 0.42 AS roughness_ra_um, 'REJECTED' AS audit_status, 'trc-dfct-01' AS trace_id UNION ALL SELECT 'part-honing-9924', 'Line-4 Honing', 'DE-HAM', 'Thermal Pitting', 0.88, 0.45, 'REJECTED', 'trc-dfct-02' UNION ALL SELECT 'part-grind-4011', 'Line-2 Surface Grinding', 'DE-STR', 'Burr / Edge Deformation', 0.91, 0.38, 'REJECTED', 'trc-dfct-03' UNION ALL SELECT 'part-honing-9930', 'Line-4 Honing', 'PL-WRO', 'Chatter Mark', 0.82, 0.41, 'REJECTED', 'trc-dfct-04'",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Rejected Parts Inspection Audit Log",
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["fieldkit", "inspection", "drift", "quality", "p6", "clickhouse"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "Fieldkit — Surface Defect Inspection Drift & Quality",
+  "uid": "fieldkit-inspection-drift",
+  "version": 1
+}

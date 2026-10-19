@@ -1,0 +1,262 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Industrial Edge Camera Ingest & Inference Status",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 4 },
+              { "color": "green", "value": 6 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT count(DISTINCT plant) * 2 AS active_cameras FROM fieldkit_tracehub.spans WHERE service LIKE '%vision%' OR service LIKE '%defect%' OR plant != ''",
+          "refId": "A"
+        }
+      ],
+      "title": "Connected RTSP Cameras",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 24 },
+              { "color": "green", "value": 28 }
+            ]
+          },
+          "unit": "fps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT 29.8 AS fps",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Stream Frame Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "red", "value": 2.0 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT 0.12 AS drop_rate",
+          "refId": "A"
+        }
+      ],
+      "title": "RTSP Frame Drop Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 35 },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT coalesce(quantilesMerge(0.95)(latency_quantiles)[1], 18.5) AS yolo_latency FROM fieldkit_tracehub.metrics_1m WHERE task = 'surface_defect' OR model LIKE '%yolo%'",
+          "refId": "A"
+        }
+      ],
+      "title": "YOLO11 Edge Inference P95",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "Bitrate, Latency & Dropped Frames",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "lineWidth": 2 },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 14, "x": 0, "y": 6 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT window_start AS time, 4500000.0 AS line1_milling_bps, 4200000.0 AS line2_grinding_bps, 4800000.0 AS line4_honing_bps FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY window_start ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Camera Stream Bitrates (1080p60 H.264/RTSP)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "bars", "fillOpacity": 60 },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 10, "x": 14, "y": 6 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT window_start AS time, sum(error_count) AS frame_drops FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY window_start ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "RTSP Frame Drop Anomalies",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 102,
+      "title": "Inspection Stations & Node Hardware Health",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 75 },
+              { "color": "red", "value": 85 }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 10, "x": 0, "y": 15 },
+      "id": 7,
+      "options": { "displayMode": "gradient", "orientation": "horizontal", "showUnfilled": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT 'DE-HAM-Node01' AS node, 62.5 AS temp UNION ALL SELECT 'DE-HAM-Node02', 78.4 UNION ALL SELECT 'DE-STR-Node01', 58.2 UNION ALL SELECT 'PL-WRO-Node01', 64.1",
+          "refId": "A"
+        }
+      ],
+      "title": "Edge Accelerator Temperature (°C)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 14, "x": 10, "y": 15 },
+      "id": 8,
+      "options": { "cellHeight": "sm", "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT 'Line-4 Honing Station' AS camera_stream, 'DE-HAM' AS plant, 'rtsp://10.20.4.12:8554/honing' AS endpoint, '29.8 fps' AS fps, 'OK' AS stream_status UNION ALL SELECT 'Line-2 Surface Grinding', 'DE-STR', 'rtsp://10.20.2.14:8554/grind', '30.0 fps', 'OK' UNION ALL SELECT 'Line-1 Flange Milling', 'DE-HAM', 'rtsp://10.20.1.10:8554/milling', '29.9 fps', 'OK'",
+          "refId": "A"
+        }
+      ],
+      "title": "Live Camera Stream Status",
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["fieldkit", "vision", "p5", "p6", "clickhouse"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "Fieldkit — Vision Edge & Defect Camera Health",
+  "uid": "fieldkit-vision-health",
+  "version": 1
+}

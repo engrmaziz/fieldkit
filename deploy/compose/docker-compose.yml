@@ -285,6 +285,14 @@ services:
       - "3001:3001"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_USERS_DEFAULT_THEME=dark
+    volumes:
+      - ../grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - clickhouse
     networks:
       - fieldkit-net
 

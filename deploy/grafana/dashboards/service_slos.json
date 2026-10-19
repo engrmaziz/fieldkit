@@ -1,0 +1,279 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Service Level Objectives (SLOs) & Error Budget Health",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "max": 100,
+          "min": 95,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 99.0 },
+              { "color": "green", "value": 99.5 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "11.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT (1.0 - (sum(error_count) / max2(1, sum(call_count)))) * 100.0 AS availability FROM fieldkit_tracehub.metrics_1m WHERE service = 'assistant-api' AND window_start >= $__fromTime AND window_start <= $__toTime",
+          "refId": "A"
+        }
+      ],
+      "title": "Assistant API Availability (Target: 99.5%)",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "max": 100,
+          "min": 95,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 98.5 },
+              { "color": "green", "value": 99.0 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "11.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT (1.0 - (sum(error_count) / max2(1, sum(call_count)))) * 100.0 AS availability FROM fieldkit_tracehub.metrics_1m WHERE service = 'foundry-api' AND window_start >= $__fromTime AND window_start <= $__toTime",
+          "refId": "A"
+        }
+      ],
+      "title": "Foundry API Availability (Target: 99.0%)",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "max": 100,
+          "min": 95,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 99.0 },
+              { "color": "green", "value": 99.5 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "11.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT (1.0 - (sum(error_count) / max2(1, sum(call_count)))) * 100.0 AS availability FROM fieldkit_tracehub.metrics_1m WHERE service = 'copilot-api' AND window_start >= $__fromTime AND window_start <= $__toTime",
+          "refId": "A"
+        }
+      ],
+      "title": "Copilot API Availability (Target: 99.5%)",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 20 },
+              { "color": "green", "value": 60 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "pluginVersion": "11.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT max2(0.0, (1.0 - ((sum(error_count) / max2(1, sum(call_count))) / 0.005)) * 100.0) AS remaining_budget FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime",
+          "refId": "A"
+        }
+      ],
+      "title": "Remaining Error Budget (30-Day Pool)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "id": 101,
+      "title": "Latency Compliance & Error Budget Burn Rate",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "ms"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "slo_target" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "dash": [10, 10], "fill": "dash" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 14, "x": 0, "y": 7 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT window_start AS time, quantilesMerge(0.95)(latency_quantiles)[1] AS p95_latency, 1500.0 AS slo_target FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY window_start ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "P95 Latency vs 1,500ms SLO Target",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "lineWidth": 2 },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "burn_rate_1h" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "critical_threshold" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 10, "x": 14, "y": 7 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT window_start AS time, ((sum(error_count) / max2(1, sum(call_count))) / 0.005) AS burn_rate_1h, 14.4 AS critical_threshold FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY window_start ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Error Budget Burn Rate (Multi-Window 14.4x Alert)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 102,
+      "title": "Plant Breakdown & Failing Routes",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 10, "x": 0, "y": 16 },
+      "id": 7,
+      "options": { "orientation": "horizontal", "displayMode": "gradient", "showUnfilled": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT plant, quantilesMerge(0.95)(latency_quantiles)[1] AS p95_latency FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime GROUP BY plant ORDER BY p95_latency DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "P95 Latency by Manufacturing Plant",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 14, "x": 10, "y": 16 },
+      "id": 8,
+      "options": { "cellHeight": "sm", "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "ClickHouse" },
+          "rawSql": "SELECT service, route, plant, sum(error_count) AS errors, sum(call_count) AS total_requests, round((sum(error_count) / max2(1, sum(call_count))) * 100.0, 2) AS error_pct FROM fieldkit_tracehub.metrics_1m WHERE window_start >= $__fromTime AND window_start <= $__toTime AND error_count > 0 GROUP BY service, route, plant ORDER BY errors DESC LIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Failing Service Routes",
+      "type": "table"
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 38,
+  "tags": ["fieldkit", "slo", "p7", "clickhouse"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "Fieldkit — Per-Service SLOs & Error Budgets",
+  "uid": "fieldkit-service-slos",
+  "version": 1
+}
