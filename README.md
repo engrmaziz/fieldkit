@@ -71,14 +71,17 @@ graph TD
 
 ## Failure Modes & Mitigations
 
-| Failure Mode | Root Cause | System Mitigation | Test Verification |
-| :--- | :--- | :--- | :--- |
-| **Schema Validation Error** | LLM emits malformed JSON or missing fields | Automatic one-shot retry appending Pydantic error trace. If retry fails, raises `LLMValidationError` and fails closed. | `test_structured_output_fail_closed_after_retry` |
-| **Ollama Service Interruption** | Host crash, port conflict, or model reload | Client initiates 3 retries with exponential backoff and jitter (`0.5s * 2^attempt + jitter`). | `test_generate_retry_on_failure` |
-| **Token Spoofing / Tampering** | Unauthorized caller presents bogus JWT | Signature validated against Keycloak JWKS (cached 10 min). Unauthorized requests rejected with HTTP 401. | `test_auth.py` |
-| **Cross-Plant Data Leak** | User from `DE-STR` attempts to view `DE-HAM` | PostgreSQL session variable `app.current_plant` enforced by kernel RLS policies; 0 leaks across multi-hop graph joins. | `test_rls.py`, `test_neighbors.py` |
-| **Ingestion Schema Drift** | Supplier modifies CSV/Excel header names | Drift rule engine flags breaking changes as BLOCK; LLM proposes column rename mappings registered in `contract_override` table. | `test_drift.py` |
-| **Landing Pipeline Re-run** | Cron job re-triggers identical file ingestion | SHA-256 content deduplication skips identical files; staging promote performs idempotent upserts. | `test_idempotency.py` |
+Comprehensive documentation of all failure modes, system mitigations, and test suites is in [docs/projects/p1.md](docs/projects/p1.md).
+
+| # | Failure Mode | Root Cause | System Mitigation | Test Verification |
+| :- | :--- | :--- | :--- | :--- |
+| **1** | **SOAP Portal Down Mid-Run** | Legacy supplier SOAP portal down or timing out | Circuit breaker opens after 3 failures; run marked `partial`; other sources (ERP, Excel, GLEIF) still promote; alert emitted. | `test_soap_connector.py` |
+| **2** | **Encoding Mis-detected** | German ERP export provided in Latin-1 / CP1252 with corrupted headers | Contract check fails on umlaut column; file quarantined to `data/quarantine/` with zero database corruption. | `test_contracts.py`, `test_csv_connector.py` |
+| **3** | **Excel Template Changed by Planner** | Plant planner renames or removes critical column (`bestelldatum` $\to$ `order_date`) | Statistical fingerprint flags drift as `BLOCK`; promotion halted; LLM proposes column rename mapping reviewed in Drift Inbox. | `test_drift.py` |
+| **4** | **ER Over-Merge (Cluster False Positive)** | Two distinct corporate entities erroneously merged into one | Analyst flags non-match in Review Queue; cluster split executed in single transaction; downstream links re-pointed; audit trail logged. | `test_review_queue.py` |
+| **5** | **LLM Unavailable / Offline** | Ollama daemon unreachable or overloaded during grey-zone adjudication | System skips automatic adjudication without guessing; ambiguous candidate pairs routed directly to human review queue. | `test_adjudicator.py` |
+| **6** | **Promotion Crash Midway** | Database network interruption occurs during multi-table promotion | All ontology inserts/updates wrapped in single atomic transaction; zero partial state or orphan rows committed. | `test_promote.py` |
+| **7** | **Cross-Plant Data Leak** | User from `DE-STR` attempts to view `DE-HAM` objects | PostgreSQL session variable `app.current_plant` enforced by kernel RLS policies; 0 leaks across multi-hop graph joins. | `test_rls.py`, `test_neighbors.py` |
 
 ---
 
@@ -165,4 +168,8 @@ To seed realistic enterprise supplier data and print the 6-step demo walkthrough
 ```bash
 make demo P=foundry
 ```
+
+- **Scene-by-Scene Runbook**: See [docs/runbooks/p1-demo-script.md](docs/runbooks/p1-demo-script.md) for timing, UI navigation, and spoken narration.
+- **Project 1 Specification & Verification**: See [docs/projects/p1.md](docs/projects/p1.md).
+- **Video Link**: *Pending recording upload* — `https://youtu.be/fieldkit-p1-foundry-demo` (Unlisted).
 
