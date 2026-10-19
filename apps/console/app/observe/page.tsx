@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import TraceWaterfallDrawer, { TraceTreeResponse } from "@/components/observe/TraceWaterfallDrawer";
+import PromptRegistryView from "@/components/observe/PromptRegistryView";
+import EvalRunsView from "@/components/observe/EvalRunsView";
 import {
   Activity,
   Layers,
@@ -16,6 +18,9 @@ import {
   SlidersHorizontal,
   ChevronRight,
   Filter,
+  FileCode2,
+  BarChart3,
+  GitCompare,
 } from "lucide-react";
 
 interface TraceSummary {
@@ -35,6 +40,7 @@ interface TraceSummary {
 }
 
 export default function ObservePage() {
+  const [activeTab, setActiveTab] = useState<"traces" | "prompts" | "evals">("traces");
   const [traces, setTraces] = useState<TraceSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState<string>("");
@@ -293,184 +299,243 @@ export default function ObservePage() {
           </button>
         </div>
 
-        {/* Operational Stat Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur shadow-sm">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
-              <span>TOTAL SPANS</span>
-              <Layers className="w-4 h-4 text-cyan-400" />
-            </div>
-            <div className="text-2xl font-bold font-mono text-slate-100">
-              {traces.length > 0 ? "24,810" : "0"}
-            </div>
-            <div className="text-[11px] text-slate-500 font-mono mt-1">Sustained rate: 86k/s</div>
-          </div>
+        {/* Tab Navigation */}
+        <div className="flex border-b border-slate-800 space-x-1">
+          <button
+            onClick={() => setActiveTab("traces")}
+            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-mono font-medium border-b-2 transition-all ${
+              activeTab === "traces"
+                ? "border-cyan-400 text-cyan-400 bg-slate-900/40"
+                : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700"
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            <span>Traces &amp; Waterfalls</span>
+            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300">
+              {traces.length > 0 ? "24.8k" : "0"}
+            </span>
+          </button>
 
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur shadow-sm">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
-              <span>LATENCY (P95)</span>
-              <Clock className="w-4 h-4 text-cyan-400" />
-            </div>
-            <div className="text-2xl font-bold font-mono text-slate-100">680.4 ms</div>
-            <div className="text-[11px] text-emerald-400 font-mono mt-1">Target &lt; 1,500 ms (PASS)</div>
-          </div>
+          <button
+            onClick={() => setActiveTab("prompts")}
+            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-mono font-medium border-b-2 transition-all ${
+              activeTab === "prompts"
+                ? "border-cyan-400 text-cyan-400 bg-slate-900/40"
+                : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700"
+            }`}
+          >
+            <FileCode2 className="w-4 h-4" />
+            <span>Prompt Registry &amp; Diff</span>
+            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/80">
+              Jinja2
+            </span>
+          </button>
 
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur shadow-sm">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
-              <span>ERROR RATE</span>
-              <AlertCircle className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="text-2xl font-bold font-mono text-emerald-400">1.2%</div>
-            <div className="text-[11px] text-slate-500 font-mono mt-1">100% tail sampled</div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur shadow-sm">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
-              <span>TOKEN THROUGHPUT</span>
-              <Zap className="w-4 h-4 text-cyan-400" />
-            </div>
-            <div className="text-2xl font-bold font-mono text-slate-100">16.4k/m</div>
-            <div className="text-[11px] text-slate-500 font-mono mt-1">Local Ollama inference</div>
-          </div>
+          <button
+            onClick={() => setActiveTab("evals")}
+            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-mono font-medium border-b-2 transition-all ${
+              activeTab === "evals"
+                ? "border-cyan-400 text-cyan-400 bg-slate-900/40"
+                : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700"
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span>Eval Runs &amp; Regressions</span>
+            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/80">
+              95% CI
+            </span>
+          </button>
         </div>
 
-        {/* Filter & Search Bar */}
-        <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search trace ID, task, service..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 w-56 sm:w-64"
-              />
+        {/* Traces Tab Content */}
+        {activeTab === "traces" && (
+          <div className="space-y-6">
+            {/* Operational Stat Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur shadow-sm">
+                <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
+                  <span>TOTAL SPANS</span>
+                  <Layers className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div className="text-2xl font-bold font-mono text-slate-100">
+                  {traces.length > 0 ? "24,810" : "0"}
+                </div>
+                <div className="text-[11px] text-slate-500 font-mono mt-1">Sustained rate: 86k/s</div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur shadow-sm">
+                <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
+                  <span>LATENCY (P95)</span>
+                  <Clock className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div className="text-2xl font-bold font-mono text-slate-100">680.4 ms</div>
+                <div className="text-[11px] text-emerald-400 font-mono mt-1">Target &lt; 1,500 ms (PASS)</div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur shadow-sm">
+                <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
+                  <span>ERROR RATE</span>
+                  <AlertCircle className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-bold font-mono text-emerald-400">1.2%</div>
+                <div className="text-[11px] text-slate-500 font-mono mt-1">100% tail sampled</div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur shadow-sm">
+                <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
+                  <span>TOKEN THROUGHPUT</span>
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div className="text-2xl font-bold font-mono text-slate-100">16.4k/m</div>
+                <div className="text-[11px] text-slate-500 font-mono mt-1">Local Ollama inference</div>
+              </div>
             </div>
 
-            {/* Service Filter */}
-            <select
-              value={selectedService}
-              onChange={(e) => setSelectedService(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500"
-            >
-              <option value="">All Services</option>
-              <option value="assistant-api">assistant-api</option>
-              <option value="foundry-api">foundry-api</option>
-              <option value="copilot-api">copilot-api</option>
-            </select>
+            {/* Filter & Search Bar */}
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <input
+                    type="text"
+                    placeholder="Search trace ID, task, service..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8 pr-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 w-56 sm:w-64"
+                  />
+                </div>
 
-            {/* Status Filter */}
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500"
-            >
-              <option value="">All Statuses</option>
-              <option value="OK">OK Only</option>
-              <option value="ERROR">ERROR Only</option>
-            </select>
+                {/* Service Filter */}
+                <select
+                  value={selectedService}
+                  onChange={(e) => setSelectedService(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="">All Services</option>
+                  <option value="assistant-api">assistant-api</option>
+                  <option value="foundry-api">foundry-api</option>
+                  <option value="copilot-api">copilot-api</option>
+                </select>
 
-            {/* Min Duration Filter */}
-            <select
-              value={minDuration}
-              onChange={(e) => setMinDuration(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500"
-            >
-              <option value="">All Latencies</option>
-              <option value="200">&gt; 200 ms</option>
-              <option value="500">&gt; 500 ms</option>
-              <option value="1000">&gt; 1,000 ms</option>
-              <option value="5000">&gt; 5,000 ms</option>
-            </select>
-          </div>
+                {/* Status Filter */}
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="OK">OK Only</option>
+                  <option value="ERROR">ERROR Only</option>
+                </select>
 
-          <div className="text-xs font-mono text-slate-400">
-            Showing <span className="text-cyan-400 font-bold">{filteredTraces.length}</span> traces
-          </div>
-        </div>
+                {/* Min Duration Filter */}
+                <select
+                  value={minDuration}
+                  onChange={(e) => setMinDuration(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="">All Latencies</option>
+                  <option value="200">&gt; 200 ms</option>
+                  <option value="500">&gt; 500 ms</option>
+                  <option value="1000">&gt; 1,000 ms</option>
+                  <option value="5000">&gt; 5,000 ms</option>
+                </select>
+              </div>
 
-        {/* Traces Table */}
-        <div className="rounded-xl bg-slate-900/60 border border-slate-800/80 overflow-hidden shadow-lg">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-mono">
-              <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/70 text-slate-400">
-                  <th className="py-3 px-4 font-semibold">STATUS</th>
-                  <th className="py-3 px-4 font-semibold">TRACE ID</th>
-                  <th className="py-3 px-4 font-semibold">ROOT SPAN / TASK</th>
-                  <th className="py-3 px-4 font-semibold">SERVICE</th>
-                  <th className="py-3 px-4 font-semibold">DURATION</th>
-                  <th className="py-3 px-4 font-semibold">TOKENS (IN/OUT)</th>
-                  <th className="py-3 px-4 font-semibold">MODEL</th>
-                  <th className="py-3 px-4 font-semibold">PLANT</th>
-                  <th className="py-3 px-4 text-right font-semibold">ACTION</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/50">
-                {filteredTraces.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="py-8 text-center text-slate-500">
-                      No traces match current filter criteria.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredTraces.map((t) => {
-                    const isErr = t.status === "ERROR";
-                    return (
-                      <tr
-                        key={t.trace_id}
-                        onClick={() => handleSelectTrace(t.trace_id)}
-                        className="hover:bg-slate-800/40 cursor-pointer transition-colors group"
-                      >
-                        <td className="py-3 px-4">
-                          {isErr ? (
-                            <span className="flex items-center text-red-400 font-semibold">
-                              <AlertCircle className="w-3.5 h-3.5 mr-1" /> ERROR
-                            </span>
-                          ) : (
-                            <span className="flex items-center text-emerald-400 font-semibold">
-                              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> OK
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 font-bold text-slate-200 group-hover:text-cyan-400 transition-colors">
-                          {t.trace_id}
-                        </td>
-                        <td className="py-3 px-4 text-slate-300">
-                          <div>{t.root_span_name}</div>
-                          <div className="text-[10px] text-slate-500">{t.task}</div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                            {t.service}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 font-bold text-slate-200">
-                          <span className={t.duration_ms > 1000 ? "text-amber-400" : "text-cyan-400"}>
-                            {t.duration_ms.toFixed(1)} ms
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-slate-400">
-                          {t.total_input_tokens} / {t.total_output_tokens}
-                        </td>
-                        <td className="py-3 px-4 text-slate-400">{t.model || "—"}</td>
-                        <td className="py-3 px-4">
-                          <span className="px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800 text-[10px]">
-                            {t.plant || "Global"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 inline transition-colors" />
+              <div className="text-xs font-mono text-slate-400">
+                Showing <span className="text-cyan-400 font-bold">{filteredTraces.length}</span> traces
+              </div>
+            </div>
+
+            {/* Traces Table */}
+            <div className="rounded-xl bg-slate-900/60 border border-slate-800/80 overflow-hidden shadow-lg">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-950/70 text-slate-400">
+                      <th className="py-3 px-4 font-semibold">STATUS</th>
+                      <th className="py-3 px-4 font-semibold">TRACE ID</th>
+                      <th className="py-3 px-4 font-semibold">ROOT SPAN / TASK</th>
+                      <th className="py-3 px-4 font-semibold">SERVICE</th>
+                      <th className="py-3 px-4 font-semibold">DURATION</th>
+                      <th className="py-3 px-4 font-semibold">TOKENS (IN/OUT)</th>
+                      <th className="py-3 px-4 font-semibold">MODEL</th>
+                      <th className="py-3 px-4 font-semibold">PLANT</th>
+                      <th className="py-3 px-4 text-right font-semibold">ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50">
+                    {filteredTraces.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="py-8 text-center text-slate-500">
+                          No traces match current filter criteria.
                         </td>
                       </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                    ) : (
+                      filteredTraces.map((t) => {
+                        const isErr = t.status === "ERROR";
+                        return (
+                          <tr
+                            key={t.trace_id}
+                            onClick={() => handleSelectTrace(t.trace_id)}
+                            className="hover:bg-slate-800/40 cursor-pointer transition-colors group"
+                          >
+                            <td className="py-3 px-4">
+                              {isErr ? (
+                                <span className="flex items-center text-red-400 font-semibold">
+                                  <AlertCircle className="w-3.5 h-3.5 mr-1" /> ERROR
+                                </span>
+                              ) : (
+                                <span className="flex items-center text-emerald-400 font-semibold">
+                                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> OK
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 font-bold text-slate-200 group-hover:text-cyan-400 transition-colors">
+                              {t.trace_id}
+                            </td>
+                            <td className="py-3 px-4 text-slate-300">
+                              <div>{t.root_span_name}</div>
+                              <div className="text-[10px] text-slate-500">{t.task}</div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                                {t.service}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 font-bold text-slate-200">
+                              <span className={t.duration_ms > 1000 ? "text-amber-400" : "text-cyan-400"}>
+                                {t.duration_ms.toFixed(1)} ms
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-slate-400">
+                              {t.total_input_tokens} / {t.total_output_tokens}
+                            </td>
+                            <td className="py-3 px-4 text-slate-400">{t.model || "—"}</td>
+                            <td className="py-3 px-4">
+                              <span className="px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800 text-[10px]">
+                                {t.plant || "Global"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 inline transition-colors" />
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Prompt Registry Tab Content */}
+        {activeTab === "prompts" && <PromptRegistryView />}
+
+        {/* Eval Runs Tab Content */}
+        {activeTab === "evals" && <EvalRunsView onSelectTrace={handleSelectTrace} />}
       </main>
 
       {/* Trace Waterfall Drawer */}
