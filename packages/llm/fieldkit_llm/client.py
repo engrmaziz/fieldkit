@@ -178,6 +178,10 @@ class LLMClient:
             if seed is not None:
                 span.set_attribute("llm.seed", seed)
 
+            now = time.time()
+            if now < self._offline_circuit_open_until:
+                raise RuntimeError("Ollama service currently offline (circuit open)")
+
             options: dict[str, Any] = {"temperature": temperature}
             if seed is not None:
                 options["seed"] = seed
@@ -231,6 +235,24 @@ class LLMClient:
 
                 except (httpx.RequestError, httpx.HTTPStatusError) as exc:
                     last_error = exc
+                    # If model not found or Ollama server unreachable, trip circuit breaker immediately
+                    if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 404:
+                        self._offline_circuit_open_until = time.time() + 60.0
+                        logger.warning(
+                            "ollama_model_not_found_circuit_open",
+                            task=task,
+                            error=str(exc),
+                        )
+                        break
+                    if isinstance(exc, (httpx.ConnectError, httpx.ConnectTimeout)):
+                        self._offline_circuit_open_until = time.time() + 60.0
+                        logger.warning(
+                            "ollama_connection_failed_circuit_open",
+                            task=task,
+                            error=str(exc),
+                        )
+                        break
+
                     if attempt < max_retries:
                         backoff = (0.5 * (2 ** (attempt - 1))) + random.uniform(0.05, 0.2)
                         logger.warning(
@@ -246,7 +268,7 @@ class LLMClient:
                             "llm_call_exhausted", task=task, attempts=max_retries, error=str(exc)
                         )
 
-            raise RuntimeError(f"Ollama call failed after {max_retries} attempts: {last_error}")
+            raise RuntimeError(f"Ollama call failed after {attempt} attempts: {last_error}")
 
     async def structured_output(
         self,

@@ -230,6 +230,17 @@ async def main() -> None:
         print(f"  - Throughput: {metrics['throughput_rps']} req/s")
         return
 
+    if args.profile in ("assistant-acl", "acl", "p2-acl", "acl-defense"):
+        from evals.p2.acl_eval import run_acl_attack_eval, write_acl_report
+
+        metrics, results = await run_acl_attack_eval()
+        report_path = write_acl_report(metrics, results)
+        print(f"\n[SUCCESS] ACL Defense Benchmark Complete! Report generated at:\n  {report_path}")
+        print(f"  - Total Attacks: {metrics.total_attacks}")
+        print(f"  - Refusal Accuracy: {metrics.refusal_accuracy_pct:.2f}% (Target: >= 90.0%)")
+        print(f"  - ACL Leaks: {metrics.acl_leak_count} (Target: 0)")
+        return
+
     if args.profile in ("assistant", "p2", "rag", "retrieval"):
         from evals.p2.run import run_retrieval_benchmark, write_assistant_report
 
