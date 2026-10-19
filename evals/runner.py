@@ -230,6 +230,17 @@ async def main() -> None:
         print(f"  - Throughput: {metrics['throughput_rps']} req/s")
         return
 
+    if args.profile in ("assistant", "p2", "rag", "retrieval"):
+        from evals.p2.run import run_retrieval_benchmark, write_assistant_report
+
+        metrics = await run_retrieval_benchmark()
+        report_path = write_assistant_report(metrics)
+        print(f"\n[SUCCESS] Assistant Evaluation Complete! Report generated at:\n  {report_path}")
+        print(f"  - Hybrid+Rerank Recall@10: {metrics['hybrid_rerank'].recall_at_10:.2%}")
+        print(f"  - Hybrid+Rerank MRR: {metrics['hybrid_rerank'].mrr:.4f}")
+        print(f"  - ACL Leak Rate: {metrics['hybrid_rerank'].acl_leak_rate_pct:.2f}%")
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")

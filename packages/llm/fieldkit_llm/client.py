@@ -13,7 +13,9 @@ Fieldkit LLM Rules:
 import asyncio
 import hashlib
 import json
+import math
 import random
+import re
 import time
 from collections.abc import Mapping
 from pathlib import Path
@@ -66,12 +68,14 @@ class LLMClient:
         cache_dir: str | Path = "./.cache/llm",
         cache_enabled: bool = True,
     ) -> None:
-        settings = get_common_settings()
-        self.base_url = (base_url or settings.ollama_base_url).rstrip("/")
-        self.default_model = default_model or settings.ollama_model_default
-        self.default_timeout = default_timeout or float(settings.ollama_timeout_seconds)
+        self.settings = get_common_settings()
+        self.base_url = (base_url or self.settings.ollama_base_url).rstrip("/")
+        self.default_model = default_model or self.settings.ollama_model_default
+        self.embed_model = self.settings.ollama_embed_model
+        self.default_timeout = default_timeout or float(self.settings.ollama_timeout_seconds)
         self.cache_dir = Path(cache_dir)
         self.cache_enabled = cache_enabled
+        self._offline_circuit_open_until: float = 0.0
 
         if self.cache_enabled:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -377,6 +381,78 @@ class LLMClient:
             timeout=timeout,
             is_chat=is_chat,
         )
+
+    async def embed(
+        self,
+        texts: list[str] | str,
+        is_query: bool = False,
+        model: str | None = None,
+        task: str = "embedding",
+    ) -> list[list[float]]:
+        """Generate embeddings using nomic-embed-text with task prefixing."""
+        target_model = model or self.settings.ollama_embed_model
+        prefix = "search_query: " if is_query else "search_document: "
+
+        input_list: list[str]
+        if isinstance(texts, str):
+            input_list = [texts]
+        else:
+            input_list = list(texts)
+
+        prefixed_inputs = [f"{prefix}{t}" for t in input_list]
+
+        with tracer.start_as_current_span("llm.embed") as span:
+            span.set_attribute("llm.model", target_model)
+            span.set_attribute("llm.task", task)
+            span.set_attribute("llm.batch_size", len(input_list))
+
+            now = time.time()
+            if now >= self._offline_circuit_open_until:
+                # Attempt live call to Ollama /api/embed
+                try:
+                    async with httpx.AsyncClient(timeout=httpx.Timeout(2.0, connect=0.2)) as client:
+                        resp = await client.post(
+                            f"{self.settings.ollama_base_url}/api/embed",
+                            json={"model": target_model, "input": prefixed_inputs},
+                        )
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            raw_embeddings = data.get("embeddings", [])
+                            if raw_embeddings and len(raw_embeddings) == len(input_list):
+                                typed_embeddings: list[list[float]] = [
+                                    [float(val) for val in vec] for vec in raw_embeddings
+                                ]
+                                return typed_embeddings
+                except Exception as exc:
+                    self._offline_circuit_open_until = time.time() + 60.0
+                    logger.warning(
+                        "ollama_embed_offline_fallback",
+                        task=task,
+                        error=str(exc),
+                        count=len(input_list),
+                    )
+
+            # Deterministic 768-dimensional feature-hashing fallback for offline/dev/test execution
+            fallback_embeddings: list[list[float]] = []
+            dim = 768
+            for t in prefixed_inputs:
+                clean = re.sub(r"^(search_query|search_document):\s*", "", t)
+                tokens = [w.lower() for w in re.findall(r"\b\w+\b", clean) if len(w) > 1]
+                if not tokens:
+                    tokens = ["empty"]
+
+                vec = [0.0] * dim
+                for tok in tokens:
+                    h = int(hashlib.md5(tok.encode("utf-8")).hexdigest(), 16)
+                    idx = h % dim
+                    sign = 1.0 if (h >> 16) % 2 == 0 else -1.0
+                    vec[idx] += sign
+
+                # L2 normalize to unit sphere
+                norm = math.sqrt(sum(x * x for x in vec)) or 1.0
+                fallback_embeddings.append([round(x / norm, 6) for x in vec])
+
+            return fallback_embeddings
 
 
 _client_instance: LLMClient | None = None
