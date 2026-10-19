@@ -12,7 +12,10 @@ from fieldkit_common.otel import init_tracer
 from fieldkit_common.settings import get_common_settings
 
 from fieldkit_foundry.routers.drift import router as drift_router
+from fieldkit_foundry.routers.lineage import router as lineage_router
+from fieldkit_foundry.routers.objects import execute_typed_query
 from fieldkit_foundry.routers.objects import router as objects_router
+from fieldkit_foundry.routers.review import router as review_router
 
 settings = get_common_settings()
 setup_logging(service_name="foundry-api", log_level=settings.log_level)
@@ -38,3 +41,12 @@ app = FastAPI(
 app.include_router(health_router)
 app.include_router(drift_router)
 app.include_router(objects_router)
+app.include_router(lineage_router)
+app.include_router(review_router)
+
+# Root-level typed DSL query endpoint matching roadmap specification
+app.post(
+    "/query",
+    tags=["Typed Query"],
+    description="Compile and execute a typed DSL query against the ontology without raw SQL",
+)(execute_typed_query)

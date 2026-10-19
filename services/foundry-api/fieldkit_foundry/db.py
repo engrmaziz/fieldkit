@@ -28,6 +28,11 @@ async def set_rls_context(session: AsyncSession, principal: Principal | None) ->
     if not principal:
         return
 
+    # Skip set_config on non-Postgres engines (e.g. SQLite) to avoid exception overhead
+    bind = session.bind
+    if bind is not None and getattr(bind.dialect, "name", "") != "postgresql":
+        return
+
     plant_val = principal.plant or ""
     role_val = principal.roles[0] if principal.roles else "viewer"
 
@@ -42,7 +47,7 @@ async def set_rls_context(session: AsyncSession, principal: Principal | None) ->
             {"role": role_val},
         )
     except Exception:
-        # Fallback for SQLite / test environments
+        # Fallback for non-Postgres / test environments
         pass
 
 

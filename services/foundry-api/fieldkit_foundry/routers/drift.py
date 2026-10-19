@@ -34,6 +34,7 @@ class DriftEventResponse(BaseModel):
     created_at: str
 
 
+@router.get("")
 @router.get("/events")
 async def list_drift_events(
     source: str | None = Query(None, description="Filter by data source"),
@@ -123,6 +124,47 @@ async def approve_drift_mapping(
             "event_id": event_id,
             "approved_by": approved_by,
             "message": "Column mapping override successfully registered in contract_override table.",
+        }
+
+
+@router.post("/{event_id}/reject")
+async def reject_drift_mapping(
+    event_id: str,
+    payload: ApproveRequest | None = None,
+) -> dict[str, Any]:
+    """Reject a suggested column rename mapping.
+
+    Updates the drift event status to 'rejected' without modifying contract overrides.
+    """
+    store = DriftStore()
+    rejected_by = payload.approved_by if payload else "analyst"
+
+    with tracer.start_as_current_span("drift.reject") as span:
+        span.set_attribute("event_id", event_id)
+        span.set_attribute("rejected_by", rejected_by)
+
+        if store.fallback_path.exists():
+            import duckdb
+
+            con = duckdb.connect(store.fallback_path.as_posix())
+            res = con.execute(
+                "SELECT status FROM drift_event WHERE event_id = ?", [event_id]
+            ).fetchone()
+            if not res:
+                con.close()
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Drift event '{event_id}' not found.",
+                )
+            con.execute("UPDATE drift_event SET status = 'rejected' WHERE event_id = ?", [event_id])
+            con.close()
+
+        logger.info("drift_mapping_rejected", event_id=event_id, rejected_by=rejected_by)
+        return {
+            "status": "rejected",
+            "event_id": event_id,
+            "rejected_by": rejected_by,
+            "message": f"Drift event '{event_id}' has been marked as rejected.",
         }
 
 

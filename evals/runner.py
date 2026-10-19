@@ -207,6 +207,19 @@ async def main() -> None:
         print(f"  - Review Queue Rate: {metrics['review_queue_rate']:.2f}% (Target: <= 3.0%)")
         return
 
+    if args.profile in ("foundry-api", "api", "p1-api"):
+        from evals.p1.api_eval import run_api_eval, write_api_report
+
+        metrics = await run_api_eval(concurrency=30, requests_per_worker=10)
+        report_path = write_api_report(metrics)
+        print(f"\n[SUCCESS] Foundry API Evaluation Complete! Report generated at:\n  {report_path}")
+        print(f"  - Total Requests: {metrics['total_requests']}")
+        print(f"  - Error Rate: {metrics['error_rate_pct']:.2f}% (Target: 0.0%)")
+        print(f"  - P50 Latency: {metrics['p50_latency_ms']} ms")
+        print(f"  - P95 Latency: {metrics['p95_latency_ms']} ms (Target: < 150 ms)")
+        print(f"  - Throughput: {metrics['throughput_rps']} req/s")
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")
