@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fieldkit_common.logging import setup_logging
 
-from fieldkit_assistant.routers import chat, health, ingest
+from fieldkit_assistant.routers import chat, health, ingest, sql
 from fieldkit_assistant.settings import settings
 
 setup_logging(service_name=settings.app_name)
@@ -41,6 +41,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(ingest.router)
 app.include_router(chat.router)
+app.include_router(sql.router)
 
 
 @app.get("/")

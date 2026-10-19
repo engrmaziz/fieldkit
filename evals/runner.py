@@ -241,6 +241,18 @@ async def main() -> None:
         print(f"  - ACL Leaks: {metrics.acl_leak_count} (Target: 0)")
         return
 
+    if args.profile in ("assistant-sql", "sql", "nl2sql", "p2-sql"):
+        from evals.p2.sql_eval import run_sql_eval, write_sql_eval_report
+
+        metrics, results = await run_sql_eval()
+        report_path = write_sql_eval_report(metrics, results)
+        print(f"\n[SUCCESS] NL2SQL Core Benchmark Complete! Report generated at:\n  {report_path}")
+        print(f"  - Total Queries: {metrics.total_queries}")
+        print(f"  - AST Safety Validity: {metrics.valid_sql_pct:.2f}% (Target: 100.0%)")
+        print(f"  - Execution Success: {metrics.successful_execution_pct:.2f}% (Target: 100.0%)")
+        print(f"  - Avg Latency: {metrics.avg_latency_ms} ms")
+        return
+
     if args.profile in ("assistant", "p2", "rag", "retrieval"):
         from evals.p2.run import run_retrieval_benchmark, write_assistant_report
 

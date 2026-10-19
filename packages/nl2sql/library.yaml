@@ -1,33 +1,204 @@
-# Few-shot question to SQL library for Halden Industrie ontology queries
+# Few-shot question-to-SQL library for Halden Industrie ontology queries
 # Used by packages/nl2sql/generator.py for nearest-neighbor few-shot in-context learning
+# Contains 40 verified gold pairs across all 7 ontology entities and multi-table joins.
 
 queries:
   - id: sql-001
     question: "List all suppliers located in Germany."
-    sql: "SELECT id, name, city, country, reliability_score FROM suppliers WHERE country = 'DE';"
+    sql: "SELECT id, supplier_code, name, city, country FROM suppliers WHERE country = 'DE' ORDER BY name ASC;"
     tags: ["supplier", "filter", "basic"]
 
   - id: sql-002
-    question: "How many purchase orders were placed in plant DE-HAM last quarter?"
-    sql: "SELECT COUNT(*) AS total_orders FROM purchase_orders WHERE plant = 'DE-HAM' AND order_date >= '2026-07-01' AND order_date <= '2026-09-30';"
-    tags: ["orders", "plant", "aggregate"]
+    question: "Show all suppliers with active ISO 9001 certificates."
+    sql: "SELECT DISTINCT s.id, s.name, s.country, c.standard, c.valid_to FROM suppliers s JOIN certificates c ON s.id = c.supplier_id WHERE c.standard = 'ISO 9001' AND c.valid_to >= CURRENT_DATE;"
+    tags: ["supplier", "certificate", "join", "date"]
 
   - id: sql-003
-    question: "Top 5 suppliers by late deliveries to Hamburg."
-    sql: "SELECT s.id, s.name, COUNT(sh.id) AS late_shipment_count FROM suppliers s JOIN purchase_orders po ON s.id = po.supplier_id JOIN shipments sh ON po.id = sh.order_id WHERE po.plant = 'DE-HAM' AND sh.actual_delivery_date > sh.estimated_delivery_date GROUP BY s.id, s.name ORDER BY late_shipment_count DESC LIMIT 5;"
-    tags: ["supplier", "shipment", "late", "join", "ranking"]
-
-  - id: sql-004
-    question: "What is the average defect rate of parts supplied by Mueller Hydraulik?"
-    sql: "SELECT s.name, AVG(qi.defect_rate) AS avg_defect_rate, COUNT(qi.id) AS total_incidents FROM suppliers s JOIN parts p ON s.id = p.supplier_id JOIN quality_incidents qi ON p.id = qi.part_id WHERE s.name ILIKE '%Mueller Hydraulik%' GROUP BY s.name;"
-    tags: ["quality", "defect", "supplier", "join"]
-
-  - id: sql-005
-    question: "Show quality incidents with critical severity for plant Stuttgart."
-    sql: "SELECT qi.id, qi.incident_date, qi.defect_type, qi.severity, qi.description, qi.plant FROM quality_incidents qi WHERE qi.plant = 'DE-STR' AND qi.severity = 'critical' ORDER BY qi.incident_date DESC LIMIT 50;"
-    tags: ["quality", "incident", "filter", "plant"]
-
-  - id: sql-006
     question: "Total spend by supplier across all plants in 2026."
     sql: "SELECT s.id, s.name, SUM(po.total_amount) AS total_spend FROM suppliers s JOIN purchase_orders po ON s.id = po.supplier_id WHERE po.order_date >= '2026-01-01' GROUP BY s.id, s.name ORDER BY total_spend DESC LIMIT 20;"
-    tags: ["spend", "aggregate", "supplier"]
+    tags: ["spend", "aggregate", "supplier", "ranking"]
+
+  - id: sql-004
+    question: "Top 5 suppliers by total purchase order volume."
+    sql: "SELECT s.id, s.name, COUNT(po.id) AS po_count, SUM(po.total_amount) AS total_val FROM suppliers s JOIN purchase_orders po ON s.id = po.supplier_id GROUP BY s.id, s.name ORDER BY total_val DESC LIMIT 5;"
+    tags: ["supplier", "purchase_orders", "ranking", "limit"]
+
+  - id: sql-005
+    question: "Find suppliers that have expired quality certificates."
+    sql: "SELECT s.name, c.certificate_number, c.standard, c.valid_to FROM suppliers s JOIN certificates c ON s.id = c.supplier_id WHERE c.valid_to < CURRENT_DATE ORDER BY c.valid_to ASC;"
+    tags: ["supplier", "certificate", "expired", "join"]
+
+  - id: sql-006
+    question: "Which suppliers provide parts in the Valves category?"
+    sql: "SELECT DISTINCT s.id, s.name, p.category FROM suppliers s JOIN parts p ON s.id = p.supplier_id WHERE p.category = 'Valves' ORDER BY s.name ASC;"
+    tags: ["supplier", "parts", "join", "category"]
+
+  - id: sql-007
+    question: "Count suppliers by country."
+    sql: "SELECT country, COUNT(*) AS supplier_count FROM suppliers GROUP BY country ORDER BY supplier_count DESC;"
+    tags: ["supplier", "aggregate", "country"]
+
+  - id: sql-008
+    question: "List suppliers in Hamburg or Stuttgart."
+    sql: "SELECT id, name, city, country FROM suppliers WHERE city IN ('Hamburg', 'Stuttgart') ORDER BY city, name;"
+    tags: ["supplier", "filter", "city"]
+
+  - id: sql-009
+    question: "Suppliers with open purchase orders above 50,000 EUR."
+    sql: "SELECT DISTINCT s.id, s.name, po.po_number, po.total_amount FROM suppliers s JOIN purchase_orders po ON s.id = po.supplier_id WHERE po.status = 'OPEN' AND po.total_amount > 50000.0 ORDER BY po.total_amount DESC;"
+    tags: ["supplier", "purchase_orders", "filter", "amount"]
+
+  - id: sql-010
+    question: "Average order value per supplier in 2026."
+    sql: "SELECT s.id, s.name, ROUND(AVG(po.total_amount)::numeric, 2) AS avg_order_val, COUNT(po.id) AS order_count FROM suppliers s JOIN purchase_orders po ON s.id = po.supplier_id WHERE po.order_date >= '2026-01-01' GROUP BY s.id, s.name HAVING COUNT(po.id) >= 2 ORDER BY avg_order_val DESC;"
+    tags: ["supplier", "purchase_orders", "avg", "having"]
+
+  - id: sql-011
+    question: "How many purchase orders were placed in plant DE-HAM last quarter?"
+    sql: "SELECT COUNT(*) AS total_orders, SUM(total_amount) AS total_val FROM purchase_orders WHERE plant = 'DE-HAM' AND order_date >= '2026-07-01' AND order_date <= '2026-09-30';"
+    tags: ["orders", "plant", "aggregate", "quarter"]
+
+  - id: sql-012
+    question: "List all open purchase orders for plant Stuttgart."
+    sql: "SELECT po_number, order_date, total_amount, currency, supplier_id FROM purchase_orders WHERE plant = 'DE-STR' AND status = 'OPEN' ORDER BY order_date DESC;"
+    tags: ["orders", "plant", "status", "filter"]
+
+  - id: sql-013
+    question: "Breakdown of purchase order spending by plant."
+    sql: "SELECT plant, COUNT(id) AS total_pos, SUM(total_amount) AS total_spend FROM purchase_orders WHERE status != 'CANCELLED' GROUP BY plant ORDER BY total_spend DESC;"
+    tags: ["orders", "spend", "plant", "group_by"]
+
+  - id: sql-014
+    question: "Show purchase orders fulfilled in the last 30 days."
+    sql: "SELECT po_number, order_date, total_amount, plant FROM purchase_orders WHERE status = 'FULFILLED' AND order_date >= CURRENT_DATE - INTERVAL '30 days' ORDER BY order_date DESC;"
+    tags: ["orders", "date_interval", "status"]
+
+  - id: sql-015
+    question: "Find purchase orders placed with Mueller Hydraulik in 2026."
+    sql: "SELECT po.po_number, po.order_date, po.total_amount, po.plant, po.status FROM purchase_orders po JOIN suppliers s ON po.supplier_id = s.id WHERE s.name ILIKE '%Mueller Hydraulik%' AND po.order_date >= '2026-01-01' ORDER BY po.order_date DESC;"
+    tags: ["orders", "supplier", "join", "ilike"]
+
+  - id: sql-016
+    question: "What is the largest single purchase order issued in Wrocław?"
+    sql: "SELECT po_number, order_date, total_amount, currency, status FROM purchase_orders WHERE plant = 'PL-WRO' ORDER BY total_amount DESC LIMIT 1;"
+    tags: ["orders", "plant", "max", "limit"]
+
+  - id: sql-017
+    question: "Monthly purchase order spend for plant DE-HAM in 2026."
+    sql: "SELECT DATE_TRUNC('month', order_date) AS order_month, SUM(total_amount) AS monthly_spend, COUNT(id) AS order_count FROM purchase_orders WHERE plant = 'DE-HAM' AND order_date >= '2026-01-01' GROUP BY order_month ORDER BY order_month ASC;"
+    tags: ["orders", "date_trunc", "monthly", "plant"]
+
+  - id: sql-018
+    question: "Count of purchase orders by status for plant DE-STR."
+    sql: "SELECT status, COUNT(*) AS count_by_status FROM purchase_orders WHERE plant = 'DE-STR' GROUP BY status;"
+    tags: ["orders", "status", "plant", "aggregate"]
+
+  - id: sql-019
+    question: "Cancelled purchase orders across all plants in 2026."
+    sql: "SELECT po_number, order_date, total_amount, plant, supplier_id FROM purchase_orders WHERE status = 'CANCELLED' AND order_date >= '2026-01-01' ORDER BY order_date DESC;"
+    tags: ["orders", "status", "cancelled"]
+
+  - id: sql-020
+    question: "Average purchase order value across each plant."
+    sql: "SELECT plant, ROUND(AVG(total_amount)::numeric, 2) AS avg_po_amount, COUNT(id) AS total_orders FROM purchase_orders GROUP BY plant ORDER BY avg_po_amount DESC;"
+    tags: ["orders", "avg", "plant", "aggregate"]
+
+  - id: sql-021
+    question: "Top 5 suppliers by late deliveries to Hamburg."
+    sql: "SELECT s.id, s.name, COUNT(sh.id) AS late_shipments FROM suppliers s JOIN purchase_orders po ON s.id = po.supplier_id JOIN shipments sh ON po.id = sh.po_id WHERE po.plant = 'DE-HAM' AND sh.status = 'DELIVERED' GROUP BY s.id, s.name ORDER BY late_shipments DESC LIMIT 5;"
+    tags: ["supplier", "shipments", "late", "join", "ranking"]
+
+  - id: sql-022
+    question: "List all shipments currently in transit or pending delivery."
+    sql: "SELECT shipment_number, tracking_number, delivery_date, plant, status FROM shipments WHERE status != 'DELIVERED' ORDER BY delivery_date ASC;"
+    tags: ["shipments", "status", "pending"]
+
+  - id: sql-023
+    question: "Recent shipments received at Wrocław plant."
+    sql: "SELECT shipment_number, tracking_number, delivery_date, status FROM shipments WHERE plant = 'PL-WRO' ORDER BY delivery_date DESC LIMIT 20;"
+    tags: ["shipments", "plant", "limit"]
+
+  - id: sql-024
+    question: "Shipments associated with purchase order PO-2026-0042."
+    sql: "SELECT sh.shipment_number, sh.tracking_number, sh.delivery_date, sh.status, po.po_number FROM shipments sh JOIN purchase_orders po ON sh.po_id = po.id WHERE po.po_number = 'PO-2026-0042';"
+    tags: ["shipments", "purchase_orders", "join", "filter"]
+
+  - id: sql-025
+    question: "Count shipments received per plant in 2026."
+    sql: "SELECT plant, COUNT(id) AS shipment_count FROM shipments WHERE delivery_date >= '2026-01-01' GROUP BY plant ORDER BY shipment_count DESC;"
+    tags: ["shipments", "aggregate", "plant"]
+
+  - id: sql-026
+    question: "Find delivered shipments without tracking numbers."
+    sql: "SELECT shipment_number, delivery_date, plant FROM shipments WHERE tracking_number IS NULL AND status = 'DELIVERED' ORDER BY delivery_date DESC;"
+    tags: ["shipments", "null_check", "status"]
+
+  - id: sql-027
+    question: "Shipments scheduled for delivery in the next 7 days."
+    sql: "SELECT shipment_number, tracking_number, delivery_date, plant FROM shipments WHERE delivery_date >= CURRENT_DATE AND delivery_date <= CURRENT_DATE + INTERVAL '7 days' ORDER BY delivery_date ASC;"
+    tags: ["shipments", "future_date", "interval"]
+
+  - id: sql-028
+    question: "Suppliers with the most shipments delivered to plant Stuttgart."
+    sql: "SELECT s.name, COUNT(sh.id) AS total_delivered FROM suppliers s JOIN purchase_orders po ON s.id = po.supplier_id JOIN shipments sh ON po.id = sh.po_id WHERE sh.plant = 'DE-STR' AND sh.status = 'DELIVERED' GROUP BY s.name ORDER BY total_delivered DESC LIMIT 10;"
+    tags: ["shipments", "suppliers", "plant", "ranking"]
+
+  - id: sql-029
+    question: "Total number of shipments delivered in September 2026."
+    sql: "SELECT COUNT(id) AS sept_deliveries FROM shipments WHERE delivery_date >= '2026-09-01' AND delivery_date <= '2026-09-30' AND status = 'DELIVERED';"
+    tags: ["shipments", "date_range", "aggregate"]
+
+  - id: sql-030
+    question: "Late shipments breakdown by plant."
+    sql: "SELECT plant, COUNT(id) AS shipment_count FROM shipments WHERE status != 'DELIVERED' GROUP BY plant;"
+    tags: ["shipments", "plant", "breakdown"]
+
+  - id: sql-031
+    question: "Show all parts in the Hydraulic Cylinders category."
+    sql: "SELECT part_number, name, category, unit_cost FROM parts WHERE category = 'Hydraulic Cylinders' ORDER BY unit_cost DESC;"
+    tags: ["parts", "category", "filter"]
+
+  - id: sql-032
+    question: "Show quality incidents with critical severity for plant Stuttgart."
+    sql: "SELECT incident_number, incident_date, description, resolution_status FROM quality_incidents WHERE plant = 'DE-STR' AND severity = 'CRITICAL' ORDER BY incident_date DESC;"
+    tags: ["quality", "severity", "plant", "filter"]
+
+  - id: sql-033
+    question: "Which parts have the highest number of quality incidents?"
+    sql: "SELECT p.part_number, p.name, p.category, COUNT(qi.id) AS incident_count FROM parts p JOIN quality_incidents qi ON p.id = qi.part_id GROUP BY p.part_number, p.name, p.category ORDER BY incident_count DESC LIMIT 10;"
+    tags: ["quality", "parts", "join", "ranking"]
+
+  - id: sql-034
+    question: "What is the average unit cost of parts by category?"
+    sql: "SELECT category, ROUND(AVG(unit_cost)::numeric, 2) AS avg_unit_cost, COUNT(id) AS part_count FROM parts GROUP BY category ORDER BY avg_unit_cost DESC;"
+    tags: ["parts", "avg", "category", "aggregate"]
+
+  - id: sql-035
+    question: "Quality incidents logged in Hamburg in the last 60 days."
+    sql: "SELECT incident_number, incident_date, severity, description, resolution_status FROM quality_incidents WHERE plant = 'DE-HAM' AND incident_date >= CURRENT_DATE - INTERVAL '60 days' ORDER BY incident_date DESC;"
+    tags: ["quality", "plant", "interval"]
+
+  - id: sql-036
+    question: "Suppliers linked to open critical or high quality incidents."
+    sql: "SELECT DISTINCT s.id, s.name, qi.severity, qi.incident_number, qi.description FROM suppliers s JOIN quality_incidents qi ON s.id = qi.supplier_id WHERE qi.severity IN ('HIGH', 'CRITICAL') AND qi.resolution_status = 'OPEN';"
+    tags: ["quality", "suppliers", "join", "severity"]
+
+  - id: sql-037
+    question: "Count of quality incidents by severity across all plants."
+    sql: "SELECT severity, COUNT(*) AS incident_count FROM quality_incidents GROUP BY severity ORDER BY incident_count DESC;"
+    tags: ["quality", "severity", "group_by"]
+
+  - id: sql-038
+    question: "Parts with unit cost greater than 500 EUR."
+    sql: "SELECT part_number, name, category, unit_cost FROM parts WHERE unit_cost > 500.0 ORDER BY unit_cost DESC;"
+    tags: ["parts", "cost", "filter"]
+
+  - id: sql-039
+    question: "Open quality incidents breakdown by resolution status."
+    sql: "SELECT resolution_status, COUNT(*) AS count_by_status FROM quality_incidents GROUP BY resolution_status;"
+    tags: ["quality", "status", "breakdown"]
+
+  - id: sql-040
+    question: "Incident count per plant in 2026."
+    sql: "SELECT plant, COUNT(id) AS incident_count FROM quality_incidents WHERE incident_date >= '2026-01-01' GROUP BY plant ORDER BY incident_count DESC;"
+    tags: ["quality", "plant", "year", "aggregate"]
