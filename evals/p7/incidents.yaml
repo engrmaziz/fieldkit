@@ -1,0 +1,224 @@
+# Master 20 Incident Scenarios for Project 7 LLM Observability & Anomaly Alerting
+# Covers failure modes across latency spikes, model swaps, broken prompt versions,
+# error rate bursts, plant-specific degradation, and token explosions.
+
+incidents:
+  - id: "inc-01"
+    name: "Prompt v3 Regressive Hallucination Loop"
+    series: "assistant-api:assistant_rag_qa:qwen2.5:7b"
+    metric: "latency_p95"
+    detector: "robust_z"
+    baseline_value: 580.0
+    anomalous_value: 2150.0
+    true_root_cause_dimension: "prompt_version"
+    true_root_cause_value: "3.0.0-rc1"
+    description: "Complex nested Jinja loop in unvetted prompt version causes 3.7x latency spike."
+
+  - id: "inc-02"
+    name: "Plant Hamburg Hydraulic Sensor Timeout"
+    series: "assistant-api:assistant_rag_qa:qwen2.5:7b"
+    metric: "latency_p95"
+    detector: "robust_z"
+    baseline_value: 610.0
+    anomalous_value: 1980.0
+    true_root_cause_dimension: "plant"
+    true_root_cause_value: "DE-HAM"
+    description: "Plant Hamburg gateway sensor packet loss causes RAG context fetch latency."
+
+  - id: "inc-03"
+    name: "SAP SOAP Connector Dependency Outage"
+    series: "foundry-api:foundry_er_resolve:qwen2.5:7b"
+    metric: "error_rate"
+    detector: "error_burst"
+    baseline_value: 0.01
+    anomalous_value: 0.185
+    true_root_cause_dimension: "route"
+    true_root_cause_value: "soap_connector"
+    description: "Mock SOAP upstream socket timeout yields error burst across supplier resolution."
+
+  - id: "inc-04"
+    name: "Accidental Swap to Quantized 1.5B Model"
+    series: "assistant-api:assistant_sql_query:qwen2.5-coder:1.5b"
+    metric: "error_rate"
+    detector: "error_burst"
+    baseline_value: 0.02
+    anomalous_value: 0.220
+    true_root_cause_dimension: "model"
+    true_root_cause_value: "qwen2.5-coder:1.5b"
+    description: "Small 1.5B parameter model repeatedly fails SQL AST validation schema."
+
+  - id: "inc-05"
+    name: "Copilot Spindle Triage Gradual Drift"
+    series: "copilot-api:copilot_ticket_triage:qwen2.5:7b"
+    metric: "latency_p95"
+    detector: "cusum"
+    baseline_value: 420.0
+    anomalous_value: 940.0
+    true_root_cause_dimension: "task"
+    true_root_cause_value: "copilot_ticket_triage"
+    description: "Persistent gradual drift in ticket context size triggers CUSUM control chart."
+
+  - id: "inc-06"
+    name: "Host GPU Thermal Throttling on Node 02"
+    series: "assistant-api:assistant_rag_qa:qwen2.5:7b"
+    metric: "latency_p95"
+    detector: "robust_z"
+    baseline_value: 520.0
+    anomalous_value: 1890.0
+    true_root_cause_dimension: "host"
+    true_root_cause_value: "halden-ai-node-02"
+    description: "Thermal throttling on local server node cuts Ollama token throughput by 50%."
+
+  - id: "inc-07"
+    name: "Plant Stuttgart Network Interface Congestion"
+    series: "assistant-api:assistant_sql_query:qwen2.5-coder:7b"
+    metric: "latency_p95"
+    detector: "ewma"
+    baseline_value: 140.0
+    anomalous_value: 680.0
+    true_root_cause_dimension: "plant"
+    true_root_cause_value: "DE-STR"
+    description: "Local VLAN MTU mismatch on Stuttgart plant edge router."
+
+  - id: "inc-08"
+    name: "Prompt v2 Rewrite Token Explosion"
+    series: "assistant-api:assistant_rag_qa:qwen2.5:7b"
+    metric: "latency_p95"
+    detector: "robust_z"
+    baseline_value: 550.0
+    anomalous_value: 2300.0
+    true_root_cause_dimension: "prompt_version"
+    true_root_cause_value: "2.1.0-beta"
+    description: "Verbose system instructions cause model to emit 1,200 tokens per response."
+
+  - id: "inc-09"
+    name: "Ollama Context Memory Eviction Storm"
+    series: "copilot-api:copilot_ticket_triage:qwen2.5:7b"
+    metric: "error_rate"
+    detector: "error_burst"
+    baseline_value: 0.005
+    anomalous_value: 0.140
+    true_root_cause_dimension: "route"
+    true_root_cause_value: "context_eviction"
+    description: "Simultaneous inference requests overflow Ollama VRAM allocation."
+
+  - id: "inc-10"
+    name: "Plant Wroclaw Cross-Border WAN Latency"
+    series: "foundry-api:foundry_er_resolve:qwen2.5:7b"
+    metric: "latency_p95"
+    detector: "cusum"
+    baseline_value: 210.0
+    anomalous_value: 590.0
+    true_root_cause_dimension: "plant"
+    true_root_cause_value: "PL-WRO"
+    description: "Cross-border VPN tunnel encryption overhead to Wroclaw warehouse."
+
+  - id: "inc-11"
+    name: "Unvetted 32B Model Out of Memory Crashes"
+    series: "assistant-api:assistant_rag_qa:qwen2.5:32b"
+    metric: "error_rate"
+    detector: "error_burst"
+    baseline_value: 0.01
+    anomalous_value: 0.280
+    true_root_cause_dimension: "model"
+    true_root_cause_value: "qwen2.5:32b"
+    description: "Overallocated 32B model causes immediate CUDA OOM exceptions."
+
+  - id: "inc-12"
+    name: "Corrupt OCR Document Intelligence Stream"
+    series: "doc-intel:document_ocr:tesseract"
+    metric: "error_rate"
+    detector: "error_burst"
+    baseline_value: 0.02
+    anomalous_value: 0.160
+    true_root_cause_dimension: "route"
+    true_root_cause_value: "ocr_parser"
+    description: "Scanned TIFF files with corrupted headers cause image decoder exceptions."
+
+  - id: "inc-13"
+    name: "SQL Ast Validator Lock Contention"
+    series: "assistant-api:assistant_sql_query:qwen2.5-coder:7b"
+    metric: "latency_p95"
+    detector: "robust_z"
+    baseline_value: 120.0
+    anomalous_value: 750.0
+    true_root_cause_dimension: "task"
+    true_root_cause_value: "sql_validation"
+    description: "Contention in shared sqlglot dialect transpiler pool."
+
+  - id: "inc-14"
+    name: "Prompt v1 Security Filter Infinite Recursion"
+    series: "assistant-api:assistant_rag_qa:qwen2.5:7b"
+    metric: "latency_p95"
+    detector: "robust_z"
+    baseline_value: 530.0
+    anomalous_value: 2450.0
+    true_root_cause_dimension: "prompt_version"
+    true_root_cause_value: "1.0.5-patch"
+    description: "Recursive guardrail rule regex backtracks on binary context inputs."
+
+  - id: "inc-15"
+    name: "PostgreSQL Connection Exhaustion under Heavy Load"
+    series: "foundry-api:foundry_er_resolve:qwen2.5:7b"
+    metric: "error_rate"
+    detector: "error_burst"
+    baseline_value: 0.008
+    anomalous_value: 0.125
+    true_root_cause_dimension: "host"
+    true_root_cause_value: "postgres-primary"
+    description: "Pool size exceeded during simultaneous batch review synchronization."
+
+  - id: "inc-16"
+    name: "Defect Inspection Edge Camera Bitrate Drop"
+    series: "defect-inspect:surface_defect:yolo11"
+    metric: "latency_p95"
+    detector: "cusum"
+    baseline_value: 85.0
+    anomalous_value: 320.0
+    true_root_cause_dimension: "plant"
+    true_root_cause_value: "DE-HAM"
+    description: "RTSP video stream buffer overflow on line 4 honing inspection station."
+
+  - id: "inc-17"
+    name: "Ollama Temperature Setting Misconfiguration"
+    series: "assistant-api:assistant_rag_qa:qwen2.5:7b"
+    metric: "error_rate"
+    detector: "error_burst"
+    baseline_value: 0.012
+    anomalous_value: 0.095
+    true_root_cause_dimension: "prompt_version"
+    true_root_cause_value: "temp-override-0.9"
+    description: "Accidentally high temperature causes model to emit non-JSON responses."
+
+  - id: "inc-18"
+    name: "Host NVMe IOPS Starvation by Background Backup"
+    series: "assistant-api:assistant_rag_qa:qwen2.5:7b"
+    metric: "latency_p95"
+    detector: "robust_z"
+    baseline_value: 510.0
+    anomalous_value: 1950.0
+    true_root_cause_dimension: "host"
+    true_root_cause_value: "halden-ai-node-01"
+    description: "Unthrottled local disk backup starves ClickHouse span write queue."
+
+  - id: "inc-19"
+    name: "Wroclaw Warehouse Thermal Overheating"
+    series: "foundry-api:foundry_er_resolve:qwen2.5:7b"
+    metric: "latency_p95"
+    detector: "ewma"
+    baseline_value: 220.0
+    anomalous_value: 810.0
+    true_root_cause_dimension: "plant"
+    true_root_cause_value: "PL-WRO"
+    description: "Server room AC failure in Wroclaw plant leads to CPU clock step-down."
+
+  - id: "inc-20"
+    name: "Prompt Format Malformed Delimiter Regression"
+    series: "assistant-api:assistant_rag_qa:qwen2.5:7b"
+    metric: "error_rate"
+    detector: "error_burst"
+    baseline_value: 0.01
+    anomalous_value: 0.170
+    true_root_cause_dimension: "prompt_version"
+    true_root_cause_value: "1.9.0-bad-quotes"
+    description: "Malformed triple-backtick delimiter breaks Pydantic JSON parser."

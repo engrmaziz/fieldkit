@@ -335,3 +335,80 @@ class ExperimentResultsResponse(BaseModel):
     metric_deltas: dict[str, MetricDeltaWithCI] = Field(default_factory=dict)
 
 
+# ============================================================================
+# Streaming Anomaly Detection, RCA & Alerting Schemas
+# ============================================================================
+
+class DimensionContribution(BaseModel):
+    """Deterministic share-weighted contribution of a specific dimension value."""
+
+    dimension: str
+    value: str
+    contribution_pct: float
+    baseline_mean: float
+    anomalous_mean: float
+    delta: float
+
+
+class RCASummary(BaseModel):
+    """Structured LLM hypothesis and evidence for root-cause analysis."""
+
+    hypothesis: str
+    evidence: list[str] = Field(default_factory=list)
+    suggested_check: str = ""
+
+
+class RCAResult(BaseModel):
+    """Deterministic dimension breakdown + validated LLM hypothesis."""
+
+    series: str
+    metric: str
+    top_dimensions: list[DimensionContribution] = Field(default_factory=list)
+    example_trace_ids: list[str] = Field(default_factory=list)
+    llm_summary: RCASummary | None = None
+    validated_numbers_count: int = 0
+    dropped_hallucinations_count: int = 0
+
+
+class AnomalyAlert(BaseModel):
+    """Complete record of an operational anomaly incident and alert notification."""
+
+    alert_id: str
+    fingerprint: str
+    series: str
+    service: str
+    task: str
+    model: str
+    detector: str
+    severity: str = "critical"
+    status: str = "active"
+    message: str
+    current_value: float
+    threshold: float
+    created_at: datetime
+    updated_at: datetime
+    resolved_at: datetime | None = None
+    rca: RCAResult | None = None
+    channels_notified: list[str] = Field(default_factory=list)
+
+
+class AlertCreate(BaseModel):
+    """External alert ingestion payload (vision health, copilot insights, drift)."""
+
+    source: str
+    series: str
+    service: str
+    message: str
+    severity: str = "warning"
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class AlertListResponse(BaseModel):
+    """Summary list of active and past alerts for Tracehub console."""
+
+    alerts: list[AnomalyAlert]
+    total_active: int
+    total_resolved: int
+
+
+

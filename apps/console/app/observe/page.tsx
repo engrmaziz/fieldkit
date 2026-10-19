@@ -6,6 +6,7 @@ import TraceWaterfallDrawer, { TraceTreeResponse } from "@/components/observe/Tr
 import PromptRegistryView from "@/components/observe/PromptRegistryView";
 import EvalRunsView from "@/components/observe/EvalRunsView";
 import ExperimentsView from "@/components/observe/ExperimentsView";
+import AlertsView from "@/components/observe/AlertsView";
 import {
   Activity,
   Layers,
@@ -23,6 +24,7 @@ import {
   BarChart3,
   GitCompare,
   FlaskConical,
+  ShieldAlert,
 } from "lucide-react";
 
 interface TraceSummary {
@@ -42,7 +44,7 @@ interface TraceSummary {
 }
 
 export default function ObservePage() {
-  const [activeTab, setActiveTab] = useState<"traces" | "prompts" | "evals" | "experiments">("traces");
+  const [activeTab, setActiveTab] = useState<"traces" | "prompts" | "evals" | "experiments" | "alerts">("traces");
   const [traces, setTraces] = useState<TraceSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState<string>("");
@@ -362,6 +364,21 @@ export default function ObservePage() {
               Split Traffic
             </span>
           </button>
+
+          <button
+            onClick={() => setActiveTab("alerts")}
+            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-mono font-medium border-b-2 transition-all ${
+              activeTab === "alerts"
+                ? "border-rose-400 text-rose-400 bg-slate-900/40"
+                : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700"
+            }`}
+          >
+            <ShieldAlert className="w-4 h-4" />
+            <span>Alerts &amp; RCA</span>
+            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-rose-950 text-rose-400 border border-rose-800/80">
+              Live
+            </span>
+          </button>
         </div>
 
         {/* Traces Tab Content */}
@@ -556,6 +573,9 @@ export default function ObservePage() {
 
         {/* A/B Experiments Tab Content */}
         {activeTab === "experiments" && <ExperimentsView />}
+
+        {/* Alerts & RCA Tab Content */}
+        {activeTab === "alerts" && <AlertsView onSelectTrace={handleSelectTrace} />}
       </main>
 
       {/* Trace Waterfall Drawer */}
