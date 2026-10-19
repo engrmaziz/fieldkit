@@ -84,3 +84,5 @@ def test_alembic_offline_migration_generates_valid_sql(
     assert "CREATE POLICY purchase_orders_plant_isolation" in sql
     assert "CREATE TABLE property_provenance" in sql
     assert "CREATE TABLE lineage_edges" in sql
+    assert "CREATE ROLE assistant_ro" in sql
+    assert "GRANT SELECT ON TABLE" in sql
