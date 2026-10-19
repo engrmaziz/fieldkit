@@ -11,6 +11,10 @@ const nextConfig = {
         source: "/api/assistant/:path*",
         destination: `${process.env.NEXT_PUBLIC_ASSISTANT_API_URL || "http://localhost:8002"}/api/assistant/:path*`,
       },
+      {
+        source: "/api/tracehub/:path*",
+        destination: `${process.env.NEXT_PUBLIC_TRACEHUB_API_URL || "http://localhost:8006"}/:path*`,
+      },
     ];
   },
 };
