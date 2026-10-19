@@ -1,0 +1,267 @@
+# Halden Industrie Enterprise Ontology Specification
+version: "1.0.0"
+
+objects:
+  Supplier:
+    description: "Enterprise canonical supplier resolved from GLEIF, ERP vendors, and Excel planning"
+    table_name: "suppliers"
+    primary_key: "id"
+    natural_key: "supplier_code"
+    plant_scoped: false
+    properties:
+      supplier_code:
+        type: "string"
+        required: true
+        description: "Canonical supplier identifier"
+      name:
+        type: "string"
+        required: true
+        description: "Official legal name"
+      street:
+        type: "string"
+        required: false
+        description: "Street address"
+      city:
+        type: "string"
+        required: false
+        description: "City or municipality"
+      postal_code:
+        type: "string"
+        required: false
+        description: "Postal / ZIP code"
+      country:
+        type: "string"
+        required: true
+        default: "DE"
+        description: "ISO 3166-1 alpha-2 country code"
+      lei:
+        type: "string"
+        required: false
+        description: "Legal Entity Identifier (GLEIF)"
+      legal_form:
+        type: "string"
+        required: false
+        description: "Legal corporate form (e.g. GmbH, AG)"
+
+  Part:
+    description: "Hydraulic machinery component part catalog"
+    table_name: "parts"
+    primary_key: "id"
+    natural_key: "part_number"
+    plant_scoped: false
+    properties:
+      part_number:
+        type: "string"
+        required: true
+        description: "Halden part code (e.g. HX-101)"
+      name:
+        type: "string"
+        required: true
+        description: "Part description / designation"
+      category:
+        type: "string"
+        required: true
+        description: "Component classification (e.g. Seals, Valves, Cylinders)"
+      unit_of_measure:
+        type: "string"
+        required: true
+        default: "PCS"
+        description: "Unit of measurement"
+      unit_cost:
+        type: "float"
+        required: true
+        default: 0.0
+        description: "Standard unit cost in EUR"
+
+  Plant:
+    description: "Halden Industrie manufacturing plant location"
+    table_name: "plants"
+    primary_key: "id"
+    natural_key: "plant_code"
+    plant_scoped: true
+    properties:
+      plant_code:
+        type: "string"
+        required: true
+        description: "Plant code identifier (DE-HAM, DE-STR, PL-WRO)"
+      name:
+        type: "string"
+        required: true
+        description: "Plant site name"
+      location:
+        type: "string"
+        required: true
+        description: "City / Location of facility"
+      country:
+        type: "string"
+        required: true
+        description: "Country code"
+
+  PurchaseOrder:
+    description: "Procurement purchase order contract"
+    table_name: "purchase_orders"
+    primary_key: "id"
+    natural_key: "po_number"
+    plant_scoped: true
+    properties:
+      po_number:
+        type: "string"
+        required: true
+        description: "Unique PO identifier (e.g. PO-2024-001)"
+      order_date:
+        type: "date"
+        required: true
+        description: "Date PO was issued"
+      total_amount:
+        type: "float"
+        required: true
+        description: "Total order value"
+      currency:
+        type: "string"
+        required: true
+        default: "EUR"
+        description: "ISO currency"
+      status:
+        type: "string"
+        required: true
+        default: "OPEN"
+        description: "Order status (OPEN, FULFILLED, CANCELLED)"
+      supplier_id:
+        type: "uuid"
+        required: false
+        description: "Foreign key to Supplier"
+
+  Shipment:
+    description: "Physical goods delivery shipment to plant"
+    table_name: "shipments"
+    primary_key: "id"
+    natural_key: "shipment_number"
+    plant_scoped: true
+    properties:
+      shipment_number:
+        type: "string"
+        required: true
+        description: "Unique shipment number"
+      tracking_number:
+        type: "string"
+        required: false
+        description: "Logistics carrier tracking code"
+      delivery_date:
+        type: "date"
+        required: true
+        description: "Delivery or arrival date"
+      status:
+        type: "string"
+        required: true
+        default: "DELIVERED"
+        description: "Shipment status"
+      po_id:
+        type: "uuid"
+        required: false
+        description: "Foreign key to PurchaseOrder"
+
+  QualityIncident:
+    description: "Plant defect or inspection quality incident report"
+    table_name: "quality_incidents"
+    primary_key: "id"
+    natural_key: "incident_number"
+    plant_scoped: true
+    properties:
+      incident_number:
+        type: "string"
+        required: true
+        description: "Unique quality incident identifier (e.g. INC-2024-101)"
+      incident_date:
+        type: "date"
+        required: true
+        description: "Date incident was logged"
+      severity:
+        type: "string"
+        required: true
+        default: "MEDIUM"
+        description: "Severity level (LOW, MEDIUM, HIGH, CRITICAL)"
+      description:
+        type: "string"
+        required: true
+        description: "Incident details or root cause"
+      resolution_status:
+        type: "string"
+        required: true
+        default: "OPEN"
+        description: "Status of resolution (OPEN, INVESTIGATING, CLOSED)"
+      part_id:
+        type: "uuid"
+        required: false
+        description: "Foreign key to Part"
+      supplier_id:
+        type: "uuid"
+        required: false
+        description: "Foreign key to Supplier"
+
+  Certificate:
+    description: "Vendor compliance or quality certification (e.g. ISO 9001)"
+    table_name: "certificates"
+    primary_key: "id"
+    natural_key: "certificate_number"
+    plant_scoped: false
+    properties:
+      certificate_number:
+        type: "string"
+        required: true
+        description: "Official certificate serial number"
+      standard:
+        type: "string"
+        required: true
+        default: "ISO 9001"
+        description: "Quality or environmental standard"
+      issuer:
+        type: "string"
+        required: true
+        description: "Certifying audit authority (e.g. TÜV SÜD)"
+      valid_from:
+        type: "date"
+        required: true
+        description: "Validity start date"
+      valid_to:
+        type: "date"
+        required: true
+        description: "Expiration date"
+      supplier_id:
+        type: "uuid"
+        required: false
+        description: "Foreign key to Supplier"
+
+links:
+  supplies:
+    from_object: "Supplier"
+    to_object: "Part"
+    cardinality: "many_to_many"
+    description: "Supplier delivers hydraulic parts"
+
+  ordered_from:
+    from_object: "PurchaseOrder"
+    to_object: "Supplier"
+    cardinality: "many_to_one"
+    foreign_key: "supplier_id"
+    description: "Purchase order is placed with a supplier"
+
+  delivered_to:
+    from_object: "Shipment"
+    to_object: "Plant"
+    cardinality: "many_to_one"
+    foreign_key: "plant_id"
+    description: "Shipment is received at a manufacturing plant"
+
+  incident_on:
+    from_object: "QualityIncident"
+    to_object: "Part"
+    cardinality: "many_to_one"
+    foreign_key: "part_id"
+    description: "Quality defect incident associated with a part"
+
+  certified_by:
+    from_object: "Certificate"
+    to_object: "Supplier"
+    cardinality: "many_to_one"
+    foreign_key: "supplier_id"
+    description: "Quality certificate issued for a supplier"

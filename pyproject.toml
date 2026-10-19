@@ -15,6 +15,10 @@ dependencies = [
     "pyarrow>=18.0.0",
     "pyyaml>=6.0.2",
     "splink>=4.0.0",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "alembic>=1.14.0",
+
+    "asyncpg>=0.30.0",
 ]
 
 
@@ -31,9 +35,12 @@ fieldkit-mock-soap = { workspace = true }
 fieldkit-ingest = { workspace = true }
 fieldkit-foundry-api = { workspace = true }
 fieldkit-er = { workspace = true }
+fieldkit-ontology = { workspace = true }
 
 [dependency-groups]
+
 dev = [
+    "aiosqlite>=0.22.1",
     "hypothesis>=6.100.0",
     "mypy>=1.14.0",
     "pytest>=8.3.0",
@@ -73,8 +80,10 @@ module = [
     "jose.*",
     "opentelemetry.*",
     "pyarrow.*",
+    "yaml.*",
 ]
 ignore_missing_imports = true
+
 
 
 [tool.pytest.ini_options]

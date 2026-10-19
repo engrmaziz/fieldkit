@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fieldkit-ontology"
+version = "0.1.0"
+description = "Fieldkit Ontology Definition, Codegen, Lineage, and RLS Promotion"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "pydantic>=2.10.0",
+    "pyyaml>=6.0.2",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "alembic>=1.14.0",
+
+    "asyncpg>=0.30.0",
+    "duckdb>=1.1.0",
+]
+
+[project.scripts]
+fieldkit-ontology = "fieldkit_ontology.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fieldkit_ontology"]
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }

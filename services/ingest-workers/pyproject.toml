@@ -21,6 +21,7 @@ dependencies = [
     "psycopg[binary]>=3.2.0",
     "fieldkit-llm",
     "fieldkit-er",
+    "fieldkit-ontology",
 ]
 
 [project.scripts]
@@ -33,3 +34,4 @@ packages = ["fieldkit_ingest"]
 fieldkit-common = { workspace = true }
 fieldkit-llm = { workspace = true }
 fieldkit-er = { workspace = true }
+fieldkit-ontology = { workspace = true }

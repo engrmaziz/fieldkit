@@ -232,6 +232,7 @@ async def run_pipeline(
     source: str = "all",
     run_id: str | None = None,
     with_er: bool = True,
+    promote: bool = False,
 ) -> None:
 
     start_time = time.perf_counter()
@@ -382,6 +383,13 @@ async def run_pipeline(
             f"from {er_metrics['total_raw']:,} raw records ({er_metrics['clusters_count']:,} clusters) -> stg_canonical_suppliers"
         )
 
+    # 8. Promotion to PostgreSQL Ontology
+    if promote:
+        print("[*] Promoting Staged Records to PostgreSQL Ontology (packages/ontology)...")
+        from fieldkit_ontology.cli import _run_promotion
+
+        await _run_promotion(pipeline.staging.db_path, run_id=pipeline.run_id)
+
     elapsed = time.perf_counter() - start_time
     total_in = sum(r["rows_in"] for r in results)
     total_ok = sum(r["rows_ok"] for r in results)
@@ -413,6 +421,11 @@ def main() -> None:
         action="store_true",
         help="Skip entity resolution post-processing step",
     )
+    parser.add_argument(
+        "--promote",
+        action="store_true",
+        help="Promote staged records into PostgreSQL ontology after ingest",
+    )
     args = parser.parse_args()
 
     asyncio.run(
@@ -420,6 +433,7 @@ def main() -> None:
             source=args.source,
             run_id=args.run_id,
             with_er=not args.skip_er,
+            promote=args.promote,
         )
     )
 
