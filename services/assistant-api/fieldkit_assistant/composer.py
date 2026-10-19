@@ -34,6 +34,7 @@ class UnifiedResponse(BaseModel):
     verification: VerificationResult | None = None
     cached: bool = False
     session_id: str | None = None
+    trace_id: str | None = None
 
 
 class AnswerComposer:

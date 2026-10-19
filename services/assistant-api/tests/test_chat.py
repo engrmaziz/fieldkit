@@ -155,3 +155,47 @@ def test_chat_caching_and_bypass() -> None:
         assert d3["cached"] is False
     finally:
         app.dependency_overrides.clear()
+
+
+def test_chat_trace_id_generation() -> None:
+    """Verify that OpenTelemetry trace_id is attached to response and SSE route event."""
+    sofia = Principal(sub="sofia-1", username="sofia", roles=["admin"], plant=None)
+    app.dependency_overrides[get_current_principal] = lambda: sofia
+
+    try:
+        r = client.post("/api/assistant/chat", json={"query": "List all suppliers in Germany"})
+        assert r.status_code == 200
+        d = r.json()
+        assert "trace_id" in d
+        assert d["trace_id"] is not None
+        assert len(d["trace_id"]) == 32
+
+        # In streaming
+        r_stream = client.post(
+            "/api/assistant/chat/stream", json={"query": "List all suppliers in Germany"}
+        )
+        assert r_stream.status_code == 200
+        assert '"trace_id":' in r_stream.text
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_chat_stream_client_cancellation() -> None:
+    """Verify that client disconnect is handled gracefully by SSE streaming endpoint."""
+    sofia = Principal(sub="sofia-1", username="sofia", roles=["admin"], plant=None)
+    app.dependency_overrides[get_current_principal] = lambda: sofia
+
+    try:
+        # Stream response with small byte read to simulate early disconnect
+        with client.stream(
+            "POST",
+            "/api/assistant/chat/stream",
+            json={"query": "What machine guarding is required?"},
+        ) as resp:
+            assert resp.status_code == 200
+            for line in resp.iter_lines():
+                if "event: route" in line:
+                    break
+        # Generator terminated after reading the first event, confirming clean exit
+    finally:
+        app.dependency_overrides.clear()

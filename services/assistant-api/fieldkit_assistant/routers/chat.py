@@ -6,6 +6,7 @@ import json
 from collections.abc import AsyncGenerator
 from pathlib import Path
 
+import structlog
 from fastapi import APIRouter, Depends, Header, Request
 from fastapi.responses import StreamingResponse
 from fieldkit_assistant.cache import ResponseCache, compute_cache_key
@@ -13,6 +14,7 @@ from fieldkit_assistant.composer import AnswerComposer, UnifiedResponse
 from fieldkit_assistant.memory import ConversationManager, QuestionRewriter
 from fieldkit_assistant.router import HybridRouter
 from fieldkit_common.auth import Principal, get_current_principal
+from fieldkit_common.otel import get_tracer
 from fieldkit_nl2sql.executor import SQLExecutor
 from fieldkit_nl2sql.generator import NL2SQLGenerator
 from fieldkit_nl2sql.linker import SchemaLinker
@@ -23,6 +25,9 @@ from fieldkit_retrieval.hybrid import HybridSearchEngine
 from fieldkit_retrieval.indexer import BatchIndexer
 from fieldkit_retrieval.models import DocumentInput, DocumentType, ProcessedChunk
 from pydantic import BaseModel, Field
+
+logger = structlog.get_logger(__name__)
+tracer = get_tracer("fieldkit-assistant")
 
 router = APIRouter(prefix="/api/assistant", tags=["Chat"])
 
@@ -114,34 +119,47 @@ async def chat(
 
     rewritten_query, _ = await _rewriter.rewrite(request.query, history)
 
-    # 2. Check Exact-Match Response Cache
-    cache_key = compute_cache_key(rewritten_query, principal)
-    if not bypass:
-        cached_data = _cache.get(cache_key)
-        if cached_data is not None:
-            cached_resp = UnifiedResponse(**cached_data)
-            cached_resp.cached = True
-            cached_resp.session_id = session_id
-            return cached_resp
+    with tracer.start_as_current_span("assistant.chat") as span:
+        trace_id = format(span.get_span_context().trace_id, "032x")
+        span.set_attribute("assistant.query.original", request.query)
+        span.set_attribute("assistant.query.rewritten", rewritten_query)
+        span.set_attribute("user.principal", principal.username)
+        span.set_attribute("user.plant", principal.plant or "Global")
 
-    # 3. Answer Composition
-    resp = await composer.compose(
-        query=request.query,
-        rewritten_query=rewritten_query,
-        principal=principal,
-        forced_route=request.route,
-        top_k=request.top_k,
-    )
-    resp.session_id = session_id
+        # 2. Check Exact-Match Response Cache
+        cache_key = compute_cache_key(rewritten_query, principal)
+        if not bypass:
+            cached_data = _cache.get(cache_key)
+            if cached_data is not None:
+                cached_resp = UnifiedResponse(**cached_data)
+                cached_resp.cached = True
+                cached_resp.session_id = session_id
+                cached_resp.trace_id = trace_id
+                span.set_attribute("assistant.cached", True)
+                span.set_attribute("assistant.route", cached_resp.route)
+                return cached_resp
 
-    # 4. Save to Cache & Update Memory
-    if not bypass:
-        _cache.set(cache_key, resp.model_dump())
+        # 3. Answer Composition
+        resp = await composer.compose(
+            query=request.query,
+            rewritten_query=rewritten_query,
+            principal=principal,
+            forced_route=request.route,
+            top_k=request.top_k,
+        )
+        resp.session_id = session_id
+        resp.trace_id = trace_id
+        span.set_attribute("assistant.cached", False)
+        span.set_attribute("assistant.route", resp.route)
 
-    session.add_turn("user", request.query, resp.route)
-    session.add_turn("assistant", resp.answer, resp.route)
+        # 4. Save to Cache & Update Memory
+        if not bypass:
+            _cache.set(cache_key, resp.model_dump())
 
-    return resp
+        session.add_turn("user", request.query, resp.route)
+        session.add_turn("assistant", resp.answer, resp.route)
+
+        return resp
 
 
 @router.post("/chat/stream")
@@ -164,77 +182,93 @@ async def chat_stream(
     rewritten_query, _ = await _rewriter.rewrite(request.query, history)
 
     async def sse_event_stream() -> AsyncGenerator[str, None]:
-        # Check disconnect
-        if await raw_request.is_disconnected():
-            return
+        with tracer.start_as_current_span("assistant.chat_stream") as span:
+            trace_id = format(span.get_span_context().trace_id, "032x")
+            span.set_attribute("assistant.query.original", request.query)
+            span.set_attribute("assistant.query.rewritten", rewritten_query)
+            span.set_attribute("user.principal", principal.username)
+            span.set_attribute("user.plant", principal.plant or "Global")
 
-        cache_key = compute_cache_key(rewritten_query, principal)
-        resp: UnifiedResponse | None = None
-
-        if not bypass:
-            cached_data = _cache.get(cache_key)
-            if cached_data is not None:
-                resp = UnifiedResponse(**cached_data)
-                resp.cached = True
-
-        if resp is None:
-            resp = await composer.compose(
-                query=request.query,
-                rewritten_query=rewritten_query,
-                principal=principal,
-                forced_route=request.route,
-                top_k=request.top_k,
-            )
-            resp.session_id = session_id
-            if not bypass:
-                _cache.set(cache_key, resp.model_dump())
-            session.add_turn("user", request.query, resp.route)
-            session.add_turn("assistant", resp.answer, resp.route)
-
-        # 1. Event: Route
-        route_payload = {
-            "route": resp.route,
-            "confidence": resp.confidence,
-            "rewritten_query": resp.rewritten_query,
-            "cached": resp.cached,
-        }
-        yield f"event: route\ndata: {json.dumps(route_payload)}\n\n"
-
-        # 2. Event: Sources (if RAG or Both)
-        if resp.citations:
-            sources_data = [c.model_dump() for c in resp.citations]
-            yield f"event: sources\ndata: {json.dumps(sources_data)}\n\n"
-
-        # 3. Event: SQL (if SQL or Both)
-        if resp.sql:
-            sql_payload = {
-                "sql": resp.sql,
-                "tables_used": resp.tables_used,
-            }
-            yield f"event: sql\ndata: {json.dumps(sql_payload)}\n\n"
-
-        # 4. Event: Rows Preview (if SQL or Both)
-        if resp.columns or resp.rows:
-            preview_payload = {
-                "columns": resp.columns,
-                "rows": resp.rows[:10],
-                "row_count": resp.row_count,
-            }
-            yield f"event: rows_preview\ndata: {json.dumps(preview_payload)}\n\n"
-
-        # 5. Event: Tokens (stream answer in chunks)
-        words = resp.answer.split(" ")
-        for i in range(0, len(words), 3):
+            # Check early disconnect
             if await raw_request.is_disconnected():
+                logger.info("sse_client_disconnected_before_start", session_id=session_id)
                 return
-            chunk_text = " ".join(words[i : i + 3]) + " "
-            yield f"event: token\ndata: {json.dumps({'text': chunk_text})}\n\n"
 
-        # 6. Event: Verification (if available)
-        if resp.verification:
-            yield f"event: verification\ndata: {json.dumps(resp.verification.model_dump())}\n\n"
+            cache_key = compute_cache_key(rewritten_query, principal)
+            resp: UnifiedResponse | None = None
 
-        # 7. Event: Done
-        yield "event: done\ndata: [DONE]\n\n"
+            if not bypass:
+                cached_data = _cache.get(cache_key)
+                if cached_data is not None:
+                    resp = UnifiedResponse(**cached_data)
+                    resp.cached = True
+                    resp.trace_id = trace_id
+                    span.set_attribute("assistant.cached", True)
+                    span.set_attribute("assistant.route", resp.route)
+
+            if resp is None:
+                resp = await composer.compose(
+                    query=request.query,
+                    rewritten_query=rewritten_query,
+                    principal=principal,
+                    forced_route=request.route,
+                    top_k=request.top_k,
+                )
+                resp.session_id = session_id
+                resp.trace_id = trace_id
+                span.set_attribute("assistant.cached", False)
+                span.set_attribute("assistant.route", resp.route)
+                if not bypass:
+                    _cache.set(cache_key, resp.model_dump())
+                session.add_turn("user", request.query, resp.route)
+                session.add_turn("assistant", resp.answer, resp.route)
+
+            # 1. Event: Route
+            route_payload = {
+                "route": resp.route,
+                "confidence": resp.confidence,
+                "rewritten_query": resp.rewritten_query,
+                "cached": resp.cached,
+                "trace_id": trace_id,
+            }
+            yield f"event: route\ndata: {json.dumps(route_payload)}\n\n"
+
+            # 2. Event: Sources (if RAG or Both)
+            if resp.citations:
+                sources_data = [c.model_dump() for c in resp.citations]
+                yield f"event: sources\ndata: {json.dumps(sources_data)}\n\n"
+
+            # 3. Event: SQL (if SQL or Both)
+            if resp.sql:
+                sql_payload = {
+                    "sql": resp.sql,
+                    "tables_used": resp.tables_used,
+                }
+                yield f"event: sql\ndata: {json.dumps(sql_payload)}\n\n"
+
+            # 4. Event: Rows Preview (if SQL or Both)
+            if resp.columns or resp.rows:
+                preview_payload = {
+                    "columns": resp.columns,
+                    "rows": resp.rows[:10],
+                    "row_count": resp.row_count,
+                }
+                yield f"event: rows_preview\ndata: {json.dumps(preview_payload)}\n\n"
+
+            # 5. Event: Tokens (stream answer in chunks)
+            words = resp.answer.split(" ")
+            for i in range(0, len(words), 3):
+                if await raw_request.is_disconnected():
+                    logger.info("sse_client_disconnected_during_stream", session_id=session_id)
+                    return
+                chunk_text = " ".join(words[i : i + 3]) + " "
+                yield f"event: token\ndata: {json.dumps({'text': chunk_text})}\n\n"
+
+            # 6. Event: Verification (if available)
+            if resp.verification:
+                yield f"event: verification\ndata: {json.dumps(resp.verification.model_dump())}\n\n"
+
+            # 7. Event: Done
+            yield "event: done\ndata: [DONE]\n\n"
 
     return StreamingResponse(sse_event_stream(), media_type="text/event-stream")

@@ -67,3 +67,27 @@ async def test_router_empty_and_fallback() -> None:
     # Query with no rules matching falls back to LLM/offline heuristic
     decision2 = await router.route("Tell me something general about the plant atmosphere")
     assert decision2.route in ["rag", "sql", "both"]
+
+
+@pytest.mark.asyncio
+async def test_router_table_exhaustive() -> None:
+    """Evaluate router decisions against a contract table of representative queries."""
+    router = HybridRouter()
+    cases = [
+        ("Sum of total spend across all plants breakdown by plant code.", "sql"),
+        ("Which purchase order has the highest single line-item quantity?", "sql"),
+        ("What does REACH regulation specify regarding lead content in bronze bushings?", "rag"),
+        ("What does CE marking require for high-pressure hydraulic manifolds?", "rag"),
+        (
+            "Top 5 suppliers by late deliveries and what does the procurement policy say about contract penalties?",
+            "both",
+        ),
+        (
+            "How many critical quality incidents occurred in plant Hamburg and what is the emergency shut-off procedure?",
+            "both",
+        ),
+    ]
+    for q, expected in cases:
+        decision = await router.route(q)
+        assert decision.route == expected, f"Failed on query: {q}"
+        assert decision.confidence >= 0.8
