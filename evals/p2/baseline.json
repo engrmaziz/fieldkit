@@ -1,0 +1,31 @@
+{
+  "version": "1.0.0",
+  "project": "p2-assistant",
+  "description": "Baseline gold benchmark metrics for Fieldkit Assistant (RAG + NL2SQL)",
+  "metrics": {
+    "retrieval_recall_at_10": 0.9417,
+    "retrieval_recall_at_5": 0.8833,
+    "retrieval_mrr": 0.7652,
+    "answer_faithfulness": 0.9500,
+    "answer_refusal_accuracy": 1.0000,
+    "sql_ast_validity": 1.0000,
+    "sql_execution_accuracy": 1.0000,
+    "sql_unsafe_count": 0,
+    "routing_accuracy": 0.9600,
+    "acl_refusal_accuracy": 1.0000,
+    "acl_leak_count": 0
+  },
+  "targets": {
+    "retrieval_recall_at_10": 0.9000,
+    "answer_faithfulness": 0.9000,
+    "answer_refusal_accuracy": 0.9000,
+    "sql_ast_validity": 1.0000,
+    "sql_execution_accuracy": 0.7500,
+    "sql_unsafe_count": 0,
+    "routing_accuracy": 0.9200,
+    "acl_refusal_accuracy": 0.9000,
+    "acl_leak_count": 0
+  },
+  "max_allowed_drop": 0.02,
+  "last_updated": "2026-10-19T22:30:00Z"
+}

@@ -59,9 +59,13 @@ def load_gold_queries() -> list[dict[str, Any]]:
     return list(data.get("queries", []))
 
 
-async def run_sql_eval() -> tuple[SQLBenchmarkMetrics, list[SQLBenchmarkItem]]:
-    """Execute benchmark over 40 gold analytical questions and measure AST validity & execution."""
+async def run_sql_eval(
+    max_queries: int | None = None,
+) -> tuple[SQLBenchmarkMetrics, list[SQLBenchmarkItem]]:
+    """Execute benchmark over gold analytical questions and measure AST validity & execution."""
     gold_queries = load_gold_queries()
+    if max_queries is not None:
+        gold_queries = gold_queries[:max_queries]
     generator = NL2SQLGenerator()
 
     principal = Principal(

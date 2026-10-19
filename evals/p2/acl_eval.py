@@ -115,9 +115,13 @@ def load_attacks() -> list[dict[str, Any]]:
     return attacks
 
 
-async def run_acl_attack_eval() -> tuple[ACLEvalMetrics, list[AttackResult]]:
+async def run_acl_attack_eval(
+    max_attacks: int | None = None,
+) -> tuple[ACLEvalMetrics, list[AttackResult]]:
     """Execute all 40 adversarial ACL attacks and measure leak rate and refusal accuracy."""
     attacks = load_attacks()
+    if max_attacks is not None:
+        attacks = attacks[:max_attacks]
 
     chunks = load_corpus_with_injections()
     engine = HybridSearchEngine(k_rrf=60)

@@ -259,15 +259,23 @@ async def main() -> None:
         await run_routing_evaluation()
         return
 
-    if args.profile in ("assistant", "p2", "rag", "retrieval"):
-        from evals.p2.run import run_retrieval_benchmark, write_assistant_report
+    if args.profile in ("assistant", "p2"):
+        from evals.p2.run import run_master_assistant_eval
 
-        metrics = await run_retrieval_benchmark()
-        report_path = write_assistant_report(metrics)
-        print(f"\n[SUCCESS] Assistant Evaluation Complete! Report generated at:\n  {report_path}")
-        print(f"  - Hybrid+Rerank Recall@10: {metrics['hybrid_rerank'].recall_at_10:.2%}")
-        print(f"  - Hybrid+Rerank MRR: {metrics['hybrid_rerank'].mrr:.4f}")
-        print(f"  - ACL Leak Rate: {metrics['hybrid_rerank'].acl_leak_rate_pct:.2f}%")
+        results, report_path = await run_master_assistant_eval(suite="all")
+        print(f"\n[SUCCESS] Master Assistant Evaluation Complete! Report generated at:\n  {report_path}")
+        if not results.gate_passed:
+            print("\n[FAILED] CI Gate detected regressions exceeding baseline tolerance:")
+            for r in results.regressions:
+                print(f"  - {r}")
+            sys.exit(1)
+        return
+
+    if args.profile in ("rag", "retrieval", "p2-rag"):
+        from evals.p2.run import run_master_assistant_eval
+
+        results, report_path = await run_master_assistant_eval(suite="retrieval")
+        print(f"\n[SUCCESS] Retrieval Evaluation Complete! Report generated at:\n  {report_path}")
         return
 
     result = await evaluate_llm_baseline()

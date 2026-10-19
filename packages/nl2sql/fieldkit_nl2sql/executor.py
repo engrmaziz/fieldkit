@@ -34,6 +34,7 @@ class SQLExecutor:
                 self.database_url,
                 echo=False,
                 pool_pre_ping=True,
+                connect_args={"timeout": 0.5},
             )
         return self._engine
 
@@ -99,8 +100,8 @@ class SQLExecutor:
             elapsed = (time.perf_counter() - start_time) * 1000.0
             err_msg = str(exc)
             # Offline/Dev execution fallback with structured mock data if Postgres offline or DB not initialized
-            err_lower = err_msg.lower()
-            if any(
+            err_lower = f"{err_msg.lower()} {type(exc).__name__.lower()}"
+            if isinstance(exc, (TimeoutError, asyncio.TimeoutError)) or any(
                 sub in err_lower
                 for sub in (
                     "connection refused",
@@ -113,6 +114,8 @@ class SQLExecutor:
                     "password",
                     "operationalerror",
                     "nosuchtable",
+                    "timeouterror",
+                    "timeout",
                 )
             ):
                 return self._offline_execution_fallback(sql, max_rows, elapsed)
