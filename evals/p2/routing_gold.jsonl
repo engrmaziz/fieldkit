@@ -1,0 +1,100 @@
+{"id": "route-001", "question": "How many purchase orders were issued in Q3 2026?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-002", "question": "What is the average defect rate of hydraulic valves delivered to Hamburg?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-003", "question": "Top 5 suppliers by late deliveries to Hamburg last quarter?", "expected_route": "sql", "category": "ranking"}
+{"id": "route-004", "question": "Which parts have a unit cost greater than 500 euros?", "expected_route": "sql", "category": "filtering"}
+{"id": "route-005", "question": "List all active suppliers located in Germany.", "expected_route": "sql", "category": "filtering"}
+{"id": "route-006", "question": "Total spend on purchase orders in plant Stuttgart for 2026?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-007", "question": "How many quality incidents were recorded for part-val-001?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-008", "question": "Find all delayed shipments delivered to Munich in August.", "expected_route": "sql", "category": "filtering"}
+{"id": "route-009", "question": "Count of suppliers grouped by country of origin.", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-010", "question": "Which 10 purchase orders had the largest total amount in 2026?", "expected_route": "sql", "category": "ranking"}
+{"id": "route-011", "question": "List suppliers with more than 3 critical severity quality incidents.", "expected_route": "sql", "category": "join_filter"}
+{"id": "route-012", "question": "What is the total number of parts in category Seal?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-013", "question": "Average delivery delay in days for shipments delivered to Katowice.", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-014", "question": "Find the cheapest supplier for hydraulic pump housing part-pmp-042.", "expected_route": "sql", "category": "ranking"}
+{"id": "route-015", "question": "How many shipments are currently marked with status delayed?", "expected_route": "sql", "category": "filtering"}
+{"id": "route-016", "question": "List purchase orders placed between 2026-01-01 and 2026-06-30.", "expected_route": "sql", "category": "date_filter"}
+{"id": "route-017", "question": "Which plant received the highest number of shipments in Q2?", "expected_route": "sql", "category": "ranking"}
+{"id": "route-018", "question": "Total purchase order amount ordered by supplier supp-de-001.", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-019", "question": "How many active certificates are registered for supp-ch-009?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-020", "question": "List all shipments with tracking numbers starting with DE-DHL.", "expected_route": "sql", "category": "filtering"}
+{"id": "route-021", "question": "What is the mean unit cost of parts across plant Hamburg?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-022", "question": "Top 3 parts by total purchase order quantity in 2026.", "expected_route": "sql", "category": "ranking"}
+{"id": "route-023", "question": "Count of open quality incidents in plant Stuttgart.", "expected_route": "sql", "category": "filtering"}
+{"id": "route-024", "question": "Which suppliers had zero defect shipments in Q1 2026?", "expected_route": "sql", "category": "join_filter"}
+{"id": "route-025", "question": "Sum of total spend across all plants breakdown by plant code.", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-026", "question": "Show all purchase orders with status draft or pending_approval.", "expected_route": "sql", "category": "filtering"}
+{"id": "route-027", "question": "Which supplier provided shipment SHP-2026-0891?", "expected_route": "sql", "category": "lookup"}
+{"id": "route-028", "question": "Find the supplier with the lowest on-time delivery rate.", "expected_route": "sql", "category": "ranking"}
+{"id": "route-029", "question": "How many certificates expire before 2027-01-01?", "expected_route": "sql", "category": "date_filter"}
+{"id": "route-030", "question": "Total number of shipments delivered to Berlin in 2026.", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-031", "question": "List parts in category Valve with unit cost under 150 euros.", "expected_route": "sql", "category": "filtering"}
+{"id": "route-032", "question": "Top 5 suppliers by total invoiced spend in Q3.", "expected_route": "sql", "category": "ranking"}
+{"id": "route-033", "question": "What is the incident count for plant Katowice in September?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-034", "question": "Which purchase order has the highest single line-item quantity?", "expected_route": "sql", "category": "ranking"}
+{"id": "route-035", "question": "How many suppliers have an LEI registered in the database?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-036", "question": "List 10 shipments with delivery dates in October 2026.", "expected_route": "sql", "category": "date_filter"}
+{"id": "route-037", "question": "What is the average lead time for parts in category Actuator?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-038", "question": "How many quality incidents are classified with critical severity?", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-039", "question": "Find total spend for supplier Voss Fluid GmbH in 2026.", "expected_route": "sql", "category": "aggregation"}
+{"id": "route-040", "question": "Which parts were affected by incident inc-2026-0042?", "expected_route": "sql", "category": "lookup"}
+{"id": "route-041", "question": "What does the EU Machinery Regulation (2023/1230) mandate regarding emergency shut-off valves?", "expected_route": "rag", "category": "regulation"}
+{"id": "route-042", "question": "According to Halden SOP-ENG-014, what is the inspection frequency for hydraulic seals?", "expected_route": "rag", "category": "sop"}
+{"id": "route-043", "question": "What are the OSHA requirements for lockout/tagout during press maintenance?", "expected_route": "rag", "category": "regulation"}
+{"id": "route-044", "question": "What does REACH regulation specify regarding lead content in bronze bushings?", "expected_route": "rag", "category": "compliance"}
+{"id": "route-045", "question": "Under GDPR, what are Halden's legal obligations regarding employee CCTV monitoring?", "expected_route": "rag", "category": "legal"}
+{"id": "route-046", "question": "What is the procedure for reporting a severe hydraulic fluid leak under SOP-EHS-007?", "expected_route": "rag", "category": "sop"}
+{"id": "route-047", "question": "What does the Pressure Equipment Directive (2014/68/EU) dictate for pressure vessels above 0.5 bar?", "expected_route": "rag", "category": "directive"}
+{"id": "route-048", "question": "Explain the safety protocol for crane operation inside plant Hamburg.", "expected_route": "rag", "category": "safety"}
+{"id": "route-049", "question": "What are the required PPE requirements inside the hydraulic test bay?", "expected_route": "rag", "category": "safety"}
+{"id": "route-050", "question": "According to Parker-Hannifin's 10-K filing, what are the primary supply chain risk factors?", "expected_route": "rag", "category": "sec_filing"}
+{"id": "route-051", "question": "What does ISO 9001 standard specify regarding non-conforming product quarantine?", "expected_route": "rag", "category": "standard"}
+{"id": "route-052", "question": "What is the legal warranty liability period under German BGB for commercial machinery components?", "expected_route": "rag", "category": "legal"}
+{"id": "route-053", "question": "What steps must an operator follow during an emergency press shutdown in plant Munich?", "expected_route": "rag", "category": "sop"}
+{"id": "route-054", "question": "Under OSHA 1910.212, what general requirements exist for machine guarding?", "expected_route": "rag", "category": "regulation"}
+{"id": "route-055", "question": "What does Halden's quality manual require for supplier calibration certificates?", "expected_route": "rag", "category": "quality_policy"}
+{"id": "route-056", "question": "What is the definition of a significant modification under the new Machinery Directive?", "expected_route": "rag", "category": "regulation"}
+{"id": "route-057", "question": "What does SOP-QA-022 state about statistical process control for cylinder bore tolerances?", "expected_route": "rag", "category": "sop"}
+{"id": "route-058", "question": "According to Eaton's 2025 Annual Report, what is their strategy on electrification?", "expected_route": "rag", "category": "sec_filing"}
+{"id": "route-059", "question": "What are the environmental storage rules for hydraulic oil under ISO 14001?", "expected_route": "rag", "category": "standard"}
+{"id": "route-060", "question": "What does the whistleblower policy mandate for reporting safety violations?", "expected_route": "rag", "category": "compliance"}
+{"id": "route-061", "question": "Under SOP-LOG-003, what documents are required upon receiving international shipments?", "expected_route": "rag", "category": "sop"}
+{"id": "route-062", "question": "What does CE marking require for high-pressure hydraulic manifolds?", "expected_route": "rag", "category": "compliance"}
+{"id": "route-063", "question": "Explain the step-by-step calibration protocol for digital pressure transducers.", "expected_route": "rag", "category": "sop"}
+{"id": "route-064", "question": "According to DIN EN ISO 4413, what are the pneumatic and hydraulic piping rules?", "expected_route": "rag", "category": "standard"}
+{"id": "route-065", "question": "What are the rules regarding confidentiality of supplier pricing audits?", "expected_route": "rag", "category": "legal"}
+{"id": "route-066", "question": "What does OSHA mandate regarding hearing protection above 85 decibels in the forging bay?", "expected_route": "rag", "category": "regulation"}
+{"id": "route-067", "question": "What are the quarantine procedures when a shipment fails initial hardness testing?", "expected_route": "rag", "category": "sop"}
+{"id": "route-068", "question": "What does Helios Technologies state in their 10-K regarding valve patent protection?", "expected_route": "rag", "category": "sec_filing"}
+{"id": "route-069", "question": "What is the procedure for updating an engineering change notice (ECN) under SOP-ENG-002?", "expected_route": "rag", "category": "sop"}
+{"id": "route-070", "question": "According to the REACH candidate list, which substances of very high concern are banned?", "expected_route": "rag", "category": "compliance"}
+{"id": "route-071", "question": "What are the export control requirements for dual-use hydraulic components to non-EU countries?", "expected_route": "rag", "category": "legal"}
+{"id": "route-072", "question": "What does SOP-SAF-011 require before entering a confined hydraulic reservoir tank?", "expected_route": "rag", "category": "safety"}
+{"id": "route-073", "question": "What is the required frequency for fire extinguisher inspection under plant safety standards?", "expected_route": "rag", "category": "safety"}
+{"id": "route-074", "question": "According to ISO 45001, how must workplace occupational health incidents be investigated?", "expected_route": "rag", "category": "standard"}
+{"id": "route-075", "question": "What does the Halden Code of Conduct dictate regarding gifts from raw material suppliers?", "expected_route": "rag", "category": "compliance"}
+{"id": "route-076", "question": "What are the physical guard specifications for automated CNC lathe spindles?", "expected_route": "rag", "category": "regulation"}
+{"id": "route-077", "question": "What does SOP-PRC-005 require before approving a single-source procurement contract?", "expected_route": "rag", "category": "sop"}
+{"id": "route-078", "question": "Under German workplace ordinance (ArbStättV), what are the lighting requirements in assembly halls?", "expected_route": "rag", "category": "regulation"}
+{"id": "route-079", "question": "What does our quality policy mandate when supplier certificate of conformity is missing?", "expected_route": "rag", "category": "quality_policy"}
+{"id": "route-080", "question": "What are the legal notice periods for terminating supplier master services agreements?", "expected_route": "rag", "category": "legal"}
+{"id": "route-081", "question": "What is our defect rate on hydraulic valves and and what does our SOP require for defective lots?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-082", "question": "Top 5 suppliers by late deliveries and what does the procurement policy say about contract penalties?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-083", "question": "How many critical quality incidents occurred in plant Hamburg and what is the emergency shut-off procedure?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-084", "question": "List purchase orders for part-pmp-011 and what does the EU Machinery Regulation specify for this part?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-085", "question": "Compare our actual defect metrics with the standard quality limits in ISO 9001.", "expected_route": "both", "category": "hybrid"}
+{"id": "route-086", "question": "Which suppliers have expired certificates and what is the legal procedure to suspend their vendor account?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-087", "question": "Total spend on steel tubes in 2026 and what does REACH regulation dictate regarding alloy testing?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-088", "question": "How many shipments were delayed to Katowice and and what is the standard operating procedure for claims?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-089", "question": "Find the defect rate for pump cylinders and what does SOP-QA-008 require for root cause analysis?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-090", "question": "List all suppliers in Poland and what are the cross-border compliance standards under EU directives?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-091", "question": "How many safety incidents occurred on hydraulic presses and what does OSHA mandate for press guards?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-092", "question": "What was our total purchase spend in Q2 and compare our data with Parker-Hannifin's 10-K reported costs?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-093", "question": "Which 3 parts had the most quality incidents and what is our quarantine protocol for affected stock?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-094", "question": "Count of delayed shipments this month and and what does the logistics SOP require for expedited freight?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-095", "question": "How many purchase orders exceed 100,000 euros and what does our corporate delegation policy mandate for signing?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-096", "question": "Find suppliers with late deliveries in Stuttgart and and what does the supplier manual require for cure notices?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-097", "question": "Average unit cost of titanium fittings and what are the export control rules under dual-use regulations?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-098", "question": "How many active parts are in category Valve and and what does CE marking dictate for valve safety reliefs?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-099", "question": "Total incident count in Munich in 2026 and what does SOP-EHS-012 require for worker injury reporting?", "expected_route": "both", "category": "hybrid"}
+{"id": "route-100", "question": "Which supplier had shipment SHP-2026-0912 and what are our warranty claim terms under the master contract?", "expected_route": "both", "category": "hybrid"}

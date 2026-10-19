@@ -253,6 +253,12 @@ async def main() -> None:
         print(f"  - Avg Latency: {metrics.avg_latency_ms} ms")
         return
 
+    if args.profile in ("routing", "router", "p2-routing"):
+        from evals.p2.routing_eval import run_routing_evaluation
+
+        await run_routing_evaluation()
+        return
+
     if args.profile in ("assistant", "p2", "rag", "retrieval"):
         from evals.p2.run import run_retrieval_benchmark, write_assistant_report
 
