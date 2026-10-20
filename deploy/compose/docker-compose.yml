@@ -198,12 +198,24 @@ services:
   # Profile: docai (Project 4: Doc Intelligence)
   # ============================================================================
   docai:
-    image: alpine:latest
+    build:
+      context: ../..
+      dockerfile: services/docai/Dockerfile
+    image: fieldkit-docai:latest
     container_name: fieldkit-docai
     profiles: ["docai", "all"]
-    command: ["sleep", "infinity"]
+    environment:
+      - PORT=8004
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - MINIO_BUCKET_DOCS=docs
     ports:
       - "${PORT_DOCAI:-8004}:8004"
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - fieldkit-net
 

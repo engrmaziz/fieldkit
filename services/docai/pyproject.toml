@@ -1,0 +1,25 @@
+[project]
+name = "fieldkit-docai"
+version = "0.1.0"
+description = "Fieldkit Contract and Document Intelligence Engine (P4)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "python-multipart>=0.0.20",
+    "minio>=7.2.0",
+    "redis>=5.0.0",
+    "arq>=0.26.0",
+    "pymupdf>=1.24.0",
+    "pillow>=10.0.0",
+    "opencv-python-headless>=4.10.0",
+    "pdf2image>=1.17.0",
+    "pytesseract>=0.3.10",
+]
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }
