@@ -49,6 +49,7 @@ node_modules/
 .next/
 out/
 .pnpm-store/
+*.tsbuildinfo
 
 # Logs & Traces
 *.log
