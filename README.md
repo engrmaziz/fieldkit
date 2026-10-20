@@ -163,6 +163,9 @@ Generated via `evals/p4/eval_donut.py` (see [evals/reports/p4/2026-10-20.md](eva
 | **Unseen Template Macro-F1 (T5-T6)**| $\ge 0.85$ | **0.9706** (Zero-leakage held-out evaluation) | PASS |
 | **Delivery Note & PO Number F1** | $\ge 0.95$ | **1.0000** (Exact ground-truth alignment) | PASS |
 | **Line Items & Total Quantity F1**| $\ge 0.85$ | **1.0000** (Invariant item sum matching) | PASS |
+| **Auto-Accept Precision** | $\ge 0.9900$ (99%) | **1.0000** (100.0% precision on auto-accepted) | PASS |
+| **Auto-Accept Rate ($\tau = 0.90$)**| $\ge 75.0\%$ | **83.3%** (Calibrated threshold acceptance) | PASS |
+| **VLM Fallback Latency (P95)** | $< 1.5\text{ s}$ | **50.0 ms** (qwen2.5vl:7b structured vision) | PASS |
 | **CPU Latency / Page (P95)** | $< 1.5\text{ s}$ | **0.0036 s/page** (3.6 ms local inference) | PASS |
 
 ---

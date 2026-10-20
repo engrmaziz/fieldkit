@@ -34,13 +34,13 @@ class LineItemField(BaseModel):
 
 
 class DeliveryNoteFields(BaseModel):
-    supplier_name: str = Field("", description="Supplier / sender corporate name")
-    supplier_address: str = Field("", description="Supplier address")
-    delivery_note_no: str = Field("", description="Delivery note identifier (e.g. LS-2026-XXXX)")
-    po_number: str = Field("", description="Purchase order reference (e.g. PO-2026-XXXX)")
-    delivery_date: str = Field("", description="Delivery date (YYYY-MM-DD)")
+    supplier_name: str = Field(default="", description="Supplier / sender corporate name")
+    supplier_address: str = Field(default="", description="Supplier address")
+    delivery_note_no: str = Field(default="", description="Delivery note identifier (e.g. LS-2026-XXXX)")
+    po_number: str = Field(default="", description="Purchase order reference (e.g. PO-2026-XXXX)")
+    delivery_date: str = Field(default="", description="Delivery date (YYYY-MM-DD)")
     line_items: list[LineItemField] = Field(default_factory=list, description="Extracted line items")
-    total_qty: int = Field(0, description="Total delivered quantity across all line items")
+    total_qty: int = Field(default=0, description="Total delivered quantity across all line items")
 
 
 @dataclass
