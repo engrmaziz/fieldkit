@@ -213,6 +213,7 @@ Endpoints:
 - **MinIO S3 Console**: [http://localhost:9001](http://localhost:9001) (minioadmin / minioadmin)
 - **ntfy Mobile Push**: [http://localhost:8090/fieldkit-alerts](http://localhost:8090/fieldkit-alerts)
 - **Mailpit SMTP Catcher**: [http://localhost:8025](http://localhost:8025)
+- **Mock ERP API Docs**: [http://localhost:8007/docs](http://localhost:8007/docs)
 
 ---
 

@@ -1,0 +1,16 @@
+[project]
+name = "fieldkit-mock-erp"
+version = "0.1.0"
+description = "Fieldkit Mock ERP Service (Orders, Shipments, RMAs, Credits, Customers)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+]
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }

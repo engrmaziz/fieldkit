@@ -1,0 +1,21 @@
+version: "1.0.0"
+description: "Deterministic business policy rules for Halden Support Ops Copilot"
+
+rules:
+  issue_credit:
+    max_amount_eur: 500.0
+    message: "Credit amount exceeds €500.00 maximum policy threshold without executive authorization."
+
+  create_rma:
+    required_order_status: "delivered"
+    max_delivered_days: 90
+    status_message: "RMA requires order status to be 'delivered'."
+    days_message: "RMA can only be created within 90 days of delivery date."
+
+  legal_hold:
+    block_side_effects: true
+    message: "Customer is under strict legal hold. All mutating side-effect actions (RMA, credits, replies) are strictly forbidden."
+
+  exemptions:
+    always_allowed_tools:
+      - "escalate"

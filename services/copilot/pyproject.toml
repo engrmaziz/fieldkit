@@ -1,0 +1,24 @@
+[project]
+name = "fieldkit-copilot"
+version = "0.1.0"
+description = "Fieldkit Ops Copilot Service with Human-in-the-Loop (P3)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "fieldkit-llm",
+    "fieldkit-mock-erp",
+    "fieldkit-ticketclf",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "pyyaml>=6.0.2",
+    "httpx>=0.28.0",
+]
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }
+fieldkit-llm = { workspace = true }
+fieldkit-mock-erp = { workspace = true }
+fieldkit-ticketclf = { workspace = true }

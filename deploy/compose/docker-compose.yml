@@ -160,11 +160,35 @@ services:
   # ============================================================================
   # Profile: copilot (Project 3: Ops Copilot)
   # ============================================================================
+  mock-erp:
+    build:
+      context: ../..
+      dockerfile: services/mock-erp/Dockerfile
+    image: fieldkit-mock-erp:latest
+    container_name: fieldkit-mock-erp
+    profiles: ["copilot", "all"]
+    ports:
+      - "${PORT_MOCK_ERP:-8007}:8007"
+    networks:
+      - fieldkit-net
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: fieldkit-mailpit
+    profiles: ["copilot", "all"]
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - fieldkit-net
+
   copilot:
-    image: alpine:latest
+    build:
+      context: ../..
+      dockerfile: services/copilot/Dockerfile
+    image: fieldkit-copilot:latest
     container_name: fieldkit-copilot
     profiles: ["copilot", "all"]
-    command: ["sleep", "infinity"]
     ports:
       - "${PORT_COPILOT:-8003}:8003"
     networks:

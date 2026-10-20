@@ -47,6 +47,8 @@ fieldkit-nl2sql = { workspace = true }
 fieldkit-assistant-api = { workspace = true }
 fieldkit-tracehub = { workspace = true }
 fieldkit-ticketclf = { workspace = true }
+fieldkit-mock-erp = { workspace = true }
+fieldkit-copilot = { workspace = true }
 
 [dependency-groups]
 
