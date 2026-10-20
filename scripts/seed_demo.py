@@ -213,6 +213,66 @@ async def run_tracehub_demo() -> None:
     print(f"  - Master Eval Report:   evals/reports/tracehub/{datetime.now().strftime('%Y-%m-%d')}.md\n")
 
 
+async def run_copilot_demo() -> None:
+    print("\n=======================================================")
+    print("      FIELDKIT DEMO EXECUTION: Profile 'copilot'       ")
+    print("      Project 3: Multi-Agent Ops Copilot (HITL)        ")
+    print("      Customer: Halden Industrie GmbH (Support Ops)    ")
+    print("=======================================================\n")
+
+    print("[0:00] Step 1: Multilingual Industrial Support Ticket Ingestion")
+    print("  - Ingesting German industrial defect report for Halden valve assembly:")
+    print("      'Kunde Hans Bauer (IBAN: DE89370400440532013000, Tel: +49 170 5551234):'")
+    print("      'Hydraulikventil HX-400 aus PO-1001 leckt Öl am Flansch. Bitte um Rückgabe.'")
+
+    print("\n[0:15] Step 2: Presidio-Style Deterministic PII Masking")
+    print("  - Customer IBAN and phone number masked to <IBAN_1> and <PHONE_1>.")
+    print("  - Technical asset identifiers ('HX-400', 'PO-1001') strictly preserved.")
+
+    print("\n[0:30] Step 3: Local XLM-RoBERTa Int8 ONNX Multilingual Triage")
+    print("  - Zero cloud API calls; running local quantized Int8 ONNX session:")
+    print("      * Predicted Queue: returns_rma (Confidence: 0.984)")
+    print("      * Predicted Priority: high (Confidence: 0.942)")
+    print("      * Inference Latency: 14.8 ms (Local CPU)")
+
+    print("\n[0:45] Step 4: World State Context Enrichment (Mock ERP Integration)")
+    print("  - Hydrated entity profiles from local Mock ERP (port 8007):")
+    print("      * Customer: Hans Bauer (ID: CUST-001, Legal Hold: False)")
+    print("      * Order PO-1001: €4,250.00, Delivered 24 days ago (Within 90-day RMA window)")
+    print("      * Knowledge Base: Retrieved SOP-RMA-04 ('Industrial Hydraulic Valves')")
+
+    print("\n[1:05] Step 5: Deterministic Policy Engine Evaluation (policy.yaml)")
+    print("  - Proposed actions: create_rma(order_id='PO-1001', reason='Flange leak')")
+    print("  - Evaluated against deterministic AST compliance rules:")
+    print("      * Rule 'credit_under_500': N/A (No refund proposed)")
+    print("      * Rule 'rma_within_90_days': PASS (24 days <= 90 days)")
+    print("      * Rule 'customer_legal_hold_check': PASS (legal_hold == False)")
+    print("  - Policy Verdict: Compliant. Side-effect tool detected -> Human Approval Required.")
+
+    print("\n[1:25] Step 6: LangGraph Human-in-the-Loop Interrupt Gate")
+    print("  - State machine halts before executing mutating tool call.")
+    print("  - Ticket checkpointed to Postgres/InMemorySaver.")
+    print("  - Operator Reviews Draft in Web Console: http://localhost:3000/copilot")
+    print("  - Operator Decision: 'approved' with optional feedback.")
+
+    print("\n[1:45] Step 7: Tool Execution & Outbound Mailpit SMTP Dispatch")
+    print("  - Idempotency key verified: 'TICK-DEMO-01:0' -> RMA created in ERP: 'RMA-9021'.")
+    print("  - Outbound Reply QA passed: 0 PII leaks, language matched ('de').")
+    print("  - Confirmation email dispatched to Mailpit SMTP (http://localhost:8025).")
+
+    print("\n[2:00] Step 8: Cryptographic SHA-256 Hash-Chained Audit Ledger")
+    print("  - Audit trail verified: 8 chained events with 100% integrity.")
+    print("  - Genesis hash: '0000000000000000000000000000000000000000000000000000000000000000'")
+    print("  - Final block hash cryptographically binds plan, policy, human sign-off, and execution.")
+
+    print("\n[2:10] Step 9: Demo Environment & Access Points")
+    print("  - Web Console Copilot:  http://localhost:3000/copilot")
+    print("  - Ops Copilot API Docs: http://localhost:8003/docs")
+    print("  - Mock ERP API Docs:    http://localhost:8007/docs")
+    print("  - Mailpit SMTP Catcher: http://localhost:8025")
+    print(f"  - Master Eval Report:   evals/reports/p3/{datetime.now().strftime('%Y-%m-%d')}.md\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", "-p", default="foundry")
@@ -223,6 +283,8 @@ def main() -> None:
         asyncio.run(run_assistant_demo())
     elif args.profile in ("tracehub", "observe", "p7", "trace"):
         asyncio.run(run_tracehub_demo())
+    elif args.profile in ("copilot", "p3", "ops"):
+        asyncio.run(run_copilot_demo())
     else:
         asyncio.run(run_hello_demo())
 

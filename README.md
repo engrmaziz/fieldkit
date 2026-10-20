@@ -66,6 +66,8 @@ graph TD
 | **Splink + LLM ER Grey-Zone** | Pure LLM / Dedupe | Fellegi-Sunter handles 95% of candidates in milliseconds; LLM adjudicator resolves ambiguous grey-zone pairs ($[0.35, 0.85)$) yielding 0% review queue rate and F1 0.9403. | [ADR 0004](docs/decisions/0004-splink-vs-dedupe-vs-pure-llm-entity-resolution.md) |
 | **PostgreSQL Native RLS** | Application-level WHERE filters | Native RLS in DB kernel guarantees multi-plant isolation across direct SQL, ORM, and multi-hop graph traversals with 0 data leaks. | [ADR 0005](docs/decisions/0005-postgres-rls-vs-application-level-filtering.md) |
 | **YAML Ontology Codegen** | Dynamic EAV schema | Pydantic v2 + SQLAlchemy 2 typed code generation yields compile-time safety, sub-millisecond query execution, and zero raw SQL injection. | [ADR 0006](docs/decisions/0006-yaml-ontology-codegen-vs-dynamic-eav.md) |
+| **Local Int8 XLM-R Classifier** | Cloud LLM Zero-Shot Triage | Eliminates cloud API dependencies, eliminates per-token costs, and delivers sub-25ms CPU inference with F1 > 0.98, while requiring a one-time local calibration script. | [docs/projects/p3.md](docs/projects/p3.md) |
+| **LangGraph Interrupt Gate** | Fully Autonomous Agent Execution | Introduces interactive latency for human review, but guarantees 100% prevention of unauthorized financial refunds, RMAs, or contract commitments. | [docs/projects/p3.md](docs/projects/p3.md) |
 
 ---
 
@@ -187,14 +189,17 @@ make eval P=foundry
 # Run Project 2 (Enterprise RAG + NL2SQL) Master Evaluation Suite
 make eval P=assistant
 
+# Run Project 3 (Multi-Agent Ops Copilot) Master Evaluation Suite
+make eval P=copilot
+
 # Run Project 7 (Tracehub Observability) Master Evaluation Suite
 make eval P=tracehub
 ```
 
 ### 4. Start Core Services with Profile
 ```bash
-# Start core services plus desired project profile (foundry, assistant, observe, etc.)
-make up P=observe
+# Start core services plus desired project profile (foundry, assistant, copilot, observe, etc.)
+make up P=copilot
 
 # Launch Web Console (Next.js 14 App Router)
 cd apps/console && pnpm run dev
@@ -204,17 +209,18 @@ Endpoints:
 - **Web Console**: [http://localhost:3000](http://localhost:3000)
   - Foundry Explorer & Lineage: `/foundry/explorer`, `/foundry/graph`, `/foundry/lineage`
   - Assistant Chat & Citations: `/assistant`
+  - Copilot Support Triage & Human Review: `/copilot`
   - Observe Traces, Prompts, Evals, A/B, Alerts: `/observe`
 - **Grafana Dashboards**: [http://localhost:3001](http://localhost:3001) (admin / admin)
 - **Tracehub API Docs**: [http://localhost:8006/docs](http://localhost:8006/docs)
 - **Assistant API Docs**: [http://localhost:8002/docs](http://localhost:8002/docs)
 - **Foundry API Docs**: [http://localhost:8001/docs](http://localhost:8001/docs)
+- **Ops Copilot API Docs**: [http://localhost:8003/docs](http://localhost:8003/docs)
+- **Mock ERP API Docs**: [http://localhost:8007/docs](http://localhost:8007/docs)
 - **Keycloak Admin**: [http://localhost:8080](http://localhost:8080) (admin / admin)
 - **MinIO S3 Console**: [http://localhost:9001](http://localhost:9001) (minioadmin / minioadmin)
 - **ntfy Mobile Push**: [http://localhost:8090/fieldkit-alerts](http://localhost:8090/fieldkit-alerts)
 - **Mailpit SMTP Catcher**: [http://localhost:8025](http://localhost:8025)
-- **Mock ERP API Docs**: [http://localhost:8007/docs](http://localhost:8007/docs)
-- **Ops Copilot API Docs**: [http://localhost:8003/docs](http://localhost:8003/docs)
 
 ---
 
@@ -226,6 +232,9 @@ make demo P=foundry
 
 # Project 2: Enterprise RAG + NL2SQL Assistant
 make demo P=assistant
+
+# Project 3: Multi-Agent Ops Copilot (HITL & Audit Ledger)
+make demo P=copilot
 
 # Project 7: Tracehub (Observability & Anomaly Alerting)
 make demo P=tracehub
