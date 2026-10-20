@@ -26,6 +26,11 @@ from .data import (
     prepare_and_split_dataset,
     stratified_split,
 )
+from .infer import (
+    ONNXTicketClassifier,
+    TicketPrediction,
+    get_onnx_classifier,
+)
 
 __version__ = "0.1.0"
 
@@ -50,4 +55,7 @@ __all__ = [
     "normalize_ticket_record",
     "prepare_and_split_dataset",
     "stratified_split",
+    "ONNXTicketClassifier",
+    "TicketPrediction",
+    "get_onnx_classifier",
 ]
