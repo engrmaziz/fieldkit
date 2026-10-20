@@ -1,8 +1,16 @@
 """Demo seeding and verification script for Fieldkit."""
 
+# ruff: noqa: E402
+
 import argparse
 import asyncio
+import sys
 from datetime import datetime
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 import httpx
 from fieldkit_llm.client import LLMClient
@@ -309,6 +317,9 @@ def main() -> None:
         asyncio.run(run_tracehub_demo())
     elif args.profile in ("copilot", "p3", "ops"):
         asyncio.run(run_copilot_demo())
+    elif args.profile in ("docai", "p4", "document", "documents", "contract", "contracts"):
+        from scripts.demo_docai import run_docai_demo
+        asyncio.run(run_docai_demo())
     else:
         asyncio.run(run_hello_demo())
 

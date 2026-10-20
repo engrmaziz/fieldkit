@@ -318,6 +318,15 @@ async def main() -> None:
         print(f"  - Avg Latency: {scenario_metrics.avg_latency_ms:.1f} ms (P95: {scenario_metrics.p95_latency_ms:.1f} ms)")
         return
 
+    if args.profile in ("docai", "p4", "document", "documents", "contract", "contracts"):
+        from evals.p4.eval_suite import run_master_docai_eval
+
+        docai_metrics = await run_master_docai_eval()
+        if not docai_metrics.overall_gate_passed:
+            print("\n[FAILED] CI Gate detected regressions in DocAI evaluation metrics!")
+            sys.exit(1)
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")
