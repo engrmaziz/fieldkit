@@ -245,7 +245,7 @@ async def run_copilot_demo() -> None:
     print("[0:00] Step 1: Multilingual Industrial Support Ticket Ingestion")
     print("  - Ingesting German industrial defect report for Halden valve assembly:")
     print("      'Kunde Hans Bauer (IBAN: DE89370400440532013000, Tel: +49 170 5551234):'")
-    print("      'Hydraulikventil HX-400 aus PO-1001 leckt Öl am Flansch. Bitte um Rückgabe.'")
+    print("      'Hydraulikventil HX-400 aus PO-1001 leckt Oel am Flansch. Bitte um Rueckgabe.'")
 
     print("\n[0:15] Step 2: Presidio-Style Deterministic PII Masking")
     print("  - Customer IBAN and phone number masked to <IBAN_1> and <PHONE_1>.")
@@ -260,7 +260,7 @@ async def run_copilot_demo() -> None:
     print("\n[0:45] Step 4: World State Context Enrichment (Mock ERP Integration)")
     print("  - Hydrated entity profiles from local Mock ERP (port 8007):")
     print("      * Customer: Hans Bauer (ID: CUST-001, Legal Hold: False)")
-    print("      * Order PO-1001: €4,250.00, Delivered 24 days ago (Within 90-day RMA window)")
+    print("      * Order PO-1001: EUR 4,250.00, Delivered 24 days ago (Within 90-day RMA window)")
     print("      * Knowledge Base: Retrieved SOP-RMA-04 ('Industrial Hydraulic Valves')")
 
     print("\n[1:05] Step 5: Deterministic Policy Engine Evaluation (policy.yaml)")
