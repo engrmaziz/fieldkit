@@ -153,6 +153,66 @@ async def run_assistant_demo() -> None:
     print("  - Baseline Metrics:      evals/p2/baseline.json\n")
 
 
+async def run_tracehub_demo() -> None:
+    print("\n=======================================================")
+    print("      FIELDKIT DEMO EXECUTION: Profile 'tracehub'      ")
+    print("      Project 7: LLM Observability & Anomaly Alerting   ")
+    print("      Customer: Halden Industrie GmbH (IT Governance)   ")
+    print("=======================================================\n")
+
+    print("[0:00] Step 1: Telemetry Pipeline & Real-Time Operational Overview")
+    print("  - Services P1–P6 emit OTel spans with GenAI semconv attributes and PII masking.")
+    print("  - Tail sampling: 100% of errors and spans > 5s retained, 20% baseline sampling.")
+    print("  - Streaming into ClickHouse Kafka engine -> spans & metrics_1m rollups.")
+    print("  - Observe Console (/observe) renders real-time P50/P95 latency and tokens/min charts.")
+
+    print("\n[0:25] Step 2: Hierarchical Span Tree & Trace Waterfall Inspection")
+    print("  - Click on slow P2 assistant trace (e.g. 'trc-p2-4812').")
+    print("  - Slide-over drawer reveals detailed timing waterfall:")
+    print("      * retrieval.hybrid:   24.5 ms  (BM25 + pgvector RRF)")
+    print("      * rerank.cpu:         18.2 ms  (Cross-Encoder token coverage)")
+    print("      * llm.generation:   1420.0 ms  (TTFT: 34ms, 1,120 output tokens)")
+    print("  - Prompt/completion span events displayed with regex PII masking and 4KB safety caps.")
+
+    print("\n[0:55] Step 3: Incident Injection & Multi-Channel Alerting (ntfy Push)")
+    print("  - Tobias injects 'prompt v3 regression' incident into Assistant QA service.")
+    print("  - Streaming anomaly detectors (Robust Z-score + EWMA + CUSUM) detect breach at minute 2.")
+    print("  - Alert dispatched with deduplication & cooldown to:")
+    print("      * Self-hosted ntfy push notification to admin phone (topic: fieldkit-alerts)")
+    print("      * Local Mailpit SMTP inbox (http://localhost:8025)")
+    print("      * Web Console alert inbox banner (/observe#alerts)")
+
+    print("\n[1:20] Step 4: Deterministic RCA Attribution with Zero Hallucinations")
+    print("  - Root Cause Inspector drawer reveals contrast-weighted dimension attribution:")
+    print("      * Dimension: prompt_version = '3.0.0-rc' (87.4% contribution to delta)")
+    print("      * Dimension: model = 'qwen2.5:7b' (12.6% background shift)")
+    print("  - Strict deterministic validator enforces 0 hallucinated numbers in LLM summary text.")
+
+    print("\n[1:40] Step 5: Versioned Prompt Registry & Regression Comparison")
+    print("  - Prompt Registry view (/observe#prompts): unified text diff between v1.0.0 and v2.0.0.")
+    print("  - Eval run comparison (/observe#evals): item-by-item alignment, 95% bootstrap CI,")
+    print("    and regression drilldown table with direct trace links.")
+
+    print("\n[1:55] Step 6: Online A/B Experiments & Provisioned Grafana Dashboards")
+    print("  - A/B experiments dashboard (/observe#ab): split traffic allocation (hash % 100),")
+    print("    P95 latency deltas, satisfaction metrics, and automated error-rate safety stop rules.")
+    print("  - Provisioned Grafana dashboards (http://localhost:3001) tracking LLM Overview,")
+    print("    Service SLO burn rates, Vision Edge Health, and Defect Inspection Drift.")
+
+    print("\n[2:00] Step 7: Demo Environment & Access Points")
+    print("  - Web Console Observe:  http://localhost:3000/observe")
+    print("      * Traces Waterfall: http://localhost:3000/observe#traces")
+    print("      * Prompt Registry:  http://localhost:3000/observe#prompts")
+    print("      * Eval Runs Diff:   http://localhost:3000/observe#evals")
+    print("      * A/B Experiments:  http://localhost:3000/observe#ab")
+    print("      * Alerts & RCA:     http://localhost:3000/observe#alerts")
+    print("  - Grafana Dashboards:   http://localhost:3001 (admin/admin)")
+    print("  - ntfy Push Portal:     http://localhost:8090/fieldkit-alerts")
+    print("  - Mailpit SMTP Catcher: http://localhost:8025")
+    print("  - Tracehub API Docs:    http://localhost:8006/docs")
+    print(f"  - Master Eval Report:   evals/reports/tracehub/{datetime.now().strftime('%Y-%m-%d')}.md\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", "-p", default="foundry")
@@ -161,6 +221,8 @@ def main() -> None:
         asyncio.run(run_foundry_demo())
     elif args.profile in ("assistant", "p2", "rag", "nl2sql"):
         asyncio.run(run_assistant_demo())
+    elif args.profile in ("tracehub", "observe", "p7", "trace"):
+        asyncio.run(run_tracehub_demo())
     else:
         asyncio.run(run_hello_demo())
 

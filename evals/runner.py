@@ -278,6 +278,22 @@ async def main() -> None:
         print(f"\n[SUCCESS] Retrieval Evaluation Complete! Report generated at:\n  {report_path}")
         return
 
+    if args.profile in ("tracehub", "observe", "p7", "trace"):
+        from evals.p7.tracehub_eval import run_all_tracehub_evals
+
+        metrics = run_all_tracehub_evals()
+        print(
+            f"\n[SUCCESS] Master Tracehub Evaluation Complete! Report generated at:\n  {metrics['report_path']}"
+        )
+        print(f"  - Ingest Throughput: {metrics['throughput_spans_per_sec']:,.1f} spans/s (Target: >= 5,000)")
+        print(f"  - Latency P95: {metrics['latency_p95_ms']} ms (Target: < 500 ms)")
+        print(f"  - Incident Detection Recall: {metrics['detection_recall']:.1%} (Target: >= 90.0%)")
+        print(f"  - Alert Precision: {metrics['alert_precision']:.1%} (Target: >= 80.0%)")
+        print(f"  - Median Time to Detect: {metrics['median_ttd_min']:.1f} min (Target: < 5.0 min)")
+        print(f"  - RCA Top-1 Accuracy: {metrics['rca_accuracy']:.1%} (Target: >= 70.0%)")
+        print(f"  - Hallucinated Numbers in RCA: {metrics['hallucinations']} (Target: Strictly 0)")
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")
