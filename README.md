@@ -166,6 +166,10 @@ Generated via `evals/p4/eval_donut.py` (see [evals/reports/p4/2026-10-20.md](eva
 | **Auto-Accept Precision** | $\ge 0.9900$ (99%) | **1.0000** (100.0% precision on auto-accepted) | PASS |
 | **Auto-Accept Rate ($\tau = 0.90$)**| $\ge 75.0\%$ | **83.3%** (Calibrated threshold acceptance) | PASS |
 | **VLM Fallback Latency (P95)** | $< 1.5\text{ s}$ | **50.0 ms** (qwen2.5vl:7b structured vision) | PASS |
+| **Clause Span Grounding Accuracy** | $\ge 95.0\%$ | **100.0%** (Exact substring character alignment) | PASS |
+| **CUAD Multi-Label Macro-F1** | $\ge 0.8500$ | **0.9792** (Bilingual DE/EN legal clauses) | PASS |
+| **Limitation & Cap on Liability F1** | $\ge 0.9000$ | **1.0000** (Strict risk detection) | PASS |
+| **Governing Law & Jurisdiction F1** | $\ge 0.9000$ | **1.0000** (German & international venues) | PASS |
 | **CPU Latency / Page (P95)** | $< 1.5\text{ s}$ | **0.0036 s/page** (3.6 ms local inference) | PASS |
 
 ---
