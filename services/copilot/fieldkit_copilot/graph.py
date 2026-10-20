@@ -309,8 +309,8 @@ class CopilotGraph:
                 ActionCall(
                     tool="escalate",
                     args={
+                        "ticket_id": ticket_id,
                         "reason": f"Policy compliance adjustment: {violations[0].get('message', 'Threshold exceeded')}",
-                        "priority": "high",
                     },
                     rationale="Policy rule violated; routing ticket to senior support lead.",
                 )
@@ -342,16 +342,25 @@ class CopilotGraph:
                 reply_draft = "Ihr RMA-Rücksendeetikett wurde erstellt."
 
             elif queue == "billing_inquiry":
-                # Check requested amount or default
+                # Check requested amount from customer message or default to 250.0 EUR
+                credit_amount = 250.0
+                raw_text_lower = state.get("raw_text", "")
+                amt_match = re.search(r"(\d+(?:[.,]\d+)?)\s*(?:€|eur|euro)", raw_text_lower, re.IGNORECASE)
+                if amt_match:
+                    try:
+                        credit_amount = float(amt_match.group(1).replace(",", "."))
+                    except ValueError:
+                        credit_amount = 250.0
+
                 actions.append(
                     ActionCall(
                         tool="issue_credit",
                         args={
                             "order_id": order_id,
-                            "amount_eur": 250.0,
+                            "amount_eur": credit_amount,
                             "reason": "Goodwill delivery delay credit",
                         },
-                        rationale="Issue goodwill commercial credit within 500 EUR policy limit.",
+                        rationale=f"Issue commercial credit of {credit_amount:.2f} EUR.",
                     )
                 )
                 actions.append(
@@ -552,10 +561,12 @@ class CopilotGraph:
                 payload=res_dict,
             )
 
+        has_escalate = any(a.tool == "escalate" for a in plan.actions)
         return {
             "tool_results": results,
-            "status": "completed",
+            "status": "escalated" if has_escalate else "completed",
             "reply_sent": any(a.tool == "send_reply" for a in plan.actions),
+            "awaiting_approval": False,
         }
 
     async def node_terminate_rejected(self, state: CopilotState) -> dict[str, Any]:
@@ -567,7 +578,7 @@ class CopilotGraph:
             state_name="terminated",
             payload={"feedback": state.get("approval_feedback")},
         )
-        return {"status": "rejected"}
+        return {"status": "rejected", "awaiting_approval": False}
 
     # -------------------------------------------------------------------------
     # Conditional Routing Logic

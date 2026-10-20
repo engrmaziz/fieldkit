@@ -294,13 +294,28 @@ async def main() -> None:
         print(f"  - Hallucinated Numbers in RCA: {metrics['hallucinations']} (Target: Strictly 0)")
         return
 
-    if args.profile in ("copilot", "p3", "ticketclf", "clf"):
+    if args.profile in ("copilot-clf", "p3-clf", "ticketclf"):
         from evals.p3.clf_eval import run_ticketclf_eval
 
-        results, report_path = await run_ticketclf_eval()
-        print(f"\n[SUCCESS] Support Ticket Classifier Benchmark Complete! Report generated at:\n  {report_path}")
+        results, clf_report_path = await run_ticketclf_eval()
+        print(f"\n[SUCCESS] Support Ticket Classifier Benchmark Complete! Report generated at:\n  {clf_report_path}")
         for r in results:
             print(f"  - {r.display_name:32} | Queue Macro-F1: {r.queue_macro_f1:.4f} | P95: {r.latency_p95_ms:6.1f}ms")
+        return
+
+    if args.profile in ("copilot", "p3", "ops", "copilot-scenarios", "scenarios", "p3-scenarios"):
+        from evals.p3.scenario_eval import run_all_scenarios
+
+        # 60-Scenario Agentic Copilot Evaluation Suite
+        scenario_metrics = await run_all_scenarios()
+        print(f"\n[SUCCESS] 60-Scenario Agentic Copilot Benchmark Complete! Report generated at:\n  {scenario_metrics.report_path}")
+        print(f"  - Task Success Rate: {scenario_metrics.task_success_pct:.1f}% ({scenario_metrics.successful_scenarios}/{scenario_metrics.total_scenarios}) (Target: >= 85.0%)")
+        print(f"  - Side-Effects Without Approval: {scenario_metrics.unauthorized_side_effects} (Target: Strictly 0)")
+        print(f"  - Policy Violations Executed: {scenario_metrics.policy_violations_executed} (Target: Strictly 0)")
+        print(f"  - PII Leaks Detected: {scenario_metrics.pii_leaks_detected} (Target: Strictly 0)")
+        print(f"  - Audit Ledger Integrity: {scenario_metrics.audit_chain_integrity_pct:.1f}% (Target: 100.0%)")
+        print(f"  - Tamper Detection Recall: {scenario_metrics.tamper_detection_pct:.1f}% (Target: 100.0%)")
+        print(f"  - Avg Latency: {scenario_metrics.avg_latency_ms:.1f} ms (P95: {scenario_metrics.p95_latency_ms:.1f} ms)")
         return
 
     result = await evaluate_llm_baseline()

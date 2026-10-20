@@ -136,11 +136,17 @@ Generated via `make eval P=copilot` (see [evals/reports/p3/2026-10-20.md](evals/
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :---: |
+| **Scenario Task Success Rate** | $\ge 85.0\%$ | **100.0%** (60/60 scenarios) | PASS |
+| **Side-Effects Without Approval** | **Strictly 0** | **0** (100% human gate adherence) | PASS |
+| **Policy-Violating Actions Executed** | **Strictly 0** | **0** (100% deterministic AST block) | PASS |
+| **PII Leaked into Prompts/Drafts** | **Strictly 0** | **0** (Presidio GDPR masking) | PASS |
+| **Audit Ledger Integrity** | $100.0\%$ | **100.0%** (SHA-256 hash-chained) | PASS |
+| **Tamper Detection Recall** | $100.0\%$ | **100.0%** (Immediate detection) | PASS |
 | **Queue Macro-F1 (Overall)** | $\ge 0.85$ | **0.9814** (XLM-R Multi-Task Int8 ONNX) | PASS |
 | **Queue Macro-F1 (German DE)** | $\ge 0.82$ | **0.9768** | PASS |
 | **Queue Macro-F1 (English EN)** | $\ge 0.85$ | **0.9856** | PASS |
 | **Classifier CPU Latency (P95)** | $< 30.0\text{ ms}$ | **22.8 ms** (4 CPU threads) | PASS |
-| **Classifier CPU Latency (P50)** | — | **14.2 ms** | PASS |
+| **Agentic End-to-End Latency (P95)**| $< 250.0\text{ ms}$ | **71.6 ms** | PASS |
 | **GPU Compute Overhead / 10k** | 0 s | **0 s** (Pure local CPU inference) | PASS |
 
 ---
