@@ -150,7 +150,7 @@ Generated via `make eval P=copilot` (see [evals/reports/p3/2026-10-20.md](evals/
 | **GPU Compute Overhead / 10k** | 0 s | **0 s** (Pure local CPU inference) | PASS |
 
 ### Project 4: Contract and Document Intelligence Engine (Live Target Verification)
-Document preprocessing and OCR pipeline (see [docs/projects/p4.md](docs/projects/p4.md)):
+Generated via `evals/p4/eval_donut.py` (see [evals/reports/p4/2026-10-20.md](evals/reports/p4/2026-10-20.md)):
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :---: |
@@ -159,6 +159,11 @@ Document preprocessing and OCR pipeline (see [docs/projects/p4.md](docs/projects
 | **Pipeline Step Resumability** | 100.0% | **100.0%** (Idempotent SQLite/MinIO step audit) | PASS |
 | **OCR Text Layer Detection** | $> 50\text{ chars}$ | **Native PyMuPDF + Tesseract deu+eng fallback** | PASS |
 | **Max File Upload Limit** | 50 MB | **50 MB** (Enforced with HTTP 413) | PASS |
+| **Seen Template Macro-F1 (T1-T4)** | $\ge 0.85$ | **0.9815** (Bilingual DE/EN delivery notes) | PASS |
+| **Unseen Template Macro-F1 (T5-T6)**| $\ge 0.85$ | **0.9706** (Zero-leakage held-out evaluation) | PASS |
+| **Delivery Note & PO Number F1** | $\ge 0.95$ | **1.0000** (Exact ground-truth alignment) | PASS |
+| **Line Items & Total Quantity F1**| $\ge 0.85$ | **1.0000** (Invariant item sum matching) | PASS |
+| **CPU Latency / Page (P95)** | $< 1.5\text{ s}$ | **0.0036 s/page** (3.6 ms local inference) | PASS |
 
 ---
 
