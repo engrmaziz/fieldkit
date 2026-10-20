@@ -121,6 +121,20 @@ class ONNXTicketClassifier:
                 self.is_loaded = True
                 self.is_mock = False
                 logger.info("onnx_session_initialized_successfully", model=str(self.model_path))
+
+                # Attempt to load fast tokenizer if available
+                tok_file = self.model_path.parent / "tokenizer" / "tokenizer.json"
+                if tok_file.exists():
+                    try:
+                        from tokenizers import Tokenizer
+
+                        tok = Tokenizer.from_file(str(tok_file))
+                        tok.enable_padding(length=256)
+                        tok.enable_truncation(max_length=256)
+                        self.tokenizer = tok
+                        logger.info("onnx_tokenizer_loaded_successfully", path=str(tok_file))
+                    except Exception as e_tok:
+                        logger.warning("failed_to_load_tokenizer_json", error=str(e_tok))
                 return
             except Exception as exc:
                 logger.warning("onnx_session_init_failed", error=str(exc))
@@ -197,13 +211,17 @@ class ONNXTicketClassifier:
                 p_logits = p_raw.reshape(1, -1)
             else:
                 # Real ONNX session inference
-                # Simple tokenization encoding with padding
-                input_ids = np.zeros((1, 256), dtype=np.int64)
-                attention_mask = np.zeros((1, 256), dtype=np.int64)
-                words = text.split()[:256]
-                for i, _ in enumerate(words):
-                    input_ids[0, i] = hash(words[i]) % 250000
-                    attention_mask[0, i] = 1
+                if self.tokenizer is not None:
+                    enc = self.tokenizer.encode(text)
+                    input_ids = np.array([enc.ids], dtype=np.int64)
+                    attention_mask = np.array([enc.attention_mask], dtype=np.int64)
+                else:
+                    input_ids = np.zeros((1, 256), dtype=np.int64)
+                    attention_mask = np.zeros((1, 256), dtype=np.int64)
+                    words = text.split()[:256]
+                    for i, _ in enumerate(words):
+                        input_ids[0, i] = hash(words[i]) % 250000
+                        attention_mask[0, i] = 1
 
                 feeds = {"input_ids": input_ids, "attention_mask": attention_mask}
                 out = self.session.run(None, feeds)
@@ -243,6 +261,10 @@ class ONNXTicketClassifier:
             )
 
         return results
+
+    def predict_one(self, text: str) -> TicketPrediction:
+        """Convenience method to predict a single ticket text."""
+        return self.predict([text])[0]
 
 
 def get_onnx_classifier(allow_mock: bool = True) -> ONNXTicketClassifier:
