@@ -200,3 +200,18 @@ class PolicyEngine:
                             )
 
         return violations
+
+    evaluate_plan = check
+
+
+_default_policy_engine: PolicyEngine | None = None
+
+
+def get_policy_engine(policy_path: Path | str | None = None) -> PolicyEngine:
+    """Return default or custom PolicyEngine instance."""
+    global _default_policy_engine
+    if policy_path is not None:
+        return PolicyEngine(policy_path)
+    if _default_policy_engine is None:
+        _default_policy_engine = PolicyEngine()
+    return _default_policy_engine

@@ -14,4 +14,4 @@ RUN uv sync --package fieldkit-copilot
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8003
 
-CMD ["uvicorn", "fieldkit_copilot.api:app", "--host", "0.0.0.0", "--port", "8003"]
+CMD ["uvicorn", "fieldkit_copilot.main:app", "--host", "0.0.0.0", "--port", "8003"]

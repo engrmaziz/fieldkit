@@ -294,3 +294,14 @@ def build_default_tool_registry() -> ToolRegistry:
     )
 
     return registry
+
+
+_default_tool_registry: ToolRegistry | None = None
+
+
+def get_tool_registry() -> ToolRegistry:
+    """Return singleton default ToolRegistry instance."""
+    global _default_tool_registry
+    if _default_tool_registry is None:
+        _default_tool_registry = build_default_tool_registry()
+    return _default_tool_registry

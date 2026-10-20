@@ -214,6 +214,7 @@ Endpoints:
 - **ntfy Mobile Push**: [http://localhost:8090/fieldkit-alerts](http://localhost:8090/fieldkit-alerts)
 - **Mailpit SMTP Catcher**: [http://localhost:8025](http://localhost:8025)
 - **Mock ERP API Docs**: [http://localhost:8007/docs](http://localhost:8007/docs)
+- **Ops Copilot API Docs**: [http://localhost:8003/docs](http://localhost:8003/docs)
 
 ---
 

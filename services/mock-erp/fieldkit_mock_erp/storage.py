@@ -272,3 +272,4 @@ class MockERPStorage:
 
 # Global singleton storage instance
 storage = MockERPStorage()
+db = storage

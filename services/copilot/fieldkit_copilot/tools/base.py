@@ -70,6 +70,8 @@ class ToolRegistry:
     def get_tool(self, name: str) -> ToolDefinition | None:
         return self.tools.get(name)
 
+    get = get_tool
+
     def export_schemas_for_planner(self) -> list[dict[str, Any]]:
         """Export tool specifications as JSON schemas formatted for the LLM prompt."""
         schemas = []
@@ -92,8 +94,9 @@ class ToolRegistry:
         self,
         tool_name: str,
         args: dict[str, Any],
-        ticket_id: str,
-        action_index: int,
+        ticket_id: str = "TICK-ANON",
+        action_index: int = 0,
+        idempotency_key: str | None = None,
         max_retries: int = 3,
     ) -> Any:
         """Execute tool with timeout, idempotency key generation, and transient retries."""
@@ -102,7 +105,7 @@ class ToolRegistry:
 
         tool = self.tools[tool_name]
         executor = self.executors[tool_name]
-        idempotency_key = f"{ticket_id}:{action_index}"
+        idemp_key = idempotency_key or f"{ticket_id}:{action_index}"
 
         # 1. Validate args against Pydantic schema
         try:
@@ -115,7 +118,7 @@ class ToolRegistry:
         for attempt in range(1, max_retries + 1):
             try:
                 result = await asyncio.wait_for(
-                    executor(validated_args, idempotency_key),
+                    executor(validated_args, idemp_key),
                     timeout=tool.timeout_seconds,
                 )
                 # 3. Validate result against return schema
