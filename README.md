@@ -189,6 +189,7 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 - [ADR 0010: ClickHouse vs PostgreSQL/TimescaleDB for Long-Term Analytical Spans](docs/decisions/0010-clickhouse-vs-postgres-timescale-for-analytical-spans.md)
 - [ADR 0011: Tail-Based Sampling Strategy for Resource-Constrained On-Premises Telemetry](docs/decisions/0011-tail-based-sampling-for-on-premises-telemetry.md)
 - [ADR 0012: Deterministic Share-Weighted Contribution vs Pure LLM Anomaly RCA](docs/decisions/0012-deterministic-share-weighted-contribution-rca-vs-pure-llm.md)
+- [ADR 0013: Span-Grounded Character Alignment, Deterministic Gates, and Hungarian Bipartite Version Diffing for DocAI](docs/decisions/0013-span-grounding-and-hungarian-alignment-for-docai.md)
 
 ---
 
@@ -223,14 +224,17 @@ make eval P=assistant
 # Run Project 3 (Multi-Agent Ops Copilot) Master Evaluation Suite
 make eval P=copilot
 
+# Run Project 4 (Document AI & Contract Intelligence) Master Evaluation Suite
+make eval P=docai
+
 # Run Project 7 (Tracehub Observability) Master Evaluation Suite
 make eval P=tracehub
 ```
 
 ### 4. Start Core Services with Profile
 ```bash
-# Start core services plus desired project profile (foundry, assistant, copilot, observe, etc.)
-make up P=copilot
+# Start core services plus desired project profile (foundry, assistant, copilot, docai, observe, etc.)
+make up P=docai
 
 # Launch Web Console (Next.js 14 App Router)
 cd apps/console && pnpm run dev
@@ -241,8 +245,10 @@ Endpoints:
   - Foundry Explorer & Lineage: `/foundry/explorer`, `/foundry/graph`, `/foundry/lineage`
   - Assistant Chat & Citations: `/assistant`
   - Copilot Support Triage & Human Review: `/copilot`
+  - DocAI Document Intelligence & Redline Diff: `/docai`, `/docai/diff`
   - Observe Traces, Prompts, Evals, A/B, Alerts: `/observe`
 - **Grafana Dashboards**: [http://localhost:3001](http://localhost:3001) (admin / admin)
+- **DocAI API Docs**: [http://localhost:8004/docs](http://localhost:8004/docs)
 - **Tracehub API Docs**: [http://localhost:8006/docs](http://localhost:8006/docs)
 - **Assistant API Docs**: [http://localhost:8002/docs](http://localhost:8002/docs)
 - **Foundry API Docs**: [http://localhost:8001/docs](http://localhost:8001/docs)
@@ -267,16 +273,21 @@ make demo P=assistant
 # Project 3: Multi-Agent Ops Copilot (HITL & Audit Ledger)
 make demo P=copilot
 
+# Project 4: Contract and Document Intelligence Engine (DocAI)
+make demo P=docai
+
 # Project 7: Tracehub (Observability & Anomaly Alerting)
 make demo P=tracehub
 ```
 
 - **Runbooks**:
   - [Project 1 Demo Runbook](docs/runbooks/p1-demo-script.md)
+  - [Project 4 Demo Runbook](docs/runbooks/p4-demo-script.md)
   - [Project 7 Demo Runbook](docs/runbooks/p7-demo-script.md)
 - **Project Specifications**:
   - [Project 1 Spec](docs/projects/p1.md)
   - [Project 2 Spec](docs/projects/p2.md)
   - [Project 3 Spec](docs/projects/p3.md)
+  - [Project 4 Spec](docs/projects/p4.md)
   - [Project 7 Spec](docs/projects/p7.md)
 
