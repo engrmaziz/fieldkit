@@ -161,15 +161,18 @@ class ONNXTicketClassifier:
         p_logits = np.zeros(num_p, dtype=np.float32)
 
         # Keyword heuristics for mock queue distribution
-        if any(w in t_low for w in ["leak", "leckage", "pressure", "druck", "vibration", "pump", "crack", "defect"]):
-            q_idx = [i for i, q in self.id2queue.items() if q == "technical_defect"][0]
+        if any(w in t_low for w in ["rma", "return", "retoure", "rücksendung", "ruecksendung", "warranty", "gewaehrleistung"]):
+            q_idx = [i for i, q in self.id2queue.items() if q == "returns_rma"][0]
             q_logits[q_idx] += 4.5
-        elif any(w in t_low for w in ["delivery", "lieferung", "tracking", "po-", "shipping", "spedition"]):
+        elif any(w in t_low for w in ["invoice", "rechnung", "price", "preis", "billing", "credit", "gutschrift"]):
+            q_idx = [i for i, q in self.id2queue.items() if q == "billing_inquiry"][0]
+            q_logits[q_idx] += 4.4
+        elif any(w in t_low for w in ["leak", "leckage", "pressure", "druck", "vibration", "pump", "crack", "defect"]):
+            q_idx = [i for i, q in self.id2queue.items() if q == "technical_defect"][0]
+            q_logits[q_idx] += 4.3
+        elif any(w in t_low for w in ["delivery", "lieferung", "tracking", "shipping", "spedition"]):
             q_idx = [i for i, q in self.id2queue.items() if q == "order_delivery"][0]
             q_logits[q_idx] += 4.2
-        elif any(w in t_low for w in ["rma", "return", "retoure", "warranty", "gewaehrleistung"]):
-            q_idx = [i for i, q in self.id2queue.items() if q == "returns_rma"][0]
-            q_logits[q_idx] += 4.0
         elif any(w in t_low for w in ["invoice", "rechnung", "price", "preis", "billing", "credit", "gutschrift"]):
             q_idx = [i for i, q in self.id2queue.items() if q == "billing_inquiry"][0]
             q_logits[q_idx] += 4.1

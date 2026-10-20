@@ -157,23 +157,34 @@ class CopilotGraph:
         ticket_id = state.get("ticket_id", "TICK-UNKNOWN")
         text = state.get("masked_text", state.get("raw_text", ""))
 
-        pred = self.classifier.predict_one(text)
-        confidence = float(pred.confidence)
+        explicit_queue = state.get("queue")
+        explicit_priority = state.get("priority")
 
-        # Detect language heuristic: if 'und', 'der', 'die', 'bitte', 'leckt' in text -> de
-        words = text.lower().split()
-        german_hits = sum(1 for w in words if w in ("der", "die", "das", "und", "bitte", "fehler", "pumpe", "nicht"))
-        language = "de" if german_hits >= 2 else "en"
+        if explicit_queue and explicit_priority:
+            queue = explicit_queue
+            priority = explicit_priority
+            confidence = float(state.get("confidence", 1.0))
+            language = state.get("language", "de")
+            needs_human = False
+        else:
+            pred = self.classifier.predict_one(text)
+            queue = explicit_queue or pred.queue
+            priority = explicit_priority or pred.priority
+            confidence = float(pred.confidence)
 
-        needs_human = confidence < 0.60
+            # Detect language heuristic: if 'und', 'der', 'die', 'bitte', 'leckt' in text -> de
+            words = text.lower().split()
+            german_hits = sum(1 for w in words if w in ("der", "die", "das", "und", "bitte", "fehler", "pumpe", "nicht"))
+            language = "de" if german_hits >= 2 else "en"
+            needs_human = confidence < 0.60
 
         self.audit_ledger.record_event(
             ticket_id=ticket_id,
             event_type="TRIAGE_COMPLETED",
             state_name="triage",
             payload={
-                "queue": pred.queue,
-                "priority": pred.priority,
+                "queue": queue,
+                "priority": priority,
                 "confidence": confidence,
                 "language": language,
                 "needs_human_triage": needs_human,
@@ -181,8 +192,8 @@ class CopilotGraph:
         )
 
         return {
-            "queue": pred.queue,
-            "priority": pred.priority,
+            "queue": queue,
+            "priority": priority,
             "confidence": confidence,
             "language": language,
             "needs_human_triage": needs_human,
