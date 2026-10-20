@@ -23,6 +23,8 @@ dependencies = [
     "pymupdf>=2.0",
     "sqlglot>=26.0.0",
     "scikit-learn>=1.9.1",
+    "onnxruntime>=1.31.0",
+    "tokenizers>=0.23.3",
 ]
 
 
@@ -52,6 +54,7 @@ dev = [
     "aiosqlite>=0.22.1",
     "hypothesis>=6.100.0",
     "mypy>=1.14.0",
+    "onnx>=1.23.2",
     "pytest>=8.3.0",
     "pytest-asyncio>=0.25.0",
     "respx>=0.22.0",
@@ -91,6 +94,10 @@ module = [
     "pyarrow.*",
     "yaml.*",
     "sklearn.*",
+    "scipy.*",
+    "onnxruntime.*",
+    "tokenizers.*",
+    "datasets.*",
 ]
 ignore_missing_imports = true
 

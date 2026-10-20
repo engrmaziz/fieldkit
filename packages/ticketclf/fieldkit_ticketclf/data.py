@@ -9,6 +9,9 @@ from typing import Any
 
 import pyarrow as pa
 import pyarrow.parquet as pq
+from fieldkit_common.logging import get_logger
+
+logger = get_logger("fieldkit.ticketclf.data")
 
 ALLOWED_QUEUES: set[str] = {
     "technical_defect",
@@ -46,6 +49,170 @@ HALDEN_COMPONENTS = [
     ("pressure relief cartridge", "Druckbegrenzungsventil"),
     ("flange connector", "Flanschverbindung"),
 ]
+
+
+def normalize_hf_queue(raw_category: str) -> str:
+    """Map external Hugging Face category string to Halden's 6 triage queues."""
+    cat = raw_category.strip().lower()
+    if cat in ALLOWED_QUEUES:
+        return cat
+
+    # 1. General technical documentation & data sheet inquiries
+    if any(
+        k in cat
+        for k in [
+            "datasheet",
+            "data sheet",
+            "cad",
+            "step file",
+            "catalog",
+            "katalog",
+            "spec",
+            "specification",
+            "certificate",
+            "zertifikat",
+            "manual",
+            "handbuch",
+            "compliance",
+            "iso",
+        ]
+    ):
+        return "general_inquiry"
+
+    # 2. Hardware malfunctions and technical defects
+    if any(
+        k in cat
+        for k in [
+            "defect",
+            "defekt",
+            "hardware",
+            "product issue",
+            "broken",
+            "malfunction",
+            "stoerung",
+            "error",
+            "fehler",
+            "bug",
+            "failure",
+            "ausfall",
+            "quality",
+            "qualitaet",
+            "repair",
+            "reparatur",
+            "leak",
+            "leckage",
+            "vibration",
+            "damage",
+            "schaden",
+        ]
+    ):
+        return "technical_defect"
+
+    # 3. Shipping, dispatch, and delivery
+    if any(
+        k in cat
+        for k in [
+            "delivery",
+            "lieferung",
+            "shipping",
+            "versand",
+            "tracking",
+            "sendungsverfolgung",
+            "dispatch",
+            "transit",
+            "logistics",
+            "logistik",
+            "delay",
+            "verzug",
+            "carrier",
+            "spedition",
+            "freight",
+            "fracht",
+        ]
+    ):
+        return "order_delivery"
+
+    # 4. Returns, RMAs, warranty
+    if any(
+        k in cat
+        for k in [
+            "refund",
+            "return",
+            "retoure",
+            "ruecksendung",
+            "rma",
+            "cancellation",
+            "stornierung",
+            "exchange",
+            "umtausch",
+            "warranty",
+            "gewaehrleistung",
+            "replacement",
+            "ersatz",
+        ]
+    ):
+        return "returns_rma"
+
+    # 5. Billing, invoices, credits, payments
+    if any(
+        k in cat
+        for k in [
+            "billing",
+            "abrechnung",
+            "invoice",
+            "rechnung",
+            "payment",
+            "zahlung",
+            "charge",
+            "price",
+            "preis",
+            "credit",
+            "gutschrift",
+            "tax",
+            "steuer",
+            "fee",
+            "gebuehr",
+            "dispute",
+            "disput",
+            "account",
+        ]
+    ):
+        return "billing_inquiry"
+
+    # 6. General information
+    if any(
+        k in cat
+        for k in [
+            "general",
+            "allgemein",
+            "inquiry",
+            "anfrage",
+            "info",
+            "information",
+            "question",
+            "frage",
+        ]
+    ):
+        return "general_inquiry"
+
+    if "technical" in cat or "technisch" in cat:
+        return "technical_defect"
+
+    return "other"
+
+
+def normalize_hf_priority(raw_priority: str) -> str:
+    """Map external priority string to low, medium, high, critical."""
+    p = raw_priority.strip().lower()
+    if p in ALLOWED_PRIORITIES:
+        return p
+    if any(k in p for k in ["urgent", "crit", "p1", "blocker"]):
+        return "critical"
+    if any(k in p for k in ["high", "p2", "major"]):
+        return "high"
+    if any(k in p for k in ["low", "p4", "minor", "trivial"]):
+        return "low"
+    return "medium"
 
 
 def normalize_ticket_record(raw: dict[str, Any]) -> dict[str, Any]:
@@ -246,14 +413,163 @@ def stratified_split(
     return train_set, val_set, test_set
 
 
+def load_hf_dataset(
+    dataset_name: str = "Tobi-Bueck/customer-support-tickets",
+    split: str = "train",
+    min_queue_count: int = 50,
+    max_records: int | None = None,
+    fallback_to_synthetic: bool = True,
+    seed: int = 42,
+) -> list[dict[str, Any]]:
+    """Load tickets from Hugging Face datasets hub with label normalization and low-frequency filtering.
+
+    Requirements (Milestone 1):
+    - Load the HF dataset via `datasets`; keep subject+body, language, queue, priority.
+    - Normalize labels; drop queues with < 50 examples into "other".
+    - Fallback gracefully to synthetic generation if offline or dataset unavailable.
+    """
+    raw_records: list[dict[str, Any]] = []
+    try:
+        from datasets import load_dataset  # type: ignore[import-untyped]
+
+        logger.info("loading_hf_dataset", dataset=dataset_name, split=split)
+        ds = load_dataset(dataset_name, split=split)
+
+        for idx, item in enumerate(ds):
+            d = dict(item)
+            # 1. Subject extraction
+            subject = str(
+                d.get("subject")
+                or d.get("ticket_subject")
+                or d.get("Ticket Subject")
+                or d.get("title")
+                or d.get("instruction")
+                or ""
+            ).strip()
+
+            # 2. Body extraction
+            body = str(
+                d.get("body")
+                or d.get("ticket_description")
+                or d.get("Ticket Description")
+                or d.get("description")
+                or d.get("text")
+                or d.get("content")
+                or ""
+            ).strip()
+
+            # 3. Language extraction
+            lang = str(d.get("language") or d.get("lang") or d.get("Language") or "en").strip().lower()
+            if lang not in ("en", "de"):
+                # Heuristic for German compound words / common stop words
+                text_lower = f"{subject} {body}".lower()
+                if any(w in text_lower for w in [" und ", " der ", " die ", " das ", " bitte ", " werk ", " ist ", " nicht "]):
+                    lang = "de"
+                else:
+                    lang = "en"
+
+            # 4. Queue / Category extraction
+            raw_q = str(
+                d.get("category")
+                or d.get("queue")
+                or d.get("ticket_type")
+                or d.get("Ticket Type")
+                or d.get("Ticket Category")
+                or d.get("intent")
+                or d.get("topic")
+                or "other"
+            )
+            queue = normalize_hf_queue(raw_q)
+
+            # 5. Priority extraction
+            raw_p = str(
+                d.get("priority")
+                or d.get("Ticket Priority")
+                or d.get("urgency")
+                or d.get("severity")
+                or "medium"
+            )
+            priority = normalize_hf_priority(raw_p)
+
+            ticket_id = str(d.get("ticket_id") or d.get("id") or d.get("Ticket ID") or f"HF-{idx+1:06d}")
+
+            raw_records.append({
+                "ticket_id": ticket_id,
+                "subject": subject,
+                "body": body,
+                "language": lang,
+                "queue": queue,
+                "priority": priority,
+                "order_id": str(d.get("order_id", "")) or None,
+                "part_number": str(d.get("part_number", "")) or None,
+                "plant": str(d.get("plant", "")) or None,
+            })
+
+    except Exception as exc:
+        if fallback_to_synthetic:
+            logger.warning(
+                "hf_dataset_load_failed_falling_back_to_synthetic",
+                dataset=dataset_name,
+                error=str(exc),
+            )
+            return generate_ticket_corpus(n_tickets=max_records or 2000, seed=seed)
+        raise RuntimeError(f"Failed to load Hugging Face dataset '{dataset_name}': {exc}") from exc
+
+    if not raw_records:
+        if fallback_to_synthetic:
+            logger.warning("hf_dataset_empty_falling_back_to_synthetic", dataset=dataset_name)
+            return generate_ticket_corpus(n_tickets=max_records or 2000, seed=seed)
+        return []
+
+    # Count queue frequencies
+    queue_counts: dict[str, int] = defaultdict(int)
+    for r in raw_records:
+        queue_counts[r["queue"]] += 1
+
+    # Drop queues with < min_queue_count examples into "other"
+    final_records: list[dict[str, Any]] = []
+    for r in raw_records:
+        if queue_counts[r["queue"]] < min_queue_count:
+            r["queue"] = "other"
+        final_records.append(normalize_ticket_record(r))
+
+    if max_records and len(final_records) > max_records:
+        rng = random.Random(seed)
+        rng.shuffle(final_records)
+        final_records = final_records[:max_records]
+
+    return final_records
+
+
 def prepare_and_split_dataset(
     n_tickets: int = 2000,
+    source: str = "synthetic",
+    dataset_name: str = "Tobi-Bueck/customer-support-tickets",
+    min_queue_count: int = 50,
     output_dir: Path | None = None,
     eval_path: Path | None = None,
     seed: int = 42,
 ) -> dict[str, list[dict[str, Any]]]:
-    """Generate tickets, stratify split 70/15/15 by (language, queue), and save Parquet datasets."""
-    tickets = generate_ticket_corpus(n_tickets=n_tickets, seed=seed)
+    """Prepare tickets from HF or synthetic corpus, stratify split 70/15/15 by (language, queue), and save Parquet datasets."""
+    if source == "hf":
+        tickets = load_hf_dataset(
+            dataset_name=dataset_name,
+            min_queue_count=min_queue_count,
+            max_records=n_tickets,
+            fallback_to_synthetic=False,
+            seed=seed,
+        )
+    elif source == "auto":
+        tickets = load_hf_dataset(
+            dataset_name=dataset_name,
+            min_queue_count=min_queue_count,
+            max_records=n_tickets,
+            fallback_to_synthetic=True,
+            seed=seed,
+        )
+    else:
+        tickets = generate_ticket_corpus(n_tickets=n_tickets, seed=seed)
+
     train_records, val_records, test_records = stratified_split(
         tickets, train_ratio=0.70, val_ratio=0.15, test_ratio=0.15, seed=seed
     )
@@ -289,16 +605,27 @@ def load_parquet_records(path: Path | str) -> list[dict[str, Any]]:
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Prepare support ticket dataset with stratified 70/15/15 split.")
+    parser.add_argument("--source", choices=["synthetic", "hf", "auto"], default="synthetic", help="Data source: synthetic Halden generator, Hugging Face datasets hub, or auto")
+    parser.add_argument("--dataset-name", default="Tobi-Bueck/customer-support-tickets", help="Hugging Face dataset identifier")
+    parser.add_argument("--n-tickets", type=int, default=2000, help="Number of tickets to generate or sample")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for determinism")
+    args = parser.parse_args()
+
     repo_root = Path(__file__).resolve().parent.parent.parent.parent
     data_dir = repo_root / "data" / "p3"
     eval_file = repo_root / "evals" / "p3" / "clf_test.parquet"
 
-    print("[*] Generating 2,000 multilingual tickets with stratified 70/15/15 split...")
+    print(f"[*] Preparing {args.n_tickets} multilingual tickets (source={args.source}) with stratified 70/15/15 split...")
     res = prepare_and_split_dataset(
-        n_tickets=2000,
+        n_tickets=args.n_tickets,
+        source=args.source,
+        dataset_name=args.dataset_name,
         output_dir=data_dir,
         eval_path=eval_file,
-        seed=42,
+        seed=args.seed,
     )
     print("[+] Datasets successfully emitted:")
     print(f"    - Train: {len(res['train'])} rows -> {data_dir / 'train.parquet'}")
