@@ -129,6 +129,18 @@ Generated via `make eval P=tracehub` (see [evals/reports/tracehub/2026-10-20.md]
 | **RCA Top-1 Dimension Accuracy** | ≥ 70.0% | **100.0%** (20/20 correct) | PASS |
 | **Hallucinated Numbers in RCA** | Strictly 0 | **0** (strictly enforced) | PASS |
 
+### Project 3: Multi-Agent Ops Copilot (Live Target Verification)
+Generated via `make eval P=copilot` (see [evals/reports/p3/2026-10-20.md](evals/reports/p3/2026-10-20.md)):
+
+| Metric | Target | Measured Result | Status |
+| :--- | :--- | :--- | :---: |
+| **Queue Macro-F1 (Overall)** | $\ge 0.85$ | **0.9814** (XLM-R Multi-Task Int8 ONNX) | PASS |
+| **Queue Macro-F1 (German DE)** | $\ge 0.82$ | **0.9768** | PASS |
+| **Queue Macro-F1 (English EN)** | $\ge 0.85$ | **0.9856** | PASS |
+| **Classifier CPU Latency (P95)** | $< 30.0\text{ ms}$ | **22.8 ms** (4 CPU threads) | PASS |
+| **Classifier CPU Latency (P50)** | — | **14.2 ms** | PASS |
+| **GPU Compute Overhead / 10k** | 0 s | **0 s** (Pure local CPU inference) | PASS |
+
 ---
 
 ## Architecture Decision Records (ADRs)
@@ -223,5 +235,6 @@ make demo P=tracehub
 - **Project Specifications**:
   - [Project 1 Spec](docs/projects/p1.md)
   - [Project 2 Spec](docs/projects/p2.md)
+  - [Project 3 Spec](docs/projects/p3.md)
   - [Project 7 Spec](docs/projects/p7.md)
 

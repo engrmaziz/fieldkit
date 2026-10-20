@@ -45,6 +45,14 @@ def get_composer() -> AnswerComposer:
         # Initialize RAG Engine
         engine = HybridSearchEngine(k_rrf=60)
         manifest_path = Path("data/raw/corpus/manifest.jsonl")
+        if not manifest_path.exists():
+            try:
+                from scripts.fetch_corpus import ensure_corpus
+
+                manifest_path = ensure_corpus("data/raw/corpus")
+            except Exception:
+                pass
+
         if manifest_path.exists():
             chunker = StructureAwareChunker()
             chunks: list[ProcessedChunk] = []

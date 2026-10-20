@@ -101,10 +101,13 @@ class SQLExecutor:
             err_msg = str(exc)
             # Offline/Dev execution fallback with structured mock data if Postgres offline or DB not initialized
             err_lower = f"{err_msg.lower()} {type(exc).__name__.lower()}"
-            if isinstance(exc, (TimeoutError, asyncio.TimeoutError)) or any(
+            if isinstance(exc, (TimeoutError, asyncio.TimeoutError, OSError)) or any(
                 sub in err_lower
                 for sub in (
                     "connection refused",
+                    "connect call failed",
+                    "multiple exceptions",
+                    "errno",
                     "refused",
                     "winerror",
                     "cannot connect",
@@ -116,6 +119,7 @@ class SQLExecutor:
                     "nosuchtable",
                     "timeouterror",
                     "timeout",
+                    "connect",
                 )
             ):
                 return self._offline_execution_fallback(sql, max_rows, elapsed)
@@ -139,10 +143,22 @@ class SQLExecutor:
             cols = ["total_spend"]
             rows = [{"total_spend": 125430.50}]
         elif "suppliers" in sql.lower():
-            cols = ["id", "name", "city", "country"]
+            cols = ["id", "supplier_code", "name", "city", "country"]
             rows = [
-                {"id": "s-001", "name": "Mueller Hydraulik GmbH", "city": "Hamburg", "country": "DE"},
-                {"id": "s-002", "name": "Bavaria Pumpen AG", "city": "Stuttgart", "country": "DE"},
+                {
+                    "id": "s-001",
+                    "supplier_code": "SUP-001",
+                    "name": "Mueller Hydraulik GmbH",
+                    "city": "Hamburg",
+                    "country": "DE",
+                },
+                {
+                    "id": "s-002",
+                    "supplier_code": "SUP-002",
+                    "name": "Bavaria Pumpen AG",
+                    "city": "Stuttgart",
+                    "country": "DE",
+                },
             ]
         elif "purchase_orders" in sql.lower():
             cols = ["po_number", "order_date", "total_amount", "plant"]

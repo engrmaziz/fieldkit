@@ -313,18 +313,15 @@ In the event of a catastrophic field failure resulting from defective supplier c
     return docs
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Fetch and generate Project 2 RAG corpus")
-    parser.add_argument("--out-dir", default=str(DATA_DIR), help="Output directory for corpus")
-    args = parser.parse_args()
-
-    out_path = Path(args.out_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
+def ensure_corpus(out_dir: Path | str = DATA_DIR) -> Path:
+    """Ensure manifest.jsonl and corpus documents exist; generate automatically if missing."""
+    out_path = Path(out_dir)
     manifest_path = out_path / "manifest.jsonl"
+    if manifest_path.exists() and manifest_path.stat().st_size > 0:
+        return manifest_path
 
+    out_path.mkdir(parents=True, exist_ok=True)
     all_docs = PUBLIC_CORPUS + generate_halden_sops()
-    print(f"Acquiring {len(all_docs)} documents for Project 2 Enterprise RAG...")
-
     manifest_entries = []
 
     for _idx, doc in enumerate(all_docs, start=1):
@@ -353,6 +350,18 @@ def main() -> None:
     with open(manifest_path, "w", encoding="utf-8") as f:
         for entry in manifest_entries:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    return manifest_path
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Fetch and generate Project 2 RAG corpus")
+    parser.add_argument("--out-dir", default=str(DATA_DIR), help="Output directory for corpus")
+    args = parser.parse_args()
+
+    manifest_path = ensure_corpus(args.out_dir)
+    out_path = Path(args.out_dir)
+    all_docs = PUBLIC_CORPUS + generate_halden_sops()
 
     print(f"[SUCCESS] Acquired and cached {len(all_docs)} documents.")
     print(f"  - Raw files directory: {out_path}")

@@ -89,6 +89,14 @@ async def ingest_corpus(
     """Ingest cached documents from manifest into structure-aware chunks with ACLs (Admin only)."""
     manifest_file = Path(settings.corpus_dir) / "manifest.jsonl"
     if not manifest_file.exists():
+        try:
+            from scripts.fetch_corpus import ensure_corpus
+
+            manifest_file = ensure_corpus(settings.corpus_dir)
+        except Exception:
+            pass
+
+    if not manifest_file.exists():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Corpus manifest not found at {manifest_file}. Run scripts/fetch_corpus.py first.",

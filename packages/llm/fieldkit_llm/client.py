@@ -235,7 +235,9 @@ class LLMClient:
 
             for attempt in range(1, max_retries + 1):
                 try:
-                    async with httpx.AsyncClient(timeout=target_timeout) as client:
+                    async with httpx.AsyncClient(
+                        timeout=httpx.Timeout(target_timeout, connect=2.0)
+                    ) as client:
                         response = await client.post(
                             f"{self.base_url}/api/generate",
                             json=req_payload,
