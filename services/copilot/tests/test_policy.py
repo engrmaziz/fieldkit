@@ -25,7 +25,9 @@ def _make_world(
         delivered_at=deliv_at,
         total_eur=2400.0,
         items=[
-            OrderItem(part_id="HX-400", part_name="Control Valve", quantity=2, unit_price_eur=1200.0)
+            OrderItem(
+                part_id="HX-400", part_name="Control Valve", quantity=2, unit_price_eur=1200.0
+            )
         ],
     )
     customer = Customer(
@@ -51,20 +53,38 @@ def test_issue_credit_policy_rules() -> None:
 
     # Positive: Credit €250.00 <= €500.00
     plan_ok = ActionPlan(
-        actions=[ActionCall(tool="issue_credit", args={"order_id": "PO-1001", "amount_eur": 250.0}, rationale="Goodwill")]
+        actions=[
+            ActionCall(
+                tool="issue_credit",
+                args={"order_id": "PO-1001", "amount_eur": 250.0},
+                rationale="Goodwill",
+            )
+        ]
     )
     violations = engine.check(plan_ok, world, principal=support_user)
     assert len(violations) == 0
 
     # Boundary: Exactly €500.00
     plan_boundary = ActionPlan(
-        actions=[ActionCall(tool="issue_credit", args={"order_id": "PO-1001", "amount_eur": 500.0}, rationale="Max goodwill")]
+        actions=[
+            ActionCall(
+                tool="issue_credit",
+                args={"order_id": "PO-1001", "amount_eur": 500.0},
+                rationale="Max goodwill",
+            )
+        ]
     )
     assert len(engine.check(plan_boundary, world, support_user)) == 0
 
     # Negative: Credit €500.01 > €500.00
     plan_exceeded = ActionPlan(
-        actions=[ActionCall(tool="issue_credit", args={"order_id": "PO-1001", "amount_eur": 500.01}, rationale="Exceeded")]
+        actions=[
+            ActionCall(
+                tool="issue_credit",
+                args={"order_id": "PO-1001", "amount_eur": 500.01},
+                rationale="Exceeded",
+            )
+        ]
     )
     v_exceeded = engine.check(plan_exceeded, world, support_user)
     assert len(v_exceeded) == 1
@@ -73,7 +93,13 @@ def test_issue_credit_policy_rules() -> None:
 
     # Negative: Zero or negative credit
     plan_zero = ActionPlan(
-        actions=[ActionCall(tool="issue_credit", args={"order_id": "PO-1001", "amount_eur": 0.0}, rationale="Zero")]
+        actions=[
+            ActionCall(
+                tool="issue_credit",
+                args={"order_id": "PO-1001", "amount_eur": 0.0},
+                rationale="Zero",
+            )
+        ]
     )
     v_zero = engine.check(plan_zero, world, support_user)
     assert len(v_zero) == 1
@@ -84,11 +110,17 @@ def test_create_rma_policy_rules() -> None:
     """Verifies RMA delivery window (<= 90 days) and delivered status constraints."""
     engine = PolicyEngine()
     support_user = Principal(sub="lukas-1", username="lukas", roles=["support"], plant="DE-STR")
-    rma_args = {"order_id": "PO-1001", "reason": "Defective valve", "items": [{"part_id": "HX-400", "quantity": 1}]}
+    rma_args = {
+        "order_id": "PO-1001",
+        "reason": "Defective valve",
+        "items": [{"part_id": "HX-400", "quantity": 1}],
+    }
 
     # Positive: Delivered 14 days ago (<= 90 days)
     world_valid = _make_world(order_status="delivered", days_ago=14)
-    plan_valid = ActionPlan(actions=[ActionCall(tool="create_rma", args=rma_args, rationale="Valid return")])
+    plan_valid = ActionPlan(
+        actions=[ActionCall(tool="create_rma", args=rma_args, rationale="Valid return")]
+    )
     assert len(engine.check(plan_valid, world_valid, support_user)) == 0
 
     # Negative: Delivered 120 days ago (> 90 days)
@@ -120,9 +152,21 @@ def test_legal_hold_blocks_side_effects_only() -> None:
     # 1. Mutating tools are strictly blocked
     mutating_plan = ActionPlan(
         actions=[
-            ActionCall(tool="create_rma", args={"order_id": "PO-1001", "reason": "Leak", "items": []}, rationale="RMA"),
-            ActionCall(tool="issue_credit", args={"order_id": "PO-1001", "amount_eur": 100.0}, rationale="Credit"),
-            ActionCall(tool="send_reply", args={"ticket_id": "TCK-1", "to_email": "c@h.de", "subject": "S", "body": "B"}, rationale="Reply"),
+            ActionCall(
+                tool="create_rma",
+                args={"order_id": "PO-1001", "reason": "Leak", "items": []},
+                rationale="RMA",
+            ),
+            ActionCall(
+                tool="issue_credit",
+                args={"order_id": "PO-1001", "amount_eur": 100.0},
+                rationale="Credit",
+            ),
+            ActionCall(
+                tool="send_reply",
+                args={"ticket_id": "TCK-1", "to_email": "c@h.de", "subject": "S", "body": "B"},
+                rationale="Reply",
+            ),
         ]
     )
     v_hold = engine.check(mutating_plan, world_hold, support_user)
@@ -137,7 +181,11 @@ def test_legal_hold_blocks_side_effects_only() -> None:
             ActionCall(tool="lookup_order", args={"order_id": "PO-1001"}, rationale="Inspect"),
             ActionCall(tool="get_shipments", args={"order_id": "PO-1001"}, rationale="Tracking"),
             ActionCall(tool="search_kb", args={"query": "leak"}, rationale="Check spec"),
-            ActionCall(tool="escalate", args={"ticket_id": "TCK-1", "reason": "Legal hold customer inquiry"}, rationale="Escalate to legal"),
+            ActionCall(
+                tool="escalate",
+                args={"ticket_id": "TCK-1", "reason": "Legal hold customer inquiry"},
+                rationale="Escalate to legal",
+            ),
         ]
     )
     v_safe = engine.check(safe_plan, world_hold, support_user)
@@ -148,11 +196,17 @@ def test_escalate_always_permitted() -> None:
     """Verifies that escalate is unconditionally allowed regardless of user role or policy."""
     engine = PolicyEngine()
     world = _make_world(legal_hold=True)
-    unauthorized_viewer = Principal(sub="view-1", username="viewer", roles=["viewer"], plant="DE-STR")
+    unauthorized_viewer = Principal(
+        sub="view-1", username="viewer", roles=["viewer"], plant="DE-STR"
+    )
 
     plan = ActionPlan(
         actions=[
-            ActionCall(tool="escalate", args={"ticket_id": "TCK-9901", "reason": "Complex hydraulic defect"}, rationale="Escalate")
+            ActionCall(
+                tool="escalate",
+                args={"ticket_id": "TCK-9901", "reason": "Complex hydraulic defect"},
+                rationale="Escalate",
+            )
         ]
     )
     violations = engine.check(plan, world, principal=unauthorized_viewer)

@@ -2,6 +2,10 @@
 
 from fastapi.testclient import TestClient
 from fieldkit_mock_erp.main import app
+from fieldkit_mock_erp.settings import settings
+
+# Disable random transient 503s for unit test suite (explicit inject_503=True tests this separately)
+settings.failure_rate_503 = 0.0
 
 client = TestClient(app)
 

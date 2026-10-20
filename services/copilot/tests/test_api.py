@@ -86,3 +86,25 @@ def test_unknown_ticket_audit_returns_404() -> None:
     """Verifies 404 on non-existent ticket audit request."""
     r = client.get("/copilot/tickets/TICK-NONEXISTENT/audit")
     assert r.status_code == 404
+
+
+def test_cluster_insights_api() -> None:
+    """Verifies ticket cluster analysis and defect spike detection endpoint."""
+    payload = {
+        "tickets": [
+            {
+                "ticket_id": "T1",
+                "text": "Dichtung defekt an Ventil HX-400",
+                "part_number": "HX-400",
+            },
+            {"ticket_id": "T2", "text": "Ventil HX-400 leckt Öl", "part_number": "HX-400"},
+            {"ticket_id": "T3", "text": "Lieferung verzögert für PO-1001", "part_number": None},
+        ],
+        "n_clusters": 2,
+        "publish_alerts": False,
+    }
+    r = client.post("/copilot/insights/cluster", json=payload)
+    assert r.status_code == 200
+    data = r.json()
+    assert "clusters" in data
+    assert len(data["clusters"]) >= 1

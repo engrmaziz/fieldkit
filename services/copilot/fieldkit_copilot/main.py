@@ -195,9 +195,7 @@ async def get_ticket_state(ticket_id: str) -> dict[str, Any]:
     response_model=IngestTicketResponse,
     tags=["Copilot"],
 )
-async def approve_ticket(
-    ticket_id: str, req: ApprovalDecisionRequest
-) -> IngestTicketResponse:
+async def approve_ticket(ticket_id: str, req: ApprovalDecisionRequest) -> IngestTicketResponse:
     """Submit human approval decision (approve, edit, or reject) to resume execution."""
     engine = get_copilot_engine()
     config = {"configurable": {"thread_id": ticket_id}}
@@ -275,4 +273,69 @@ async def get_audit_trail(ticket_id: str) -> AuditTrailResponse:
         event_count=len(events),
         tamper_errors=errors,
         events=[e.model_dump() for e in events],
+    )
+
+
+class ClusterAnalysisRequest(BaseModel):
+    """Input payload to analyze support tickets for emerging defect spikes."""
+
+    tickets: list[dict[str, Any]]
+    n_clusters: int = 3
+    publish_alerts: bool = True
+
+
+class ClusterAnalysisResponse(BaseModel):
+    """Discovered clusters and detected defect spikes."""
+
+    clusters: list[dict[str, Any]]
+    spikes: list[dict[str, Any]]
+    alerts_published: list[dict[str, Any]] = Field(default_factory=list)
+
+
+@app.post(
+    "/copilot/insights/cluster",
+    response_model=ClusterAnalysisResponse,
+    tags=["Copilot Insights"],
+)
+async def analyze_ticket_clusters(req: ClusterAnalysisRequest) -> ClusterAnalysisResponse:
+    """Cluster incoming tickets, identify surging defect topics, and alert Tracehub."""
+    from datetime import UTC, datetime
+
+    from .clustering import EmergingIssueEngine, TicketDocument
+
+    docs: list[TicketDocument] = []
+    for t in req.tickets:
+        ts = t.get("timestamp")
+        if isinstance(ts, str):
+            try:
+                dt = datetime.fromisoformat(ts)
+            except Exception:
+                dt = datetime.now(UTC)
+        elif isinstance(ts, datetime):
+            dt = ts
+        else:
+            dt = datetime.now(UTC)
+
+        docs.append(
+            TicketDocument(
+                ticket_id=t.get("ticket_id", "TICK-UNKNOWN"),
+                text=t.get("text", ""),
+                timestamp=dt,
+                queue=t.get("queue", "general_inquiry"),
+                part_number=t.get("part_number"),
+            )
+        )
+
+    engine = EmergingIssueEngine()
+    clusters = engine.cluster_tickets(docs, n_clusters=req.n_clusters)
+    spikes = engine.detect_spikes(clusters)
+
+    published: list[dict[str, Any]] = []
+    if req.publish_alerts and spikes:
+        published = await engine.publish_alerts_to_tracehub(spikes)
+
+    return ClusterAnalysisResponse(
+        clusters=[c.model_dump() for c in clusters],
+        spikes=[s.model_dump() for s in spikes],
+        alerts_published=published,
     )

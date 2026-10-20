@@ -174,7 +174,11 @@ class CopilotGraph:
 
             # Detect language heuristic: if 'und', 'der', 'die', 'bitte', 'leckt' in text -> de
             words = text.lower().split()
-            german_hits = sum(1 for w in words if w in ("der", "die", "das", "und", "bitte", "fehler", "pumpe", "nicht"))
+            german_hits = sum(
+                1
+                for w in words
+                if w in ("der", "die", "das", "und", "bitte", "fehler", "pumpe", "nicht")
+            )
             language = "de" if german_hits >= 2 else "en"
             needs_human = confidence < 0.60
 
@@ -231,6 +235,7 @@ class CopilotGraph:
                 if order_obj:
                     # Customer lookup
                     from fieldkit_mock_erp.storage import db
+
                     customer_obj = db.get_customer(order_obj.customer_id)
 
                 # Shipments
@@ -245,9 +250,13 @@ class CopilotGraph:
         # Query technical KB
         kb_articles: list[dict[str, Any]] = []
         try:
-            kb_res = await self.tool_registry.execute("search_kb", {"query": state.get("queue", "")})
+            kb_res = await self.tool_registry.execute(
+                "search_kb", {"query": state.get("queue", "")}
+            )
             if hasattr(kb_res, "matches") and isinstance(kb_res.matches, list):
-                kb_articles = [m.model_dump() if hasattr(m, "model_dump") else dict(m) for m in kb_res.matches]
+                kb_articles = [
+                    m.model_dump() if hasattr(m, "model_dump") else dict(m) for m in kb_res.matches
+                ]
             elif isinstance(kb_res, list):
                 kb_articles = kb_res
         except Exception:
@@ -337,7 +346,11 @@ class CopilotGraph:
                 actions.append(
                     ActionCall(
                         tool="issue_credit",
-                        args={"order_id": order_id, "amount_eur": 250.0, "reason": "Goodwill delivery delay credit"},
+                        args={
+                            "order_id": order_id,
+                            "amount_eur": 250.0,
+                            "reason": "Goodwill delivery delay credit",
+                        },
                         rationale="Issue goodwill commercial credit within 500 EUR policy limit.",
                     )
                 )
@@ -514,11 +527,7 @@ class CopilotGraph:
                     args=tool_args,
                     idempotency_key=idempotency_key,
                 )
-                res_data = (
-                    exec_res.model_dump()
-                    if hasattr(exec_res, "model_dump")
-                    else exec_res
-                )
+                res_data = exec_res.model_dump() if hasattr(exec_res, "model_dump") else exec_res
                 res_dict = {
                     "action_index": idx,
                     "tool": tool_name,

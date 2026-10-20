@@ -44,9 +44,7 @@ class AuditEvent(BaseModel):
 
     event_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     sequence: int
-    timestamp: str = Field(
-        default_factory=lambda: datetime.now(UTC).isoformat()
-    )
+    timestamp: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
     ticket_id: str
     event_type: str
     state_name: str

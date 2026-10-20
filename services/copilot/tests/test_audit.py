@@ -1,6 +1,5 @@
 """Unit tests for Hash-Chained Audit Ledger with SHA-256 tamper detection."""
 
-
 from fieldkit_copilot.audit import AuditLedger
 
 

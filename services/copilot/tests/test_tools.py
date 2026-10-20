@@ -111,7 +111,11 @@ async def test_escalate_and_send_reply(registry: ToolRegistry) -> None:
     # escalate
     esc = await registry.execute(
         "escalate",
-        {"ticket_id": "TCK-4001", "reason": "Severe hydraulic pressure drop on manufacturing line", "target_team": "quality"},
+        {
+            "ticket_id": "TCK-4001",
+            "reason": "Severe hydraulic pressure drop on manufacturing line",
+            "target_team": "quality",
+        },
         "TCK-4001",
         0,
     )
@@ -122,7 +126,12 @@ async def test_escalate_and_send_reply(registry: ToolRegistry) -> None:
     # send_reply
     reply = await registry.execute(
         "send_reply",
-        {"ticket_id": "TCK-4001", "to_email": "purchasing@client.de", "subject": "Update on HX-400", "body": "We have dispatched a replacement."},
+        {
+            "ticket_id": "TCK-4001",
+            "to_email": "purchasing@client.de",
+            "subject": "Update on HX-400",
+            "body": "We have dispatched a replacement.",
+        },
         "TCK-4001",
         1,
     )

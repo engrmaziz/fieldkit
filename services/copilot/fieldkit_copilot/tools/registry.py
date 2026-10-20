@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import uuid
 from datetime import UTC, datetime
 from typing import Any
 
@@ -89,7 +88,9 @@ class IssueCreditArgs(BaseModel):
     """Input parameters for issue_credit."""
 
     order_id: str = Field(description="Order ID for which credit is issued")
-    amount_eur: float = Field(gt=0.0, description="Credit amount in Euros (max €500.00 without executive approval)")
+    amount_eur: float = Field(
+        gt=0.0, description="Credit amount in Euros (max €500.00 without executive approval)"
+    )
     reason: str = Field(description="Business justification for the refund/credit")
 
 
@@ -100,8 +101,12 @@ class EscalateArgs(BaseModel):
     """Input parameters for escalate."""
 
     ticket_id: str = Field(description="Support ticket ID to escalate")
-    reason: str = Field(description="Reason why automated copilot is escalating to human supervisor")
-    target_team: str = Field(default="engineering", description="Target escalation team: engineering, quality, legal")
+    reason: str = Field(
+        description="Reason why automated copilot is escalating to human supervisor"
+    )
+    target_team: str = Field(
+        default="engineering", description="Target escalation team: engineering, quality, legal"
+    )
 
 
 class EscalateResult(BaseModel):
@@ -124,6 +129,13 @@ class SendReplyArgs(BaseModel):
     to_email: str = Field(description="Recipient customer email address")
     subject: str = Field(description="Email subject line")
     body: str = Field(description="Sanitized email body text")
+    language: str | None = Field(
+        default=None, description="Customer ticket language (de/en), auto-detected if None"
+    )
+    approved_actions: list[str] = Field(default_factory=list, description="Approved action list")
+    known_part_numbers: list[str] = Field(
+        default_factory=list, description="Known valid part numbers"
+    )
 
 
 class SendReplyResult(BaseModel):
@@ -273,13 +285,40 @@ def build_default_tool_registry() -> ToolRegistry:
 
     # 7. send_reply (Mutating Side-effect)
     async def _handle_send_reply(args: dict[str, Any], _idemp_key: str) -> SendReplyResult:
-        msg_id = f"MSG-{uuid.uuid4().hex[:12]}"
-        return SendReplyResult(
-            sent=True,
+        from fieldkit_copilot.reply_qa import ReplyQARequest, detect_language, validate_reply_qa
+        from fieldkit_copilot.smtp import OutboundEmail, get_smtp_client
+
+        ticket_lang = args.get("language") or detect_language(args["body"])
+
+        # 1. Deterministic Reply QA validation
+        qa_req = ReplyQARequest(
             ticket_id=args["ticket_id"],
-            message_id=msg_id,
+            ticket_language=ticket_lang,
+            ticket_text=args.get("ticket_text", args["body"]),
+            reply_draft=args["body"],
+            approved_actions=args.get("approved_actions", ["send_reply"]),
+            known_part_numbers=args.get("known_part_numbers", []),
+        )
+        qa_res = validate_reply_qa(qa_req)
+        if not qa_res.passed:
+            raise ValueError(f"Reply QA validation failed: {'; '.join(qa_res.violations)}")
+
+        # 2. Transmit via Mailpit SMTP
+        smtp_client = get_smtp_client()
+        email = OutboundEmail(
+            to_email=args["to_email"],
+            subject=args["subject"],
+            body=qa_res.sanitized_draft,
+            ticket_id=args["ticket_id"],
+        )
+        send_res = await smtp_client.send_email(email)
+
+        return SendReplyResult(
+            sent=send_res.success,
+            ticket_id=args["ticket_id"],
+            message_id=send_res.message_id,
             recipient=args["to_email"],
-            sent_at=datetime.now(UTC).isoformat(),
+            sent_at=send_res.dispatched_at,
         )
 
     registry.register(

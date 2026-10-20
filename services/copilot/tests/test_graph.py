@@ -94,7 +94,10 @@ async def test_human_rejection_prevents_side_effects() -> None:
     # Resume with rejection and feedback
     copilot.graph.update_state(
         config,
-        {"approval_status": "rejected", "approval_feedback": "Customer damaged item during mounting."},
+        {
+            "approval_status": "rejected",
+            "approval_feedback": "Customer damaged item during mounting.",
+        },
     )
 
     final_state = await copilot.graph.ainvoke(None, config=config)
