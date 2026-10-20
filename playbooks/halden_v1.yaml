@@ -1,0 +1,67 @@
+# Halden Industrie GmbH - Standard Legal Procurement Playbook (Version 1.0)
+# Owner: Sofia Schmidt (Procurement Legal Counsel, Plant Wrocław PL-WRO)
+# Enforced across: DE-HAM, DE-STR, PL-WRO
+
+version: "1.0.0"
+organization: "Halden Industrie GmbH"
+description: "Mandatory procurement contract risk thresholds and fallback positions."
+
+rules:
+  - id: "RULE_LIABILITY_CAP"
+    name: "Limitation and Cap on Liability"
+    target_category: "Cap on Liability"
+    severity: "CRITICAL"
+    max_cap_multiplier: 2.0  # Maximum 2x annual contract value
+    max_fixed_cap_eur: 1000000.0
+    allow_uncapped_liability: false
+    description: "Liability must be capped at no more than 2x annual contract value or EUR 1,000,000. Uncapped supplier liability is strictly prohibited."
+    fallback_recommendation: "The total aggregate liability of either party under this Agreement shall not exceed the lesser of EUR 1,000,000 or two times (2x) the total fees paid or payable by Halden Industrie in the preceding twelve (12) months."
+
+  - id: "RULE_GOVERNING_LAW"
+    name: "Permitted Governing Law and CISG Exclusion"
+    target_category: "Governing Law"
+    severity: "HIGH"
+    permitted_jurisdictions:
+      - "germany"
+      - "deutschland"
+      - "poland"
+      - "polen"
+      - "wrocław"
+      - "hamburg"
+      - "stuttgart"
+    require_cisg_exclusion: true
+    description: "Contracts must be governed exclusively by German or Polish substantive law. The UN Convention on Contracts for the International Sale of Goods (CISG) must be explicitly excluded."
+    fallback_recommendation: "This Agreement shall be governed by and construed in accordance with the laws of the Federal Republic of Germany, without regard to its conflict of law principles. The UN Convention on Contracts for the International Sale of Goods (CISG) is expressly excluded."
+
+  - id: "RULE_RENEWAL_NOTICE"
+    name: "Minimum Notice Period for Termination / Non-Renewal"
+    target_category: "Notice Period To Terminate"
+    severity: "HIGH"
+    min_notice_days: 90
+    description: "Automatic renewal or termination for convenience notice periods must be at least 90 calendar days prior to term end to prevent automatic lock-in."
+    fallback_recommendation: "Either party may terminate this Agreement without cause upon giving at least ninety (90) calendar days' prior written notice to the other party."
+
+  - id: "RULE_IP_INDEMNITY"
+    name: "Supplier Third-Party IP Indemnification"
+    target_category: "Indemnification"
+    severity: "HIGH"
+    require_ip_indemnity: true
+    description: "Supplier must defend, indemnify, and hold harmless Halden Industrie against all third-party intellectual property infringement claims."
+    fallback_recommendation: "Supplier shall defend, indemnify, and hold harmless Halden Industrie and its affiliates from and against any third-party claims arising out of any alleged infringement of patent, copyright, trademark, or trade secret rights."
+
+  - id: "RULE_WARRANTY_DURATION"
+    name: "Minimum Product Warranty Duration"
+    target_category: "Warranty"
+    severity: "MEDIUM"
+    min_warranty_months: 24
+    description: "Delivered parts and industrial assemblies must have a minimum warranty period of at least 24 months (36 months preferred)."
+    fallback_recommendation: "Supplier warrants that all delivered goods shall conform to technical specifications and drawings and shall be free from defects in material and workmanship for a period of not less than twenty-four (24) months from delivery."
+
+  - id: "RULE_PAYMENT_TERMS"
+    name: "Favorable Payment Terms and Skonto Discount"
+    target_category: "Price and Payment Terms"
+    severity: "LOW"
+    min_payment_days: 30
+    require_skonto_discount: true
+    description: "Payment terms must be at least 30 days net (preferably 45 days). Invoices paid within 14 days must receive a 2% prompt-payment discount (Skonto)."
+    fallback_recommendation: "Payment shall be due within forty-five (45) days net from receipt of a proper tax invoice. For payments made within fourteen (14) days, a 2% prompt-payment discount (Skonto) shall apply."

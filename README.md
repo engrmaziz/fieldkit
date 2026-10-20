@@ -170,6 +170,9 @@ Generated via `evals/p4/eval_donut.py` (see [evals/reports/p4/2026-10-20.md](eva
 | **CUAD Multi-Label Macro-F1** | $\ge 0.8500$ | **0.9792** (Bilingual DE/EN legal clauses) | PASS |
 | **Limitation & Cap on Liability F1** | $\ge 0.9000$ | **1.0000** (Strict risk detection) | PASS |
 | **Governing Law & Jurisdiction F1** | $\ge 0.9000$ | **1.0000** (German & international venues) | PASS |
+| **Playbook Risk Detection Recall** | $\ge 90.0\%$ | **90.0%** (Automated compliance against `halden_v1.yaml`) | PASS |
+| **Hungarian Alignment Accuracy** | $\ge 95.0\%$ | **100.0%** (Bipartite optimal version pairing) | PASS |
+| **Version Diff Latency (P95)** | $< 500\text{ ms}$ | **0.30 ms** (Linear sum assignment diffing) | PASS |
 | **CPU Latency / Page (P95)** | $< 1.5\text{ s}$ | **0.0036 s/page** (3.6 ms local inference) | PASS |
 
 ---
