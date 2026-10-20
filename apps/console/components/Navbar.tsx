@@ -25,7 +25,7 @@ export default function Navbar() {
     { href: "/assistant", label: "Assistant", icon: Bot, badge: "P2", active: pathname?.startsWith("/assistant") },
     { href: "/observe", label: "Observe", icon: Activity, badge: "P7", active: pathname?.startsWith("/observe") },
     { href: "/copilot", label: "Copilot", icon: Wrench, badge: "P3", active: pathname?.startsWith("/copilot") },
-    { href: "/docai", label: "Doc AI", icon: FileText, badge: "P4", active: false },
+    { href: "/docai", label: "Doc AI", icon: FileText, badge: "P4", active: pathname?.startsWith("/docai") },
   ];
 
   return (

@@ -185,3 +185,78 @@ export interface ChatMessage {
   feedback?: "up" | "down" | null;
 }
 
+export interface DocAIDocument {
+  document_id: string;
+  filename: string;
+  mime_type: string;
+  file_size_bytes: number;
+  document_type: "delivery_note" | "contract" | "other";
+  status: "uploaded" | "queued" | "processing" | "auto_accepted" | "review_required" | "completed" | "failed";
+  plant?: string;
+  created_at: string;
+  confidence?: number;
+  page_count: number;
+}
+
+export interface DeliveryNoteExtraction {
+  supplier_name: string;
+  supplier_address: string;
+  delivery_note_no: string;
+  po_number: string;
+  delivery_date: string;
+  total_qty: number;
+  line_items: Array<{
+    part_no: string;
+    description: string;
+    qty: number;
+    unit: string;
+    unit_price?: number;
+  }>;
+  validators: Record<string, { status: "PASS" | "FAIL" | "WARN"; message: string }>;
+  decision: "AUTO_ACCEPTED" | "VLM_FALLBACK" | "REVIEW_QUEUE";
+  confidence: number;
+}
+
+export interface ContractExtraction {
+  contract_id: string;
+  title: string;
+  parties: string[];
+  governing_law?: string;
+  clauses: Array<{
+    clause_id: string;
+    section_number: string;
+    title: string;
+    text: string;
+    page_idx: number;
+    char_start: number;
+    char_end: number;
+    bbox: number[];
+    categories: string[];
+    category_scores: Record<string, number>;
+  }>;
+  playbook_findings: Array<{
+    rule_id: string;
+    rule_name: string;
+    status: "PASS" | "FAIL" | "WARN";
+    severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+    clause_id?: string;
+    message: string;
+    fallback_recommendation?: string;
+  }>;
+}
+
+export interface ContractDiffItem {
+  clause_v1_id?: string;
+  clause_v2_id?: string;
+  section_v1?: string;
+  section_v2?: string;
+  status: "UNCHANGED" | "MODIFIED" | "ADDED" | "DELETED";
+  similarity_score: number;
+  v1_text: string;
+  v2_text: string;
+  text_diff: string;
+  is_material: boolean;
+  material_reasons: string[];
+  severity: string;
+}
+

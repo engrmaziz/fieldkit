@@ -15,6 +15,10 @@ const nextConfig = {
         source: "/api/tracehub/:path*",
         destination: `${process.env.NEXT_PUBLIC_TRACEHUB_API_URL || "http://localhost:8006"}/:path*`,
       },
+      {
+        source: "/api/docai/:path*",
+        destination: `${process.env.NEXT_PUBLIC_DOCAI_API_URL || "http://localhost:8004"}/:path*`,
+      },
     ];
   },
 };
