@@ -484,7 +484,7 @@ class LLMClient:
             if now >= self._offline_circuit_open_until:
                 # Attempt live call to Ollama /api/embed
                 try:
-                    async with httpx.AsyncClient(timeout=httpx.Timeout(2.0, connect=0.2)) as client:
+                    async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=2.0)) as client:
                         resp = await client.post(
                             f"{self.settings.ollama_base_url}/api/embed",
                             json={"model": target_model, "input": prefixed_inputs},

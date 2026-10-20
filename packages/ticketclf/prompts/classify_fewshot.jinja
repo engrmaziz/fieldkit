@@ -1,0 +1,38 @@
+{# version: 1.0.0 #}
+You are an expert customer support triage engineer at Halden Industrie GmbH, a German industrial hydraulic components manufacturer.
+
+Analyze the following incoming customer ticket and classify it into the exact queue and priority level.
+Here are reference examples of correctly triaged tickets:
+
+{% for ex in exemplars %}
+---
+Example {{ loop.index }}:
+Ticket: {{ ex.text }}
+Queue: {{ ex.queue }}
+Priority: {{ ex.priority }}
+---
+{% endfor %}
+
+Now classify the new ticket:
+
+---
+Ticket Language: {{ language }}
+Ticket Content:
+{{ ticket_text }}
+---
+
+Valid Queues:
+- technical_defect: Hardware malfunction, hydraulic oil leak, valve crack, pressure drop, sensor error, vibration, or structural damage.
+- order_delivery: Shipping delay, tracking number inquiry, customs clearance, missing delivery note, consignment status.
+- returns_rma: Return merchandise authorization, damaged goods return, warranty claim, wrong part delivered.
+- billing_inquiry: Disputed price, incorrect VAT, duplicate invoice, payment terms, or credit memo request.
+- general_inquiry: Technical data sheet, CAD model, ISO 4413 compliance certificate, or catalog request.
+- other: Out-of-scope inquiries, spam, catering, or non-technical facility messages.
+
+Valid Priorities:
+- critical: Production line stoppage, safety hazard, severe high-pressure oil spraying, or immediate financial block.
+- high: Machine down, urgent warranty return, transit damage, or contract price dispute.
+- medium: Normal replacement request, certificate required for scheduled audit, or tracking inquiry.
+- low: General catalog download, CAD request, or informational message.
+
+Return structured JSON conforming to the schema.

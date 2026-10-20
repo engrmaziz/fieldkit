@@ -294,6 +294,15 @@ async def main() -> None:
         print(f"  - Hallucinated Numbers in RCA: {metrics['hallucinations']} (Target: Strictly 0)")
         return
 
+    if args.profile in ("copilot", "p3", "ticketclf", "clf"):
+        from evals.p3.clf_eval import run_ticketclf_eval
+
+        results, report_path = await run_ticketclf_eval()
+        print(f"\n[SUCCESS] Support Ticket Classifier Benchmark Complete! Report generated at:\n  {report_path}")
+        for r in results:
+            print(f"  - {r.display_name:32} | Queue Macro-F1: {r.queue_macro_f1:.4f} | P95: {r.latency_p95_ms:6.1f}ms")
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")

@@ -23,8 +23,8 @@ class CommonSettings(BaseSettings):
 
     # LLM & Ollama
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model_default: str = "qwen2.5:7b"
-    ollama_embed_model: str = "nomic-embed-text"
+    ollama_model_default: str = "qwen3.5:4b"
+    ollama_embed_model: str = "nomic-embed-text:latest"
     ollama_timeout_seconds: int = 60
 
     # Tracehub (Project 7)

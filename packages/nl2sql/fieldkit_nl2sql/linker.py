@@ -99,8 +99,27 @@ class SchemaLinker:
             )
 
         scored_cols.sort(key=lambda x: x[1], reverse=True)
-        top_columns = [col for col, _ in scored_cols[:top_k]]
-        relevant_tables = sorted({col.table_name for col in top_columns})
+        # Select top columns ensuring diverse table representation (at most 4 columns per table)
+        selected_cols: list[LinkedColumn] = []
+        table_counts: dict[str, int] = {}
+        deferred: list[LinkedColumn] = []
+        max_per_table = max(2, top_k // 2)
+
+        for lcol, _ in scored_cols:
+            t = lcol.table_name
+            if table_counts.get(t, 0) < max_per_table:
+                selected_cols.append(lcol)
+                table_counts[t] = table_counts.get(t, 0) + 1
+                if len(selected_cols) == top_k:
+                    break
+            else:
+                deferred.append(lcol)
+
+        if len(selected_cols) < top_k:
+            selected_cols.extend(deferred[: top_k - len(selected_cols)])
+
+        top_columns = selected_cols
+        relevant_tables = sorted({c.table_name for c in top_columns})
 
         # Discover FK join paths from ontology links
         join_paths: list[str] = []

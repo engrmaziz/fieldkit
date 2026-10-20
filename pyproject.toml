@@ -22,6 +22,7 @@ dependencies = [
     "selectolax>=1.0.1",
     "pymupdf>=2.0",
     "sqlglot>=26.0.0",
+    "scikit-learn>=1.9.1",
 ]
 
 
@@ -43,6 +44,7 @@ fieldkit-retrieval = { workspace = true }
 fieldkit-nl2sql = { workspace = true }
 fieldkit-assistant-api = { workspace = true }
 fieldkit-tracehub = { workspace = true }
+fieldkit-ticketclf = { workspace = true }
 
 [dependency-groups]
 
@@ -88,6 +90,7 @@ module = [
     "opentelemetry.*",
     "pyarrow.*",
     "yaml.*",
+    "sklearn.*",
 ]
 ignore_missing_imports = true
 
