@@ -1,5 +1,7 @@
 """Unit tests for YOLO ONNX detector, letterboxing, NMS, and batching."""
 
+from pathlib import Path
+
 import numpy as np
 from fieldkit_vision.detector import (
     Detection,
@@ -78,15 +80,16 @@ def test_apply_nms() -> None:
     assert 1 not in keep
 
 
-def test_yolo_detector_batch_and_benchmark() -> None:
+def test_yolo_detector_batch_and_benchmark(tmp_path: Path) -> None:
     """Verify detector single and batch inference and benchmark output."""
-    detector = YOLOOnnxDetector(model_path=None)
-    assert detector.is_simulated is True
+    # Test simulated fallback
+    detector_sim = YOLOOnnxDetector(model_path="nonexistent_fallback.onnx")
+    assert detector_sim.is_simulated is True
 
     frame = np.full((360, 640, 3), 100, dtype=np.uint8)
 
     # Single detect
-    dets = detector.detect(frame)
+    dets = detector_sim.detect(frame)
     assert len(dets) >= 3
     classes = [d.class_name for d in dets]
     assert "person" in classes
@@ -94,13 +97,31 @@ def test_yolo_detector_batch_and_benchmark() -> None:
     assert "forklift" in classes
 
     # Batch detect
-    batch_dets = detector.detect_batch([frame, frame, frame, frame])
+    batch_dets = detector_sim.detect_batch([frame, frame, frame, frame])
     assert len(batch_dets) == 4
     for cam_dets in batch_dets:
         assert len(cam_dets) >= 3
 
-    # Benchmark
-    bench = detector.benchmark(num_frames=20, batch_size=4)
+    # Benchmark simulated
+    bench = detector_sim.benchmark(num_frames=20, batch_size=4)
     assert bench["batch_size"] == 4.0
     assert bench["fps"] > 0
     assert bench["ms_per_frame"] > 0
+
+    # Test real ONNX session (use existing model or build in tmp_path for CI)
+    onnx_file = Path("models/p5/yolo11n_ppe.onnx")
+    if not onnx_file.exists():
+        import onnx
+        from fieldkit_vision.detector import build_synthetic_yolo_onnx
+
+        onnx_file = tmp_path / "yolo11n_test.onnx"
+        onnx.save(build_synthetic_yolo_onnx("yolo11n_test"), onnx_file)
+
+    detector_real = YOLOOnnxDetector(model_path=str(onnx_file))
+    assert detector_real.session is not None
+    assert detector_real.is_simulated is False
+    real_dets = detector_real.detect(frame)
+    assert isinstance(real_dets, list)
+    real_batch = detector_real.detect_batch([frame, frame])
+    assert len(real_batch) == 2
+
