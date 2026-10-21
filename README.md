@@ -228,7 +228,7 @@ Generated via `make eval P=p5` (see [evals/reports/p5/2026-10-21.md](evals/repor
 
 ### Project 6: Industrial Defect Inspection with Retraining Loop — InspectAI (Live Target Verification)
 Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p6/2026-10-21.md](evals/reports/p6/2026-10-21.md), [evals/reports/p6/anomaly_baselines.md](evals/reports/p6/anomaly_baselines.md), [evals/reports/p6/decision_engine.md](evals/reports/p6/decision_engine.md), and [evals/reports/p6/retraining_loop.md](evals/reports/p6/retraining_loop.md)):
-*(Milestones 1, 2, 3, 4, 5 & 6 Delivered — Unsupervised PatchCore Anomaly Baselines on MVTec AD, Supervised 7-Class Defect Classifier on NEU Surface Taxonomy, Temperature Scaling Calibration, Cost-Optimized Decision Engine, 2% Seeded Audit Sampling, Real-Time Edge Inspection Service, Blended Jet Colormap Heatmap Overlays, PostgreSQL Inspection Ledger, Review Triage Queue, Manifest Integrity & dHash Deduplication, Closed Retraining Loop, Non-Blocking Shadow Inference, PSI Drift Monitoring, Instant Rollback, and Next.js 14 Operator Inspection Console UI)*
+*(Milestones 1, 2, 3, 4, 5, 6 & 7 Delivered — Feature Complete: Unsupervised PatchCore Anomaly Baselines on MVTec AD, Supervised 7-Class Defect Classifier on NEU Surface Taxonomy, Temperature Scaling Calibration, Cost-Optimized Decision Engine, 2% Seeded Audit Sampling, Real-Time Edge Inspection Service, Blended Jet Colormap Heatmap Overlays, PostgreSQL Inspection Ledger, Review Triage Queue, Manifest Integrity & dHash Deduplication, Closed Retraining Loop, Non-Blocking Shadow Inference, PSI Drift Monitoring, Instant Rollback, Next.js 14 Operator Inspection Console UI, CI Regression Gate, and Turnkey Demo Script)*
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :---: |
@@ -257,6 +257,8 @@ Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p
 | **Instant Rollback Verification (M5)**| Instantaneous | **Production reverted to `prod_v1.0.0` with audit ledger** | PASS |
 | **Frozen Test Set Immutability (M5)** | 100.0% | **100.0%** (SHA-256 fingerprint verified) | PASS |
 | **Web Console UI (M6)** | 100% Next.js 14 Build | **17/17 routes prerendered, Jet heatmap opacity crossfade, HITL keyboard triage [P/R]** | PASS |
+| **Regression Gate & Baseline Delta (M7)** | 0.0% Regressions | **Passed (evals/p6/baseline.json verified with 0 regressions)** | PASS |
+| **Turnkey Customer Demo (M7)** | 9/9 Steps Verified | **scripts/demo_inspection.py (make demo P=inspect)** | PASS |
 | **Model Registry Lifecycle** | Candidate $\to$ Production | **Local versioned artifacts with metadata & zero-downtime rollback** | PASS |
 
 ---
@@ -279,6 +281,10 @@ Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p
 - [ADR 0015: Deterministic Temporal Rule Smoothing vs. Single-Frame Triggers for Edge Safety Alerts](docs/decisions/0015-temporal-rule-smoothing-vs-single-frame-triggers.md)
 - [ADR 0016: ClickHouse MergeTree vs. PostgreSQL for High-Frequency Industrial Vision Events](docs/decisions/0016-clickhouse-mergetree-vs-postgres-for-high-frequency-vision-events.md)
 - [ADR 0017: Ultralytics YOLO AGPL-3.0 Licensing Implications and Commercial Deployment Strategy](docs/decisions/0017-ultralytics-yolo-agpl-licensing-and-commercial-deployment-strategy.md)
+- [ADR 0018: PatchCore Memory Bank Coreset Reduction vs Autoencoders for Industrial Anomaly Localization](docs/decisions/0018-patchcore-coreset-vs-autoencoders-for-defect-detection.md)
+- [ADR 0019: Asymmetric Cost-Based Decision Boundaries vs Symmetric F1 Operating Cutoffs for Automotive Quality Compliance](docs/decisions/0019-asymmetric-cost-matrix-vs-symmetric-f1-thresholds.md)
+- [ADR 0020: Population Stability Index (PSI) with Adaptive Laplace Smoothing vs Wasserstein Distance for Smelting Drift Monitoring](docs/decisions/0020-population-stability-index-psi-drift-vs-wasserstein.md)
+- [ADR 0021: Non-Blocking Shadow Inference and Versioned Manifests for Zero-Downtime Edge Defect Inspection](docs/decisions/0021-shadow-mode-evaluation-and-zero-downtime-model-rollback.md)
 
 ---
 
@@ -315,6 +321,12 @@ make eval P=copilot
 
 # Run Project 4 (Document AI & Contract Intelligence) Master Evaluation Suite
 make eval P=docai
+
+# Run Project 5 (Industrial Vision Safety Wall) Master Evaluation Suite
+make eval P=vision
+
+# Run Project 6 (InspectAI Edge Defect Inspection) Master Evaluation Suite
+make eval P=inspect
 
 # Run Project 7 (Tracehub Observability) Master Evaluation Suite
 make eval P=tracehub
@@ -371,6 +383,12 @@ make demo P=copilot
 # Project 4: Contract and Document Intelligence Engine (DocAI)
 make demo P=docai
 
+# Project 5: Industrial Vision Safety Wall (PPE & Intrusion Analytics)
+make demo P=vision
+
+# Project 6: InspectAI (Industrial Defect Inspection with Retraining Loop)
+make demo P=inspect
+
 # Project 7: Tracehub (Observability & Anomaly Alerting)
 make demo P=tracehub
 ```
@@ -385,5 +403,6 @@ make demo P=tracehub
   - [Project 3 Spec](docs/projects/p3.md)
   - [Project 4 Spec](docs/projects/p4.md)
   - [Project 5 Spec](docs/projects/p5.md)
+  - [Project 6 Spec](docs/projects/p6.md)
   - [Project 7 Spec](docs/projects/p7.md)
 

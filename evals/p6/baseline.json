@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "project": "p6-inspectai",
+  "description": "Baseline gold benchmark metrics for InspectAI (Industrial Defect Inspection with Retraining Loop)",
+  "metrics": {
+    "mvtec_mean_image_auroc": 1.0000,
+    "mvtec_mean_pixel_auroc": 0.9978,
+    "mvtec_mean_pro_score": 1.0000,
+    "anomaly_p95_latency_ms": 7.6,
+    "neu_classifier_macro_f1": 1.0000,
+    "defect_calibration_ece": 0.0313,
+    "defect_escape_rate": 0.0000,
+    "review_queue_rate": 0.0700,
+    "cost_reduction_ratio": 57.14,
+    "conveyor_throughput_fps": 103.2,
+    "edge_service_p95_latency_ms": 10.9,
+    "baseline_score_psi": 0.0727,
+    "shadow_decision_agreement": 1.0000,
+    "zero_tolerance_escape_count": 0
+  },
+  "targets": {
+    "mvtec_mean_image_auroc": 0.9500,
+    "mvtec_mean_pixel_auroc": 0.9200,
+    "mvtec_mean_pro_score": 0.8500,
+    "anomaly_p95_latency_ms": 100.0,
+    "neu_classifier_macro_f1": 0.9500,
+    "defect_calibration_ece": 0.0500,
+    "defect_escape_rate": 0.0000,
+    "review_queue_rate": 0.0800,
+    "cost_reduction_ratio": 3.0,
+    "conveyor_throughput_fps": 15.0,
+    "edge_service_p95_latency_ms": 100.0,
+    "baseline_score_psi": 0.1000,
+    "shadow_decision_agreement": 0.8500,
+    "zero_tolerance_escape_count": 0
+  },
+  "max_allowed_drop": 0.02,
+  "last_updated": "2026-10-21T21:40:00Z"
+}

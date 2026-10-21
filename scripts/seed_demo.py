@@ -323,6 +323,9 @@ def main() -> None:
     elif args.profile in ("vision", "p5", "video", "multicam", "vision-edge"):
         from scripts.demo_vision import run_vision_demo
         asyncio.run(run_vision_demo())
+    elif args.profile in ("inspect", "p6", "inspectai", "defect", "inspection"):
+        from scripts.demo_inspection import run_inspection_demo
+        asyncio.run(run_inspection_demo())
     else:
         asyncio.run(run_hello_demo())
 
