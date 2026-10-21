@@ -12,15 +12,15 @@
 
 | Category | Test Samples | Image AUROC (Target $\ge 0.95$) | Pixel AUROC (Target $\ge 0.92$) | PRO Score (Target $\ge 0.85$) | CPU Latency P95 (Target $< 100$ ms) | Coreset Memory Bank | Gate Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **`metal_nut`** | 10 | **1.0000** | **0.9964** | **1.0000** | **7.1 ms** | 720 patches | PASS |
+| **`metal_nut`** | 10 | **1.0000** | **0.9964** | **1.0000** | **6.8 ms** | 720 patches | PASS |
 | **`screw`** | 10 | **1.0000** | **0.9976** | **1.0000** | **6.8 ms** | 720 patches | PASS |
-| **`grid`** | 10 | **1.0000** | **0.9989** | **1.0000** | **7.3 ms** | 720 patches | PASS |
-| **`tile`** | 10 | **1.0000** | **0.9983** | **1.0000** | **6.9 ms** | 720 patches | PASS |
+| **`grid`** | 10 | **1.0000** | **0.9989** | **1.0000** | **7.6 ms** | 720 patches | PASS |
+| **`tile`** | 10 | **1.0000** | **0.9983** | **1.0000** | **7.1 ms** | 720 patches | PASS |
 
 **Mean Image AUROC**: **1.0000** (Target: $\ge 0.9500$)
 **Mean Pixel AUROC**: **0.9978** (Target: $\ge 0.9200$)
 **Mean PRO Score**:   **1.0000** (Target: $\ge 0.8500$)
-**Overall Latency (P95)**: **7.3 ms** (Target: $< 100.0$ ms on CPU)
+**Overall Latency (P95)**: **7.4 ms** (Target: $< 100.0$ ms on CPU)
 
 ---
 

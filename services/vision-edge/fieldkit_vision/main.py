@@ -25,6 +25,7 @@ from fieldkit_vision.health import (
     HealthStatus,
 )
 from fieldkit_vision.homography import CameraHomography
+from fieldkit_vision.inspect.router import router as inspect_router
 from fieldkit_vision.metrics import (
     VISION_ALERTS_TOTAL,
     VISION_CAMERA_BLUR_SCORE,
@@ -126,6 +127,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(inspect_router)
 
 
 @app.get("/healthz")

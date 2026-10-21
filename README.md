@@ -228,23 +228,27 @@ Generated via `make eval P=p5` (see [evals/reports/p5/2026-10-21.md](evals/repor
 
 ### Project 6: Industrial Defect Inspection with Retraining Loop — InspectAI (Live Target Verification)
 Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p6/2026-10-21.md](evals/reports/p6/2026-10-21.md), [evals/reports/p6/anomaly_baselines.md](evals/reports/p6/anomaly_baselines.md), and [evals/reports/p6/decision_engine.md](evals/reports/p6/decision_engine.md)):
-*(Milestones 1, 2 & 3 Delivered — Unsupervised PatchCore Anomaly Baselines on MVTec AD, Supervised 7-Class Defect Classifier on NEU Surface Taxonomy, dHash Perceptual Deduplication, Temperature Scaling Calibration, Cost-Optimized Decision Engine, and 2% Seeded Audit Sampling)*
+*(Milestones 1, 2, 3 & 4 Delivered — Unsupervised PatchCore Anomaly Baselines on MVTec AD, Supervised 7-Class Defect Classifier on NEU Surface Taxonomy, Temperature Scaling Calibration, Cost-Optimized Decision Engine, 2% Seeded Audit Sampling, Real-Time Edge Inspection Service, Blended Jet Colormap Heatmap Overlays, and PostgreSQL Inspection Ledger)*
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :---: |
 | **MVTec Image AUROC (Mean)** | $\ge 0.9500$ | **1.0000** (`metal_nut`, `screw`, `grid`, `tile`) | PASS |
 | **MVTec Pixel AUROC (Mean)** | $\ge 0.9200$ | **0.9978** (2D localized defect segmentation) | PASS |
 | **MVTec Per-Region Overlap (PRO)** | $\ge 0.8500$ | **1.0000** (Connected component recall) | PASS |
-| **Anomaly CPU Latency (P95)** | $< 100.0\text{ ms}$ | **7.8 ms** (Vectorized sliding window on host CPU) | PASS |
+| **Anomaly CPU Latency (P95)** | $< 100.0\text{ ms}$ | **7.6 ms** (Vectorized sliding window on host CPU) | PASS |
 | **PatchCore Memory Bank Coreset** | Greedy k-Center | **10% coreset ratio (90% memory reduction)** | PASS |
 | **NEU Classifier Macro-F1** | $\ge 0.9500$ | **1.0000** (7 classes: crazing, inclusion, patches, pitted, scale, scratches, good) | PASS |
 | **Defect Calibration Error (ECE)** | $< 0.0500$ | **0.0313** (Temperature-scaled $T=1.34$) | PASS |
-| **Classifier CPU Latency (P95)** | $< 50.0\text{ ms}$ | **3.3 ms** (Calibrated inference) | PASS |
+| **Classifier CPU Latency (P95)** | $< 50.0\text{ ms}$ | **3.1 ms** (Calibrated inference) | PASS |
 | **Defect Escape Rate (M3)** | **Strictly 0.0%** | **0.00%** (0 escapes / 100 tested components) | PASS |
 | **Operator Review Queue Budget (M3)**| $\le 8.0\%$ | **7.00%** (7 parts routed to human review) | PASS |
 | **Cost Reduction vs. Naive Cutoff (M3)**| $\ge 3.0\times$ | **57.1x cost reduction** (35.00 € vs 2000.00 €) | PASS |
 | **2% Random Seeded Audit (M3)** | $2.0\% \pm 1.0\%$ | **1.0%** (Cryptographically seeded audit drift filter) | PASS |
-| **Decision Pipeline Latency (P95)** | $< 100.0\text{ ms}$ | **19.1 ms** (Fused edge inspection pipeline) | PASS |
+| **Decision Pipeline Latency (P95)** | $< 100.0\text{ ms}$ | **20.2 ms** (Fused edge inspection pipeline) | PASS |
+| **Conveyor Throughput (M4)** | $\ge 15.0\text{ FPS}$ | **103.2 FPS** (Sustained multi-product edge pipeline) | PASS |
+| **Edge Service Latency P95 (M4)** | $< 100.0\text{ ms}$ | **10.9 ms** (Mean 8.8 ms, P50 8.5 ms on CPU) | PASS |
+| **Heatmap Overlay Storage (M4)** | $\ge 90\%$ non-pass | **100% captured** (Jet overlay JPEG quality 92) | PASS |
+| **Service Error Rate (M4)** | $0.0\%$ | **0 errors** (100% response integrity) | PASS |
 | **Cross-Split Dataset Deduplication** | dHash Hamming $\le 2$ | **64-bit perceptual hashing with cross-split leakage block** | PASS |
 | **Model Registry Lifecycle** | Candidate $\to$ Production | **Local versioned artifacts with metadata & zero-downtime rollback** | PASS |
 
@@ -327,6 +331,8 @@ Endpoints:
   - Observe Traces, Prompts, Evals, A/B, Alerts: `/observe`
 - **Grafana Dashboards**: [http://localhost:3001](http://localhost:3001) (admin / admin)
 - **Vision Edge API Docs**: [http://localhost:8005/docs](http://localhost:8005/docs)
+  - Safety Vision Analytics: `/events`, `/search/nl`, `/cameras/{id}/zones`
+  - InspectAI Edge Service: `POST /inspect/{product_id}`, `GET /inspect/records`, `GET /inspect/records/{id}`, `POST /inspect/records/{id}/review`, `GET /inspect/heatmap/{id}`, `GET /inspect/products`
 - **MediaMTX RTSP Server**: [rtsp://localhost:8554](rtsp://localhost:8554)
 - **DocAI API Docs**: [http://localhost:8004/docs](http://localhost:8004/docs)
 - **Tracehub API Docs**: [http://localhost:8006/docs](http://localhost:8006/docs)

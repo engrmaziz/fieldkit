@@ -361,6 +361,9 @@ async def main() -> None:
         print(f"  - Cost Reduction Factor (M3): {p6_metrics.decision_report.cost_reduction_ratio:.1f}x vs Naive Cutoff (Target: >= 3.0x)")
         print(f"  - 2% Seeded Random Audit (M3): {p6_metrics.decision_report.audit_samples_count} audit samples ({p6_metrics.decision_report.audit_samples_count / p6_metrics.decision_report.total_evaluated * 100:.1f}%)")
         print(f"  - Decision Pipeline P95 (M3): {p6_metrics.decision_report.p95_decision_ms:.1f} ms (Target: < 100 ms)")
+        print(f"  - Conveyor Throughput (M4): {p6_metrics.load_test_result.throughput_fps:.1f} FPS (Target: >= 15.0 FPS)")
+        print(f"  - Live Service P95 Latency (M4): {p6_metrics.load_test_result.p95_latency_ms:.1f} ms (Target: < 100 ms)")
+        print(f"  - Heatmaps Stored (M4): {p6_metrics.load_test_result.heatmaps_generated} overlays generated")
         if not p6_metrics.overall_gate_passed:
             print("\n[FAILED] CI Gate detected regressions in Project 6 evaluation metrics!")
             sys.exit(1)

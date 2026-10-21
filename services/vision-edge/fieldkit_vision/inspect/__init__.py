@@ -12,7 +12,16 @@ from fieldkit_vision.inspect.decision import (
     InspectionDecision,
     InspectionDecisionEngine,
 )
+from fieldkit_vision.inspect.models import (
+    InspectionRecord,
+    InspectionRequest,
+    InspectionResponse,
+    InspectionReviewUpdate,
+)
 from fieldkit_vision.inspect.preprocess import InspectionPreprocessor, PreprocessResult
+from fieldkit_vision.inspect.router import router as inspect_router
+from fieldkit_vision.inspect.storage import HeatmapStorageManager
+from fieldkit_vision.inspect.worker import InspectionWorker
 
 __version__ = "0.1.0"
 __all__ = [
@@ -27,4 +36,11 @@ __all__ = [
     "InspectionDecisionEngine",
     "InspectionPreprocessor",
     "PreprocessResult",
+    "InspectionRequest",
+    "InspectionResponse",
+    "InspectionRecord",
+    "InspectionReviewUpdate",
+    "HeatmapStorageManager",
+    "InspectionWorker",
+    "inspect_router",
 ]
