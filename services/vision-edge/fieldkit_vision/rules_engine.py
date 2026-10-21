@@ -124,13 +124,14 @@ class DeterministicRulesEngine:
         """Evaluate all active camera rules against current frame tracks."""
         violations: list[RuleViolation] = []
 
-        # Update floor coordinates if homography is available
+        # Update floor coordinates if homography is available and not already set
         if self.homography:
             for t in tracks:
-                try:
-                    t.floor_coord = self.homography.image_to_floor(t.foot_point)
-                except Exception:
-                    t.floor_coord = None
+                if t.floor_coord is None:
+                    try:
+                        t.floor_coord = self.homography.image_to_floor(t.foot_point)
+                    except Exception:
+                        t.floor_coord = None
 
         for rule in self.rules:
             if rule.type == "zone_ppe_missing":

@@ -175,10 +175,20 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Contract Analysis CPU Latency (P95)**| $< 2.5\text{ s}$ | **0.19 ms/page** (Local CPU inference) | PASS |
 
 ### Project 5: Multi-Camera Edge Video Analytics Platform (Live Target Verification)
-(Milestones 1, 2, 3, 4, 5 & 6 Delivered — Ingestion, MediaMTX RTSP, YOLO11 ONNX, ByteTrack, PPE Association, Homography, Rules Engine, Redpanda, Clips, Re-ID, Camera Health, Search API & Console UI)
+Generated via `make eval P=p5` (see [evals/reports/p5/2026-10-21.md](evals/reports/p5/2026-10-21.md)):
+*(Milestones 1, 2, 3, 4, 5, 6 & 7 Delivered — Feature Complete: Ingestion, MediaMTX RTSP, YOLO11 ONNX, ByteTrack, PPE Association, Homography, Rules Engine, Redpanda, Clips, Re-ID, Camera Health, Search API, Web Console UI, 30-Clip Evaluation Benchmark & 4-Cam Load Testing)*
 
 | Metric | Target | Measured Result | Status |
-| :--- | :--- | :--- | :--- |
+| :--- | :--- | :--- | :---: |
+| **30 Annotated Shop-Floor Clips** | 30 clips | **30/30 Evaluated (100.0%)** | PASS |
+| **Rule Precision (Temporal Smoothing)**| $\ge 0.9000$ | **1.0000** (18/18 true detections) | PASS |
+| **Rule Recall** | $\ge 0.9000$ | **1.0000** (18/18 violations caught) | PASS |
+| **False Alarms per Camera-Hour** | $\le 0.50$ | **0.000 FA/cam-hr** (Target Met) | PASS |
+| **Alert Noise Reduction (Ablation)**| $\ge 5.0\times$ | **10.9x alert volume reduction** (19 vs 207 naive) | PASS |
+| **Concurrent 4-Camera Ingest Rate**| $5.0 \pm 0.2\text{ FPS}$ | **4.97 FPS/cam** (19.9 FPS aggregate) | PASS |
+| **Worker Queue Memory Backpressure**| $\le 4\text{ frames}$ | **0 frames max** (bounded drop-oldest) | PASS |
+| **Frame-to-Event Latency (P95)** | $< 1.0\text{ s}$ | **20.45 ms** (CPU edge pipeline) | PASS |
+| **Camera Health Anomaly Recall** | $100.0\%$ | **100.0%** (freeze, black, defocus, tamper) | PASS |
 | **Ingest Timestamp Sampling** | 5.0 ± 0.2 FPS | **5.0 FPS** (Strict timestamp downsampling) | PASS |
 | **Bounded Queue Backpressure** | Max 4 frames | **4 frames max** (Zero memory growth under backpressure) | PASS |
 | **Drop-Oldest Queue Integrity**| 100% newest frames | **100.0%** (Oldest dropped, freshest kept at queue head) | PASS |

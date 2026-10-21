@@ -327,6 +327,23 @@ async def main() -> None:
             sys.exit(1)
         return
 
+    if args.profile in ("vision", "p5", "vision-edge", "video", "multicam"):
+        from evals.p5.eval_suite import run_master_p5_eval
+
+        p5_metrics = await run_master_p5_eval()
+        print(f"\n[SUCCESS] Project 5 Video Analytics Benchmark Complete! Report generated at:\n  {p5_metrics.report_path}")
+        print(f"  - 30 Clips Evaluated: {p5_metrics.ablation_report.total_clips} (100% evaluated)")
+        print(f"  - Rule Precision: {p5_metrics.ablation_report.temporal_metrics.precision:.4f} (Target: >= 0.90)")
+        print(f"  - Rule Recall: {p5_metrics.ablation_report.temporal_metrics.recall:.4f} (Target: >= 0.90)")
+        print(f"  - False Alarms / Cam-Hr: {p5_metrics.ablation_report.temporal_metrics.false_alarms_per_camera_hour:.3f} (Target: <= 0.50)")
+        print(f"  - Alert Reduction Factor: {p5_metrics.ablation_report.alert_reduction_factor:.1f}x vs Single-Frame")
+        print(f"  - 4-Cam Aggregate Throughput: {p5_metrics.load_test_result.aggregate_processed_fps:.1f} FPS (Target: >= 20.0 FPS)")
+        print(f"  - Queue Backpressure: max {max(s.max_queue_depth for s in p5_metrics.load_test_result.camera_stats)} frames (Target: <= 4 frames)")
+        if not p5_metrics.overall_gate_passed:
+            print("\n[FAILED] CI Gate detected regressions in Project 5 vision evaluation metrics!")
+            sys.exit(1)
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")
