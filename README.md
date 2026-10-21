@@ -242,6 +242,10 @@ Generated via `make eval P=p5` (see [evals/reports/p5/2026-10-21.md](evals/repor
 - [ADR 0011: Tail-Based Sampling Strategy for Resource-Constrained On-Premises Telemetry](docs/decisions/0011-tail-based-sampling-for-on-premises-telemetry.md)
 - [ADR 0012: Deterministic Share-Weighted Contribution vs Pure LLM Anomaly RCA](docs/decisions/0012-deterministic-share-weighted-contribution-rca-vs-pure-llm.md)
 - [ADR 0013: Span-Grounded Character Alignment, Deterministic Gates, and Hungarian Bipartite Version Diffing for DocAI](docs/decisions/0013-span-grounding-and-hungarian-alignment-for-docai.md)
+- [ADR 0014: Bounded Per-Camera Ingestion Workers with Cross-Camera Dynamic Batching](docs/decisions/0014-per-camera-bounded-workers-and-cross-camera-batching.md)
+- [ADR 0015: Deterministic Temporal Rule Smoothing vs. Single-Frame Triggers for Edge Safety Alerts](docs/decisions/0015-temporal-rule-smoothing-vs-single-frame-triggers.md)
+- [ADR 0016: ClickHouse MergeTree vs. PostgreSQL for High-Frequency Industrial Vision Events](docs/decisions/0016-clickhouse-mergetree-vs-postgres-for-high-frequency-vision-events.md)
+- [ADR 0017: Ultralytics YOLO AGPL-3.0 Licensing Implications and Commercial Deployment Strategy](docs/decisions/0017-ultralytics-yolo-agpl-licensing-and-commercial-deployment-strategy.md)
 
 ---
 

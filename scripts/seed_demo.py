@@ -320,6 +320,9 @@ def main() -> None:
     elif args.profile in ("docai", "p4", "document", "documents", "contract", "contracts"):
         from scripts.demo_docai import run_docai_demo
         asyncio.run(run_docai_demo())
+    elif args.profile in ("vision", "p5", "video", "multicam", "vision-edge"):
+        from scripts.demo_vision import run_vision_demo
+        asyncio.run(run_vision_demo())
     else:
         asyncio.run(run_hello_demo())
 
