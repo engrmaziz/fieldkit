@@ -68,3 +68,6 @@ Thumbs.db
 
 # Docker / Kubernetes temporary state
 *.kubeconfig
+backups/
+*.dump
+

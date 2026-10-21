@@ -1,0 +1,20 @@
+name: daily-backup
+version: 1.0.0
+description: "Project 8: Automated point-in-time PostgreSQL snapshot and MinIO object storage mirror"
+schedule: "0 4 * * *"
+steps:
+  - id: snapshot_postgres
+    type: http
+    url: "http://localhost:8008/backup/postgres"
+    method: "POST"
+
+  - id: mirror_minio
+    type: http
+    url: "http://localhost:8008/backup/minio"
+    method: "POST"
+
+  - id: verify_checksums
+    type: http
+    depends_on: ["snapshot_postgres", "mirror_minio"]
+    url: "http://localhost:8008/backup/verify"
+    method: "POST"

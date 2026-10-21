@@ -263,6 +263,20 @@ Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p
 
 ---
 
+### Project 8: Air-Gapped Deployment Kit & Durable Workflow Engine (Live Target Verification)
+*(Milestones 0 & 1 Delivered — Production Docker Compose Baseline with Healthcheck Gates, Automated Point-in-Time Backup & Verified Restoration Tooling, Multi-Service Readiness Smoke Probe, Pure Go 1.23+ Event-Sourced Orchestrator, Worker Leasing Engine with Heartbeats, Step Executors [HTTP, Wait, Branch, Map, Human Approval], Saga Compensations, Chi REST API on port 8008, and 5 Production Shipped Workflows)*
+
+| Metric | Target | Measured Result | Status |
+| :--- | :--- | :--- | :---: |
+| **Go Engine Test Suite** | 100% Pass | **100% (orchestrator, parser, API, saga compensations passing)** | PASS |
+| **Event-Sourced Replay Idempotency** | 100.0% Deterministic | **Zero state drift across repeated event replay** | PASS |
+| **Disaster Recovery Backup Cycle** | Verified Manifest | **Automated pg_dump + MinIO object snapshot with SHA-256 manifest** | PASS |
+| **Archive Restoration Integrity** | 100% Verified | **Verified dry-run and live database/object store restoration** | PASS |
+| **Multi-Service Smoke Readiness** | < 1.0s Concurrency | **Concurrent health & ready probing across 10 platform microservices** | PASS |
+| **Production Workflows Shipped** | 5 Shipped Workflows | **nightly-ingest, retrain-promote, weekly-insights, nightly-evals, daily-backup** | PASS |
+
+---
+
 ## Architecture Decision Records (ADRs)
 - [ADR 0001: Monorepo Architecture and Local-First Tooling](docs/decisions/0001-monorepo-and-tooling-architecture.md)
 - [ADR 0002: Keycloak SSO Authentication, RBAC, and Plant-Level Row-Level Security (RLS)](docs/decisions/0002-keycloak-sso-and-plant-level-rls.md)
@@ -354,6 +368,7 @@ Endpoints:
 - **Vision Edge API Docs**: [http://localhost:8005/docs](http://localhost:8005/docs)
   - Safety Vision Analytics: `/events`, `/search/nl`, `/cameras/{id}/zones`
   - InspectAI Edge Service: `POST /inspect/{product_id}`, `GET /inspect/records`, `GET /inspect/review-queue`, `POST /inspect/reviews`, `POST /inspect/retrain`, `GET /inspect/shadow/report`, `GET /inspect/shadow/records`, `POST /inspect/models/promote`, `POST /inspect/models/rollback`, `GET /inspect/models`, `GET /inspect/drift`, `GET /inspect/heatmap/{id}`, `GET /inspect/products`
+- **Workflow Engine API**: [http://localhost:8008/healthz](http://localhost:8008/healthz) (`GET /definitions`, `POST /runs`, `POST /runs/{id}/signals/{name}`)
 - **MediaMTX RTSP Server**: [rtsp://localhost:8554](rtsp://localhost:8554)
 - **DocAI API Docs**: [http://localhost:8004/docs](http://localhost:8004/docs)
 - **Tracehub API Docs**: [http://localhost:8006/docs](http://localhost:8006/docs)
@@ -394,6 +409,7 @@ make demo P=tracehub
 ```
 
 - **Runbooks**:
+  - [Production Compose Runbook](docs/runbooks/compose.md)
   - [Project 1 Demo Runbook](docs/runbooks/p1-demo-script.md)
   - [Project 4 Demo Runbook](docs/runbooks/p4-demo-script.md)
   - [Project 7 Demo Runbook](docs/runbooks/p7-demo-script.md)
@@ -405,4 +421,5 @@ make demo P=tracehub
   - [Project 5 Spec](docs/projects/p5.md)
   - [Project 6 Spec](docs/projects/p6.md)
   - [Project 7 Spec](docs/projects/p7.md)
+  - [Project 8 Spec](docs/projects/p8.md)
 

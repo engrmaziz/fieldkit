@@ -1,0 +1,21 @@
+name: weekly-insights
+version: 1.0.0
+description: "Project 3: Multi-plant scrap and incident root-cause synthesis with Mailpit executive briefing"
+schedule: "0 6 * * 1"
+steps:
+  - id: extract_incidents
+    type: http
+    url: "http://localhost:8003/incidents/summary"
+    method: "GET"
+
+  - id: run_rca_synthesis
+    type: http
+    depends_on: ["extract_incidents"]
+    url: "http://localhost:8003/rca/synthesize"
+    method: "POST"
+
+  - id: dispatch_briefing_email
+    type: http
+    depends_on: ["run_rca_synthesis"]
+    url: "http://localhost:8003/notifications/dispatch"
+    method: "POST"

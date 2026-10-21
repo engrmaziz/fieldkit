@@ -39,6 +39,9 @@ members = [
     "packages/*",
     "services/*",
 ]
+exclude = [
+    "services/workflow-engine",
+]
 
 [tool.uv.sources]
 fieldkit-common = { workspace = true }

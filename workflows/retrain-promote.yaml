@@ -1,0 +1,40 @@
+name: retrain-promote
+version: 1.0.0
+description: "Project 6: Automated defect retraining, frozen evaluation gate, shadow inference, and Quality Lead promotion"
+schedule: "0 3 * * 0"
+steps:
+  - id: trigger_retraining
+    type: http
+    url: "http://localhost:8005/inspect/retrain"
+    method: "POST"
+    compensate_with: "clean_candidate_artifacts"
+    timeout_sec: 120
+
+  - id: evaluate_frozen_gate
+    type: http
+    depends_on: ["trigger_retraining"]
+    url: "http://localhost:8005/inspect/shadow/report"
+    method: "GET"
+
+  - id: await_lead_approval
+    type: human_approval
+    depends_on: ["evaluate_frozen_gate"]
+    signal_name: "promote_approved"
+
+  - id: promote_to_production
+    type: http
+    depends_on: ["await_lead_approval"]
+    url: "http://localhost:8005/inspect/models/promote"
+    method: "POST"
+    compensate_with: "rollback_model"
+
+compensations:
+  - id: rollback_model
+    type: http
+    url: "http://localhost:8005/inspect/models/rollback"
+    method: "POST"
+
+  - id: clean_candidate_artifacts
+    type: http
+    url: "http://localhost:8005/inspect/models/cleanup"
+    method: "POST"

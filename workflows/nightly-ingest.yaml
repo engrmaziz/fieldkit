@@ -1,0 +1,38 @@
+name: nightly-ingest
+version: 1.0.0
+description: "Project 1: Halden Industrie nightly multi-source data ingestion, schema profiling, and entity resolution"
+schedule: "0 2 * * *"
+steps:
+  - id: ingest_erp
+    type: http
+    url: "http://localhost:8001/ingest/erp"
+    method: "POST"
+    timeout_sec: 60
+    retry_policy:
+      max_attempts: 3
+      initial_interval_sec: 2
+      backoff_multiplier: 2.0
+
+  - id: ingest_soap
+    type: http
+    url: "http://localhost:8001/ingest/soap"
+    method: "POST"
+    timeout_sec: 60
+
+  - id: profile_drift
+    type: http
+    depends_on: ["ingest_erp", "ingest_soap"]
+    url: "http://localhost:8001/drift/profile"
+    method: "POST"
+
+  - id: resolve_entities
+    type: http
+    depends_on: ["profile_drift"]
+    url: "http://localhost:8001/er/resolve"
+    method: "POST"
+
+  - id: promote_staging
+    type: http
+    depends_on: ["resolve_entities"]
+    url: "http://localhost:8001/staging/promote"
+    method: "POST"

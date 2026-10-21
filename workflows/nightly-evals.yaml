@@ -1,0 +1,25 @@
+name: nightly-evals
+version: 1.0.0
+description: "Cross-Project regression evaluation suite: runs assistant, docai, and vision benchmarks"
+schedule: "0 1 * * *"
+steps:
+  - id: eval_assistant_rag
+    type: http
+    url: "http://localhost:8002/eval"
+    method: "POST"
+
+  - id: eval_docai_contracts
+    type: http
+    url: "http://localhost:8004/eval"
+    method: "POST"
+
+  - id: eval_vision_safety
+    type: http
+    url: "http://localhost:8005/eval"
+    method: "POST"
+
+  - id: aggregate_tracehub_metrics
+    type: http
+    depends_on: ["eval_assistant_rag", "eval_docai_contracts", "eval_vision_safety"]
+    url: "http://localhost:8006/metrics/aggregate"
+    method: "POST"

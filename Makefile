@@ -60,7 +60,25 @@ demo: ## Run demo for selected profile and seed data
 eval: ## Run evaluation suite and write report to evals/reports/<project>/<date>.md
 	uv run python evals/runner.py --profile $(P)
 
+backup: ## Run automated disaster recovery backup
+	uv run python scripts/backup.py
 
+restore: ## Run disaster recovery restore (use ARCHIVE=path [CONFIRM=1])
+	@if [ -z "$${ARCHIVE:-}" ]; then \
+		echo "Usage: make restore ARCHIVE=./backups/<name> [CONFIRM=1]"; \
+		exit 1; \
+	fi
+	@if [ "$${CONFIRM:-0}" = "1" ]; then \
+		uv run python scripts/restore.py --archive "$${ARCHIVE}" --confirm; \
+	else \
+		uv run python scripts/restore.py --archive "$${ARCHIVE}" --dry-run; \
+	fi
+
+smoke: ## Run multi-service readiness smoke test
+	uv run python scripts/smoke_readiness.py
+
+test-go: ## Run Go workflow engine tests
+	cd services/workflow-engine && go test ./... -v
 
 clean: ## Clean cache files
 	rm -rf .pytest_cache .mypy_cache .ruff_cache __pycache__ .cache
