@@ -84,14 +84,45 @@ def _generate_synthetic_component_image(
         grain = rng.normal(0, 2, (size, size)).astype(np.float32)
         img = np.clip(img.astype(np.float32) + grain[:, :, None], 0, 255).astype(np.uint8)
 
+    elif category == "steel_sheet":
+        # Hot-rolled strip steel texture with subtle horizontal roll marks
+        for y in range(0, size, 4):
+            cv2.line(img, (0, y), (size, y), (135, 135, 135), 1)
+        grain = rng.normal(0, 1.5, (size, size)).astype(np.float32)
+        img = np.clip(img.astype(np.float32) + grain[:, :, None], 0, 255).astype(np.uint8)
+
     # Add realistic defect if specified
     if defect_type:
         if defect_type in ("scratch", "scratches"):
             # Diagonal sharp surface scratch
-            p1 = (int(rng.randint(60, 120)), int(rng.randint(60, 120)))
-            p2 = (int(p1[0] + rng.randint(40, 80)), int(p1[1] + rng.randint(40, 80)))
+            p1 = (int(rng.randint(40, 100)), int(rng.randint(40, 100)))
+            p2 = (int(p1[0] + rng.randint(60, 120)), int(p1[1] + rng.randint(60, 120)))
             cv2.line(img, p1, p2, (30, 30, 30), 3)
             cv2.line(mask, p1, p2, 255, 7)
+
+        elif defect_type == "pitted_surface":
+            # High-frequency speckle pits
+            noise = rng.normal(0, 45, (size, size)).astype(np.float32)
+            img = np.clip(img.astype(np.float32) + noise[:, :, None], 0, 255).astype(np.uint8)
+            mask[np.abs(noise) > 35] = 255
+
+        elif defect_type == "patches":
+            # Irregular dark oxide patches
+            cv2.ellipse(img, (128, 128), (55, 40), 45, 0, 360, (50, 50, 50), -1)
+            cv2.ellipse(mask, (128, 128), (55, 40), 45, 0, 360, 255, -1)
+
+        elif defect_type == "crazing":
+            # Micro-crack spiderweb lines
+            for _ in range(6):
+                pt1 = (int(rng.randint(40, 200)), int(rng.randint(40, 200)))
+                pt2 = (int(pt1[0] + rng.randint(-30, 30)), int(pt1[1] + rng.randint(-30, 30)))
+                cv2.line(img, pt1, pt2, (40, 40, 40), 2)
+                cv2.line(mask, pt1, pt2, 255, 4)
+
+        elif defect_type == "rolled_in_scale":
+            # Long dark scale streak
+            cv2.rectangle(img, (20, 110), (236, 145), (70, 70, 70), -1)
+            cv2.rectangle(mask, (20, 110), (236, 145), 255, -1)
 
         elif defect_type in ("bent", "hole", "puncture"):
             # Puncture or dark deformation

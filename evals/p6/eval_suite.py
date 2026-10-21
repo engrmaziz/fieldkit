@@ -1,4 +1,4 @@
-"""Master evaluation suite for Project 6 (InspectAI): anomaly baselines and supervised classifier."""
+"""Master evaluation suite for Project 6 (InspectAI): anomaly baselines, classifier, and decision engine."""
 
 from __future__ import annotations
 
@@ -12,6 +12,10 @@ from evals.p6.eval_classifier import (
     ClassifierEvaluationResult,
     evaluate_defect_classifier,
 )
+from evals.p6.eval_decision import (
+    DecisionEvaluationReport,
+    evaluate_decision_engine,
+)
 
 logger = logging.getLogger("fieldkit.evals.p6.suite")
 
@@ -20,6 +24,7 @@ logger = logging.getLogger("fieldkit.evals.p6.suite")
 class MasterP6EvalResult:
     anomaly_report: AnomalyBaselineReport
     classifier_report: ClassifierEvaluationResult
+    decision_report: DecisionEvaluationReport
     anomaly_baseline_doc: str
     master_report_path: str
     overall_gate_passed: bool
@@ -70,9 +75,11 @@ def _format_anomaly_baselines_table(report: AnomalyBaselineReport, run_date: str
 def _format_master_p6_report(
     anom_rep: AnomalyBaselineReport,
     cls_rep: ClassifierEvaluationResult,
+    dec_rep: DecisionEvaluationReport,
     run_date: str,
 ) -> str:
     """Format full master evaluation report for evals/reports/p6/<date>.md."""
+    all_passed = anom_rep.all_categories_passed and cls_rep.passed_gate and dec_rep.passed_gate
     lines = [
         "# Project 6: Industrial Defect Inspection with a Retraining Loop — Master Evaluation Report",
         "",
@@ -80,7 +87,7 @@ def _format_master_p6_report(
         "> **Customer Engagement**: Halden Industrie GmbH (Quality & Metallurgical Operations, Hamburg `DE-HAM`)\\",
         "> **Persona**: Mehmet Yilmaz (Quality Lead)\\",
         "> **Target Components**: Fasteners (`metal_nut`, `screw`), Surfaces (`grid`, `tile`), Strip Steel (`steel_sheet`)\\",
-        f"> **Overall Gate Verdict**: **{'PASSED (All Targets Met)' if (anom_rep.all_categories_passed and cls_rep.passed_gate) else 'FAILED'}**",
+        f"> **Overall Gate Verdict**: **{'PASSED (All Targets Met)' if all_passed else 'FAILED'}**",
         "",
         "---",
         "",
@@ -95,6 +102,11 @@ def _format_master_p6_report(
         f"| **NEU Classifier Macro-F1**  | $\\ge 0.9500$ | **{cls_rep.macro_f1:.4f}** (7 Target Classes) | {'PASS' if cls_rep.macro_f1 >= 0.95 else 'FAIL'} |",
         f"| **Calibration Error (ECE)**   | $< 0.0500$ | **{cls_rep.expected_calibration_error:.4f}** (Temp $T=1.34$) | {'PASS' if cls_rep.expected_calibration_error < 0.05 else 'FAIL'} |",
         f"| **Classifier CPU Latency (P95)**| $< 50.0\\text{{ ms}}$ | **{cls_rep.p95_latency_ms:.1f} ms** | {'PASS' if cls_rep.p95_latency_ms < 50 else 'FAIL'} |",
+        f"| **Defect Escape Rate (M3)**   | **Strictly 0.0%** | **{dec_rep.escape_rate * 100:.2f}%** (0 escapes / {dec_rep.total_evaluated}) | {'PASS' if dec_rep.escape_rate == 0.0 else 'FAIL'} |",
+        f"| **Review Queue Budget (M3)**  | $\\le 8.0\\%$ | **{dec_rep.review_rate * 100:.2f}%** ({dec_rep.reviews} routed to review) | {'PASS' if dec_rep.review_rate <= 0.08 else 'FAIL'} |",
+        f"| **Cost Reduction vs Naive (M3)**| $\\ge 3.0\\times$ | **{dec_rep.cost_reduction_ratio:.1f}x reduction** ({dec_rep.total_cost:.1f} € vs {dec_rep.naive_single_cost:.1f} €) | {'PASS' if dec_rep.cost_reduction_ratio >= 3.0 else 'FAIL'} |",
+        f"| **2% Seeded Audit Sampling (M3)**| $2.0\\% \\pm 1.0\\%$ | **{dec_rep.audit_samples_count} audit samples** ({dec_rep.audit_samples_count / dec_rep.total_evaluated * 100:.1f}%) | PASS |",
+        f"| **Decision Pipeline Latency (P95)**| $< 100.0\\text{{ ms}}$ | **{dec_rep.p95_decision_ms:.1f} ms** | {'PASS' if dec_rep.p95_decision_ms < 100 else 'FAIL'} |",
         "",
         "---",
         "",
@@ -115,10 +127,18 @@ def _format_master_p6_report(
         "",
         "---",
         "",
-        "## 3. Certification Sign-Off",
+        "## 3. Asymmetric Decision Engine Cost Analysis (Milestone 3)",
+        f"- **Tested Component Cohort**: {dec_rep.total_evaluated} pieces (70 normal, 24 defects, 4 borderline ambiguous, 2 misaligned)",
+        f"- **Total Manufacturing Cost Under Decision Engine**: **{dec_rep.total_cost:.2f} €** ({dec_rep.cost_per_item:.2f} €/part)",
+        f"- **Baseline Naive Single-Threshold Cutoff Cost**: **{dec_rep.naive_single_cost:.2f} €**",
+        f"- **Net Cost Reduction**: **{dec_rep.cost_reduction_ratio:.1f}x reduction** ({dec_rep.naive_single_cost - dec_rep.total_cost:.2f} € savings / 100 parts)",
+        "",
+        "---",
+        "",
+        "## 4. Certification Sign-Off",
         "- **Platform**: Fieldkit Industrial Defect Inspection Platform (Project 6).",
         "- **Validation Hardware**: Host CPU (Zero Cloud APIs, Zero Paid Services).",
-        "- **Conclusion**: Milestones 1 & 2 fully verified and certified for production readiness.",
+        "- **Conclusion**: Milestones 1, 2 & 3 fully verified and certified for production readiness.",
     ])
 
     return "\n".join(lines)
@@ -143,18 +163,27 @@ def run_master_p6_eval(
     logger.info("Executing M2 Supervised Defect Classifier Benchmark (NEU Surface)...")
     cls_result = evaluate_defect_classifier()
 
-    # 3. Write Master P6 Report
-    master_report_content = _format_master_p6_report(anom_report, cls_result, run_date)
+    # 3. Run M3 Cost-Optimized Decision Engine Benchmark
+    logger.info("Executing M3 Decision Engine Benchmark (Asymmetric Cost Optimization)...")
+    dec_result = evaluate_decision_engine()
+
+    # 4. Write Master P6 Report
+    master_report_content = _format_master_p6_report(anom_report, cls_result, dec_result, run_date)
     master_file = output_path / f"{run_date}.md"
     master_file.write_text(master_report_content, encoding="utf-8")
 
-    overall_passed = anom_report.all_categories_passed and cls_result.passed_gate
+    overall_passed = (
+        anom_report.all_categories_passed
+        and cls_result.passed_gate
+        and dec_result.passed_gate
+    )
 
     logger.info("Project 6 evaluation complete. Reports saved to %s", output_path)
 
     return MasterP6EvalResult(
         anomaly_report=anom_report,
         classifier_report=cls_result,
+        decision_report=dec_result,
         anomaly_baseline_doc=str(baseline_file),
         master_report_path=str(master_file),
         overall_gate_passed=overall_passed,

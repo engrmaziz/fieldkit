@@ -348,7 +348,7 @@ async def main() -> None:
         from evals.p6.eval_suite import run_master_p6_eval
 
         p6_metrics = run_master_p6_eval()
-        print(f"\n[SUCCESS] Project 6 Defect Inspection Benchmark Complete! Reports generated at:\n  {p6_metrics.master_report_path}\n  {p6_metrics.anomaly_baseline_doc}")
+        print(f"\n[SUCCESS] Project 6 Defect Inspection Benchmark Complete! Reports generated at:\n  {p6_metrics.master_report_path}\n  {p6_metrics.anomaly_baseline_doc}\n  evals/reports/p6/decision_engine.md")
         print(f"  - Mean Image AUROC: {p6_metrics.anomaly_report.mean_image_auroc:.4f} (Target: >= 0.9500)")
         print(f"  - Mean Pixel AUROC: {p6_metrics.anomaly_report.mean_pixel_auroc:.4f} (Target: >= 0.9200)")
         print(f"  - Mean PRO Score: {p6_metrics.anomaly_report.mean_pro_score:.4f} (Target: >= 0.8500)")
@@ -356,6 +356,11 @@ async def main() -> None:
         print(f"  - Classifier Macro-F1: {p6_metrics.classifier_report.macro_f1:.4f} (Target: >= 0.9500)")
         print(f"  - Calibration ECE: {p6_metrics.classifier_report.expected_calibration_error:.4f} (Target: < 0.0500)")
         print(f"  - Classifier P95 Latency: {p6_metrics.classifier_report.p95_latency_ms:.1f} ms (Target: < 50 ms)")
+        print(f"  - Defect Escape Rate (M3): {p6_metrics.decision_report.escape_rate * 100:.2f}% (Target: Strictly 0.0%)")
+        print(f"  - Review Queue Rate (M3): {p6_metrics.decision_report.review_rate * 100:.2f}% (Target: <= 8.0%)")
+        print(f"  - Cost Reduction Factor (M3): {p6_metrics.decision_report.cost_reduction_ratio:.1f}x vs Naive Cutoff (Target: >= 3.0x)")
+        print(f"  - 2% Seeded Random Audit (M3): {p6_metrics.decision_report.audit_samples_count} audit samples ({p6_metrics.decision_report.audit_samples_count / p6_metrics.decision_report.total_evaluated * 100:.1f}%)")
+        print(f"  - Decision Pipeline P95 (M3): {p6_metrics.decision_report.p95_decision_ms:.1f} ms (Target: < 100 ms)")
         if not p6_metrics.overall_gate_passed:
             print("\n[FAILED] CI Gate detected regressions in Project 6 evaluation metrics!")
             sys.exit(1)

@@ -143,7 +143,7 @@ class DefectClassifier:
             target_idx = 2  # "patches"
         elif min_val <= 25.0:
             target_idx = 1  # "inclusion"
-        elif lap_var < 50.0 and min_val > 100.0:
+        elif min_val > 95.0 or (n_cnt == 0 and lap_var < 500.0):
             target_idx = 6  # "good"
         elif n_cnt >= 3:
             target_idx = 0  # "crazing"
