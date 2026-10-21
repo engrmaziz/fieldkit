@@ -227,8 +227,8 @@ Generated via `make eval P=p5` (see [evals/reports/p5/2026-10-21.md](evals/repor
 | **Worker Re-ID Journey Timeline** | Cross-camera transit audit trail | **Chronological sighting progression with OSNet score** | PASS |
 
 ### Project 6: Industrial Defect Inspection with Retraining Loop — InspectAI (Live Target Verification)
-Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p6/2026-10-21.md](evals/reports/p6/2026-10-21.md), [evals/reports/p6/anomaly_baselines.md](evals/reports/p6/anomaly_baselines.md), and [evals/reports/p6/decision_engine.md](evals/reports/p6/decision_engine.md)):
-*(Milestones 1, 2, 3 & 4 Delivered — Unsupervised PatchCore Anomaly Baselines on MVTec AD, Supervised 7-Class Defect Classifier on NEU Surface Taxonomy, Temperature Scaling Calibration, Cost-Optimized Decision Engine, 2% Seeded Audit Sampling, Real-Time Edge Inspection Service, Blended Jet Colormap Heatmap Overlays, and PostgreSQL Inspection Ledger)*
+Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p6/2026-10-21.md](evals/reports/p6/2026-10-21.md), [evals/reports/p6/anomaly_baselines.md](evals/reports/p6/anomaly_baselines.md), [evals/reports/p6/decision_engine.md](evals/reports/p6/decision_engine.md), and [evals/reports/p6/retraining_loop.md](evals/reports/p6/retraining_loop.md)):
+*(Milestones 1, 2, 3, 4 & 5 Delivered — Unsupervised PatchCore Anomaly Baselines on MVTec AD, Supervised 7-Class Defect Classifier on NEU Surface Taxonomy, Temperature Scaling Calibration, Cost-Optimized Decision Engine, 2% Seeded Audit Sampling, Real-Time Edge Inspection Service, Blended Jet Colormap Heatmap Overlays, PostgreSQL Inspection Ledger, Review Triage Queue, Manifest Integrity & dHash Deduplication, Closed Retraining Loop, Non-Blocking Shadow Inference, PSI Drift Monitoring, and Instant Rollback)*
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :---: |
@@ -250,6 +250,12 @@ Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p
 | **Heatmap Overlay Storage (M4)** | $\ge 90\%$ non-pass | **100% captured** (Jet overlay JPEG quality 92) | PASS |
 | **Service Error Rate (M4)** | $0.0\%$ | **0 errors** (100% response integrity) | PASS |
 | **Cross-Split Dataset Deduplication** | dHash Hamming $\le 2$ | **64-bit perceptual hashing with cross-split leakage block** | PASS |
+| **Baseline Score PSI (M5)** | $< 0.1000$ | **0.0727** (Stable baseline vs test split) | PASS |
+| **Material Drift Alert PSI (M5)** | $> 0.2000$ | **3.1255** (Critical shift alert triggered) | PASS |
+| **Shadow Decision Agreement (M5)** | $\ge 85.0\%$ | **100.0%** (50 paired production/shadow decisions) | PASS |
+| **Candidate Model Promotion (M5)** | Gate Check | **`cand_v2.0.0` promoted to Production** | PASS |
+| **Instant Rollback Verification (M5)**| Instantaneous | **Production reverted to `prod_v1.0.0` with audit ledger** | PASS |
+| **Frozen Test Set Immutability (M5)** | 100.0% | **100.0%** (SHA-256 fingerprint verified) | PASS |
 | **Model Registry Lifecycle** | Candidate $\to$ Production | **Local versioned artifacts with metadata & zero-downtime rollback** | PASS |
 
 ---
@@ -332,7 +338,7 @@ Endpoints:
 - **Grafana Dashboards**: [http://localhost:3001](http://localhost:3001) (admin / admin)
 - **Vision Edge API Docs**: [http://localhost:8005/docs](http://localhost:8005/docs)
   - Safety Vision Analytics: `/events`, `/search/nl`, `/cameras/{id}/zones`
-  - InspectAI Edge Service: `POST /inspect/{product_id}`, `GET /inspect/records`, `GET /inspect/records/{id}`, `POST /inspect/records/{id}/review`, `GET /inspect/heatmap/{id}`, `GET /inspect/products`
+  - InspectAI Edge Service: `POST /inspect/{product_id}`, `GET /inspect/records`, `GET /inspect/review-queue`, `POST /inspect/reviews`, `POST /inspect/retrain`, `GET /inspect/shadow/report`, `GET /inspect/shadow/records`, `POST /inspect/models/promote`, `POST /inspect/models/rollback`, `GET /inspect/models`, `GET /inspect/drift`, `GET /inspect/heatmap/{id}`, `GET /inspect/products`
 - **MediaMTX RTSP Server**: [rtsp://localhost:8554](rtsp://localhost:8554)
 - **DocAI API Docs**: [http://localhost:8004/docs](http://localhost:8004/docs)
 - **Tracehub API Docs**: [http://localhost:8006/docs](http://localhost:8006/docs)

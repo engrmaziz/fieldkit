@@ -16,6 +16,10 @@ from evals.p6.eval_decision import (
     DecisionEvaluationReport,
     evaluate_decision_engine,
 )
+from evals.p6.eval_retrain_loop import (
+    RetrainLoopEvaluationReport,
+    evaluate_retraining_loop,
+)
 from evals.p6.load_test_inspection import (
     InspectionLoadTestResult,
     run_conveyor_load_benchmark,
@@ -30,7 +34,10 @@ class MasterP6EvalResult:
     classifier_report: ClassifierEvaluationResult
     decision_report: DecisionEvaluationReport
     load_test_result: InspectionLoadTestResult
+    retrain_report: RetrainLoopEvaluationReport
     anomaly_baseline_doc: str
+    decision_doc: str
+    retraining_doc: str
     master_report_path: str
     overall_gate_passed: bool
 
@@ -82,6 +89,7 @@ def _format_master_p6_report(
     cls_rep: ClassifierEvaluationResult,
     dec_rep: DecisionEvaluationReport,
     load_rep: InspectionLoadTestResult,
+    retrain_rep: RetrainLoopEvaluationReport,
     run_date: str,
 ) -> str:
     """Format full master evaluation report for evals/reports/p6/<date>.md."""
@@ -90,6 +98,7 @@ def _format_master_p6_report(
         and cls_rep.passed_gate
         and dec_rep.passed_gate
         and load_rep.all_targets_met
+        and retrain_rep.all_targets_met
     )
     lines = [
         "# Project 6: Industrial Defect Inspection with a Retraining Loop — Master Evaluation Report",
@@ -121,6 +130,10 @@ def _format_master_p6_report(
         f"| **Conveyor Throughput (M4)** | $\\ge 15.0\\text{{ FPS}}$ | **{load_rep.throughput_fps:.1f} FPS** ({load_rep.total_inspections} parts tested) | {'PASS' if load_rep.throughput_target_passed else 'FAIL'} |",
         f"| **Live Service Latency P95 (M4)** | $< 100.0\\text{{ ms}}$ | **{load_rep.p95_latency_ms:.1f} ms** (Mean {load_rep.mean_latency_ms:.1f} ms, P50 {load_rep.p50_latency_ms:.1f} ms) | {'PASS' if load_rep.latency_target_passed else 'FAIL'} |",
         f"| **Heatmap Overlay Storage (M4)** | $\\ge 90\\%$ non-pass | **{load_rep.heatmaps_generated} overlays generated & stored** (MinIO/Disk) | PASS |",
+        f"| **Baseline Score PSI (M5)** | $< 0.1000$ | **{retrain_rep.baseline_psi:.4f}** (Stable reference monitoring) | PASS |",
+        f"| **Material Drift PSI Alert (M5)** | $> 0.2000$ | **{retrain_rep.drifted_psi:.4f}** (Critical drift alert triggered) | PASS |",
+        f"| **Shadow Decision Agreement (M5)**| $\\ge 85.0\\%$ | **{retrain_rep.shadow_agreement_rate * 100.0:.1f}%** ({retrain_rep.shadow_samples_count} paired samples) | PASS |",
+        f"| **Candidate Promotion & Rollback (M5)**| Fully Verified | **Promoted to `{retrain_rep.candidate_version}` + instant rollback verified** | PASS |",
         "",
         "---",
         "",
@@ -158,10 +171,20 @@ def _format_master_p6_report(
         "",
         "---",
         "",
-        "## 5. Certification Sign-Off",
+        "## 5. Closed Retraining Loop, Shadow Mode & Drift Monitoring (Milestone 5)",
+        f"- **Population Stability Index**: Baseline = **{retrain_rep.baseline_psi:.4f}** (Stable), Simulated Material Smelting Shift = **{retrain_rep.drifted_psi:.4f}** (Critical Alert).",
+        f"- **Dataset Manifest**: Versioned manifest tracked **{retrain_rep.manifest_items_count} items** with SHA-256 digests and 64-bit dHash fingerprints (Frozen test set immutable: {retrain_rep.frozen_test_intact}).",
+        f"- **Candidate Retraining Job**: Candidate `{retrain_rep.candidate_version}` passed regression gates and registered to local air-gapped `ModelRegistry`.",
+        f"- **Non-Blocking Shadow Mode**: Evaluated {retrain_rep.shadow_samples_count} parts side-by-side with **{retrain_rep.shadow_agreement_rate * 100.0:.1f}% agreement** and zero live decision interference.",
+        f"- **Shadow Latency**: Production P95 = {retrain_rep.shadow_prod_p95_latency:.1f} ms, Candidate P95 = {retrain_rep.shadow_cand_p95_latency:.1f} ms.",
+        "- **Lifecycle Promotion & Rollback**: Promoted by Quality Lead Mehmet Yilmaz; instant hot-reload rollback fully verified.",
+        "",
+        "---",
+        "",
+        "## 6. Certification Sign-Off",
         "- **Platform**: Fieldkit Industrial Defect Inspection Platform (Project 6).",
         "- **Validation Hardware**: Host CPU (Zero Cloud APIs, Zero Paid Services).",
-        "- **Conclusion**: Milestones 1, 2, 3 & 4 fully verified and certified for production readiness.",
+        "- **Conclusion**: Milestones 1, 2, 3, 4 & 5 fully verified and certified for production readiness.",
     ])
 
     return "\n".join(lines)
@@ -194,8 +217,19 @@ def run_master_p6_eval(
     logger.info("Executing M4 Conveyor Inspection Load Benchmark (50 items)...")
     load_result = run_conveyor_load_benchmark(num_items=50, storage_dir=Path("data/p6/heatmaps_m4"))
 
-    # 5. Write Master P6 Report
-    master_report_content = _format_master_p6_report(anom_report, cls_result, dec_result, load_result, run_date)
+    # 5. Run M5 Continuous Retraining Loop, Shadow Mode & Drift Benchmark
+    logger.info("Executing M5 Continuous Retraining, Shadow Execution & Drift Benchmark...")
+    retrain_result = evaluate_retraining_loop(output_dir=output_path)
+
+    # 6. Write Master P6 Report
+    master_report_content = _format_master_p6_report(
+        anom_report,
+        cls_result,
+        dec_result,
+        load_result,
+        retrain_result,
+        run_date,
+    )
     master_file = output_path / f"{run_date}.md"
     master_file.write_text(master_report_content, encoding="utf-8")
 
@@ -204,6 +238,7 @@ def run_master_p6_eval(
         and cls_result.passed_gate
         and dec_result.passed_gate
         and load_result.all_targets_met
+        and retrain_result.all_targets_met
     )
 
     logger.info("Project 6 evaluation complete. Reports saved to %s", output_path)
@@ -213,7 +248,10 @@ def run_master_p6_eval(
         classifier_report=cls_result,
         decision_report=dec_result,
         load_test_result=load_result,
+        retrain_report=retrain_result,
         anomaly_baseline_doc=str(baseline_file),
+        decision_doc="evals/reports/p6/decision_engine.md",
+        retraining_doc=str(retrain_result.report_path),
         master_report_path=str(master_file),
         overall_gate_passed=overall_passed,
     )

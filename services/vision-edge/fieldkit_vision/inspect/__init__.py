@@ -20,6 +20,11 @@ from fieldkit_vision.inspect.models import (
 )
 from fieldkit_vision.inspect.preprocess import InspectionPreprocessor, PreprocessResult
 from fieldkit_vision.inspect.router import router as inspect_router
+from fieldkit_vision.inspect.shadow import (
+    PairedShadowRecord,
+    ShadowInspectionManager,
+    ShadowPromotionReport,
+)
 from fieldkit_vision.inspect.storage import HeatmapStorageManager
 from fieldkit_vision.inspect.worker import InspectionWorker
 
@@ -42,5 +47,8 @@ __all__ = [
     "InspectionReviewUpdate",
     "HeatmapStorageManager",
     "InspectionWorker",
+    "PairedShadowRecord",
+    "ShadowInspectionManager",
+    "ShadowPromotionReport",
     "inspect_router",
 ]

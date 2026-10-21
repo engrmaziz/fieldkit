@@ -67,3 +67,39 @@ class InspectionReviewUpdate(BaseModel):
     operator_label: str = Field(..., description="Operator verified label (e.g. good, crazing, scratch, reject)")
     operator_notes: str | None = Field(default=None, description="Notes on defect manifestation")
     reviewed_by: str = Field(default="operator", description="Operator user identifier")
+
+
+class ReviewSubmission(BaseModel):
+    """Review queue submission matching M5 specification."""
+
+    inspection_id: str
+    verdict: str = Field(..., description="Verdict: good or defect")
+    defect_class: str | None = Field(default=None, description="Specific defect class if verdict is defect")
+    polygon: list[list[float]] | None = Field(default=None, description="Optional bounding polygon coordinates")
+    notes: str | None = Field(default=None, description="Operator notes")
+    reviewed_by: str = Field(default="mehmet", description="Reviewer identifier")
+
+
+class RetrainRequest(BaseModel):
+    """Payload to trigger closed-loop retraining."""
+
+    product_id: str
+    candidate_version: str | None = None
+
+
+class ModelPromotionRequest(BaseModel):
+    """Payload to promote candidate model to production."""
+
+    product_id: str
+    version: str
+    promoted_by: str = "mehmet"
+    role: str = "quality"
+    notes: str = "Passed shadow evaluation"
+
+
+class ModelRollbackRequest(BaseModel):
+    """Payload to roll back production model."""
+
+    product_id: str
+    target_version: str
+

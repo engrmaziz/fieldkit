@@ -17,7 +17,7 @@
 | **Operator Review Rate** | $\le 8.0\%$ | **7.00%** (7 routed to review) | PASS |
 | **Cost Reduction vs. Naive Cutoff** | $\ge 3.0\times$ | **57.1x reduction** (35.00 € vs 2000.00 €) | PASS |
 | **2% Random Seeded Audit Sampling** | $2.0\% \pm 1.0\%$ | **1 audit samples** (1.0%) | PASS |
-| **End-to-End Decision Latency (P95)**| $< 100.0\text{ ms}$ | **18.6 ms** | PASS |
+| **End-to-End Decision Latency (P95)**| $< 100.0\text{ ms}$ | **22.3 ms** | PASS |
 
 ---
 
