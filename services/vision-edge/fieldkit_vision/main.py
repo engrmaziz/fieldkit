@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import logging
+from collections import deque
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 import cv2
@@ -13,10 +15,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from fieldkit_vision.camera_worker import CameraWorker, load_all_camera_configs
+from fieldkit_vision.clip_generator import FrameRingBuffer, MinIOClipUploader, generate_event_clip
 from fieldkit_vision.config import settings
 from fieldkit_vision.detector import YOLOOnnxDetector
+from fieldkit_vision.events import ClickHouseEventStorage, RedpandaEventPublisher, VisionEvent
 from fieldkit_vision.homography import CameraHomography
-from fieldkit_vision.models import CameraHealthStatus, CameraMetrics, TrackResponse
+from fieldkit_vision.metrics import VISION_ALERTS_TOTAL
+from fieldkit_vision.models import CameraHealthStatus, CameraMetrics, FramePacket, TrackResponse
+from fieldkit_vision.rules_engine import DeterministicRulesEngine
 from fieldkit_vision.tracker import ByteTracker, associate_ppe_to_tracks
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -26,6 +32,13 @@ logger = logging.getLogger("fieldkit.vision.main")
 workers: dict[str, CameraWorker] = {}
 trackers: dict[str, ByteTracker] = {}
 homographies: dict[str, CameraHomography] = {}
+rules_engines: dict[str, DeterministicRulesEngine] = {}
+ring_buffers: dict[str, FrameRingBuffer] = {}
+recent_events: deque[VisionEvent] = deque(maxlen=500)
+
+event_publisher = RedpandaEventPublisher()
+clickhouse_storage = ClickHouseEventStorage()
+clip_uploader = MinIOClipUploader()
 detector: YOLOOnnxDetector | None = None
 
 
@@ -43,16 +56,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         worker = CameraWorker(config=cfg)
         workers[cfg.camera_id] = worker
         trackers[cfg.camera_id] = ByteTracker(camera_id=cfg.camera_id)
+        ring_buffers[cfg.camera_id] = FrameRingBuffer(capacity=50)
 
         # Load homography if configured
+        homog: CameraHomography | None = None
         if cfg.homography and cfg.homography.image_points and cfg.homography.floor_points_meters:
             try:
-                homographies[cfg.camera_id] = CameraHomography.from_config(cfg.homography)
+                homog = CameraHomography.from_config(cfg.homography)
+                homographies[cfg.camera_id] = homog
             except Exception as e:
                 logger.warning("Failed to initialize homography for camera %s: %s", cfg.camera_id, e)
 
+        # Initialize deterministic rules engine with temporal smoothing
+        rules_engines[cfg.camera_id] = DeterministicRulesEngine(camera_config=cfg, homography=homog)
+
         worker.start()
-        logger.info("Spawned worker and tracker for camera %s (%s)", cfg.camera_id, cfg.name)
+        logger.info("Spawned worker, tracker, and rules engine for camera %s (%s)", cfg.camera_id, cfg.name)
 
     yield
 
@@ -63,6 +82,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     workers.clear()
     trackers.clear()
     homographies.clear()
+    rules_engines.clear()
+    ring_buffers.clear()
 
 
 app = FastAPI(
@@ -213,4 +234,112 @@ async def get_camera_tracks(camera_id: str) -> list[TrackResponse]:
             )
         )
     return results
+
+
+async def process_frame_and_evaluate_rules(
+    camera_id: str,
+    frame_packet: FramePacket,
+    generate_clips: bool = False,
+) -> list[VisionEvent]:
+    """Run detection, tracking, PPE association, deterministic rules engine, and emit events."""
+    ring = ring_buffers.setdefault(camera_id, FrameRingBuffer(capacity=50))
+    ring.append(frame_packet)
+
+    tracker = trackers.setdefault(camera_id, ByteTracker(camera_id=camera_id))
+    rules_engine = rules_engines.get(camera_id)
+
+    if detector is None or rules_engine is None or frame_packet.image is None:
+        return []
+
+    # 1. Detection
+    detections = detector.detect(frame_packet.image)
+
+    # 2. Tracking
+    active_tracks = tracker.update(detections, timestamp=frame_packet.timestamp)
+
+    # 3. PPE Association
+    associate_ppe_to_tracks(active_tracks, detections)
+
+    # 4. Rules Engine Evaluation (with temporal smoothing and 30s cooldown)
+    violations = rules_engine.evaluate(tracks=active_tracks, timestamp=frame_packet.timestamp)
+
+    emitted_events: list[VisionEvent] = []
+    for v in violations:
+        clip_uri: str | None = None
+
+        # 5. Optional 10s MP4 event clip generation with privacy face blur
+        if generate_clips and ring.size() >= 5:
+            try:
+                clip_path = Path(f"data/p5/clips/{camera_id}_{int(frame_packet.timestamp)}.mp4")
+                person_boxes = [t.box for t in active_tracks if t.class_name == "person"]
+                generate_event_clip(
+                    frames=ring.get_frames(),
+                    output_path=clip_path,
+                    fps=5.0,
+                    apply_privacy=True,
+                    person_boxes=person_boxes,
+                )
+                clip_uri = clip_uploader.upload_clip(clip_path, camera_id=camera_id, event_id=f"evt_{v.track_id}")
+            except Exception as e:
+                logger.warning("Failed to generate/upload event clip for camera %s: %s", camera_id, e)
+
+        evt = VisionEvent(
+            camera_id=camera_id,
+            plant_id="DE-HAM",
+            rule_id=v.rule_id,
+            rule_type=v.rule_type,
+            severity=v.severity,
+            track_id=v.track_id,
+            related_track_id=v.related_track_id,
+            zone_id=v.zone_id,
+            metric_distance=v.metric_distance,
+            metric_speed=v.metric_speed,
+            timestamp=v.timestamp,
+            clip_uri=clip_uri,
+            metadata=v.metadata,
+        )
+
+        # Increment Prometheus alert metric
+        VISION_ALERTS_TOTAL.labels(camera_id=camera_id, rule_type=v.rule_type, severity=v.severity).inc()
+
+        # Stream to Redpanda and ClickHouse
+        await event_publisher.publish(evt)
+        await clickhouse_storage.store_event(evt)
+        recent_events.appendleft(evt)
+        emitted_events.append(evt)
+
+    return emitted_events
+
+
+@app.get("/events", response_model=list[VisionEvent])
+async def list_events(
+    camera_id: str | None = None,
+    rule_type: str | None = None,
+    severity: str | None = None,
+    limit: int = 50,
+) -> list[VisionEvent]:
+    """Retrieve recent safety and security violation events with optional filtering."""
+    results = list(recent_events)
+    if camera_id:
+        results = [e for e in results if e.camera_id == camera_id]
+    if rule_type:
+        results = [e for e in results if e.rule_type == rule_type]
+    if severity:
+        results = [e for e in results if e.severity == severity]
+    return results[:limit]
+
+
+@app.post("/cameras/{camera_id}/evaluate", response_model=list[VisionEvent])
+async def evaluate_camera_events(camera_id: str) -> list[VisionEvent]:
+    """Evaluate active camera frame against rules engine and emit events."""
+    worker = workers.get(camera_id)
+    if not worker:
+        raise HTTPException(status_code=404, detail=f"Camera {camera_id} not found")
+
+    frame_packet = worker.latest_frame
+    if not frame_packet or frame_packet.image is None:
+        return []
+
+    return await process_frame_and_evaluate_rules(camera_id, frame_packet, generate_clips=False)
+
 

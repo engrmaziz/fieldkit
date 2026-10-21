@@ -175,7 +175,7 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Contract Analysis CPU Latency (P95)**| $< 2.5\text{ s}$ | **0.19 ms/page** (Local CPU inference) | PASS |
 
 ### Project 5: Multi-Camera Edge Video Analytics Platform (Live Target Verification)
-(Milestones 1, 2 & 3 Delivered — Ingestion, MediaMTX RTSP, YOLO11 ONNX, ByteTrack, PPE Association & Metric Homography)
+(Milestones 1, 2, 3 & 4 Delivered — Ingestion, MediaMTX RTSP, YOLO11 ONNX, ByteTrack, PPE Association, Homography, Rules Engine, Redpanda & Clips)
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :--- |
@@ -195,6 +195,13 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Head-Region PPE Association** | Top 25% head region IoU | **Temporal rolling window smoothing (10-frame buffer)** | PASS |
 | **Floor Homography Calibration**| Invertible 4-point projection | **0.0000m mean reprojection error across all cameras** | PASS |
 | **Metric Ground Distance & Speed**| Physical meter calculations | **Euclidean meter distance & speed (m/s) tracking** | PASS |
+| **Temporal Rule Violation Smoothing** | $\ge 70\%$ violation over 2.0s | **100.0%** (Suppresses momentary single-frame blips) | PASS |
+| **Alert Cooldown Fatigue Filter** | 30.0 s cooldown | **30.0 s** (Per camera, rule, and track/pair ID) | PASS |
+| **Proximity Distance & Speed Gate** | $< 2.0\text{ m}$, speed $\ge 0.5\text{ m/s}$ | **Euclidean metric plane evaluation with $\ge 0.6\text{s}$ duration** | PASS |
+| **Redpanda Kafka Event Streaming** | `vision.events` topic | **JSON structured event payload + in-memory fallback** | PASS |
+| **ClickHouse Event Partitioning & TTL**| 90-day automatic retention | **Monthly partitioning + 90-day TTL MergeTree schema** | PASS |
+| **10s MP4 Event Clip Generation** | 5s pre / 5s post ring-buffer | **H.264/MP4 encoding + MinIO `vision-clips` upload** | PASS |
+| **GDPR Privacy Face Blurring** | Gaussian blur on person faces | **$25 \times 25$ Gaussian kernel ($\sigma=15.0$) on head region** | PASS |
 
 ---
 

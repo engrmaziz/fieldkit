@@ -27,6 +27,9 @@ CAMERA_RECONNECTS = Counter(
 CAMERA_CONNECTED = Gauge(
     "vision_camera_connected", "Camera connection state (1=connected, 0=disconnected)", ["camera_id"]
 )
+VISION_ALERTS_TOTAL = Counter(
+    "vision_alerts_total", "Safety and security violation alerts emitted", ["camera_id", "rule_type", "severity"]
+)
 
 
 class CameraMetricsTracker:

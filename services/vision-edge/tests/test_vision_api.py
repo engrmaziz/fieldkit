@@ -136,3 +136,36 @@ async def test_camera_homography_and_tracks_endpoints() -> None:
     if "cam_track_mock" in trackers:
         del trackers["cam_track_mock"]
 
+
+@pytest.mark.asyncio
+async def test_events_and_evaluate_endpoints() -> None:
+    from fieldkit_vision.events import VisionEvent
+    from fieldkit_vision.main import recent_events
+
+    # Seed mock event into recent_events
+    test_evt = VisionEvent(
+        camera_id="cam1_press",
+        plant_id="DE-HAM",
+        rule_id="rule_press_helmet",
+        rule_type="zone_ppe_missing",
+        severity="CRITICAL",
+        track_id=42,
+    )
+    recent_events.append(test_evt)
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        # GET /events
+        resp = await client.get("/events")
+        assert resp.status_code == 200
+        events = resp.json()
+        assert len(events) >= 1
+        assert any(e["track_id"] == 42 for e in events)
+
+        # GET /events with filter
+        filt_resp = await client.get("/events?camera_id=cam1_press&severity=CRITICAL")
+        assert filt_resp.status_code == 200
+        filt_events = filt_resp.json()
+        assert all(e["camera_id"] == "cam1_press" for e in filt_events)
+
+
