@@ -175,7 +175,7 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Contract Analysis CPU Latency (P95)**| $< 2.5\text{ s}$ | **0.19 ms/page** (Local CPU inference) | PASS |
 
 ### Project 5: Multi-Camera Edge Video Analytics Platform (Live Target Verification)
-(Milestone 1 Delivered — Ingestion, MediaMTX RTSP Simulation, Timestamp Sampling & Prometheus Metrics)
+(Milestones 1 & 2 Delivered — Ingestion, MediaMTX RTSP Simulation, YOLO11 Dataset Unification & ONNX Inference Engine)
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :---: |
@@ -185,6 +185,10 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Stream Auto-Reconnect** | < 30 s | **Exponential backoff with jitter (capped at 30s)** | PASS |
 | **Camera Prometheus Metrics** | Real-time /metrics | **decoded_fps, processed_fps, dropped_frames, reconnects** | PASS |
 | **Chaos Disconnect Recovery**| 100% automatic | **100.0%** (Automatic recovery from periodic network drop) | PASS |
+| **Cross-Split Dataset Deduplication**| dHash Hamming $\le 2$ | **80 near-identical duplicates dropped (3,947 clean images)**| PASS |
+| **Unified YOLO Classes** | 5 Target Classes | **[person, helmet, no_helmet, vest, forklift]** | PASS |
+| **Dynamic Camera Batching** | Batch size $\ge 4$ | **Batched [4, 3, 640, 640] tensor across cameras** | PASS |
+| **Vectorized NMS** | IoU threshold 0.45 | **C++ Accelerated NMS (`cv2.dnn.NMSBoxes`)** | PASS |
 
 ---
 
