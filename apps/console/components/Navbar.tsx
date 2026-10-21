@@ -14,6 +14,7 @@ import {
   Layers,
   Camera,
   ScanEye,
+  GitFork,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -30,6 +31,7 @@ export default function Navbar() {
     { href: "/docai", label: "Doc AI", icon: FileText, badge: "P4", active: pathname?.startsWith("/docai") },
     { href: "/vision", label: "Vision", icon: Camera, badge: "P5", active: pathname?.startsWith("/vision") },
     { href: "/inspection", label: "InspectAI", icon: ScanEye, badge: "P6", active: pathname?.startsWith("/inspection") },
+    { href: "/workflows", label: "Workflows", icon: GitFork, badge: "P8", active: pathname?.startsWith("/workflows") },
   ];
 
   return (

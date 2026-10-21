@@ -23,6 +23,10 @@ const nextConfig = {
         source: "/api/inspect/:path*",
         destination: `${process.env.NEXT_PUBLIC_VISION_API_URL || "http://localhost:8005"}/inspect/:path*`,
       },
+      {
+        source: "/api/workflows/:path*",
+        destination: `${process.env.NEXT_PUBLIC_WORKFLOW_API_URL || "http://localhost:8008"}/:path*`,
+      },
     ];
   },
 };
