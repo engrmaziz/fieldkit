@@ -264,16 +264,21 @@ Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p
 ---
 
 ### Project 8: Air-Gapped Deployment Kit & Durable Workflow Engine (Live Target Verification)
-*(Milestones 0 & 1 Delivered — Production Docker Compose Baseline with Healthcheck Gates, Automated Point-in-Time Backup & Verified Restoration Tooling, Multi-Service Readiness Smoke Probe, Pure Go 1.23+ Event-Sourced Orchestrator, Worker Leasing Engine with Heartbeats, Step Executors [HTTP, Wait, Branch, Map, Human Approval], Saga Compensations, Chi REST API on port 8008, and 5 Production Shipped Workflows)*
+Generated via `make eval P=deploy` (see [evals/reports/p8/chaos_report.md](evals/reports/p8/chaos_report.md) and [evals/reports/p8/2026-10-21.md](evals/reports/p8/2026-10-21.md)):
+*(Milestones 0, 1 & 2 Delivered — Production Docker Compose Baseline with Healthcheck Gates, Automated Point-in-Time Backup & Verified Restoration Tooling, Multi-Service Readiness Smoke Probe, Pure Go 1.23+ Event-Sourced Orchestrator, Worker Leasing Engine with Heartbeats, Step Executors [HTTP, Wait, Branch, Map, Human Approval], Saga Compensations, Chi REST API on port 8008, 200-Workflow Fault-Injection Chaos Harness, and 5 Production Shipped Workflows)*
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :---: |
-| **Go Engine Test Suite** | 100% Pass | **100% (orchestrator, parser, API, saga compensations passing)** | PASS |
-| **Event-Sourced Replay Idempotency** | 100.0% Deterministic | **Zero state drift across repeated event replay** | PASS |
-| **Disaster Recovery Backup Cycle** | Verified Manifest | **Automated pg_dump + MinIO object snapshot with SHA-256 manifest** | PASS |
-| **Archive Restoration Integrity** | 100% Verified | **Verified dry-run and live database/object store restoration** | PASS |
-| **Multi-Service Smoke Readiness** | < 1.0s Concurrency | **Concurrent health & ready probing across 10 platform microservices** | PASS |
-| **Production Workflows Shipped** | 5 Shipped Workflows | **nightly-ingest, retrain-promote, weekly-insights, nightly-evals, daily-backup** | PASS |
+| **Go Engine Test Suite** | 100% Pass | **100% (orchestrator, parser, API, property invariants passing)** | PASS |
+| **200-Workflow Chaos Harness (M2)** | 100.0% Completion | **100.0%** (200 / 200 completed under live SIGKILL crashes) | PASS |
+| **Duplicate Downstream Side Effects (M2)** | **Strictly 0** | **0 duplicate side effects** (150 unique keys dispatched) | PASS |
+| **Tasks Stuck with Expired Lease (M2)** | **Strictly 0** | **0 stuck tasks** (Surviving workers re-acquired leases) | PASS |
+| **Event Replay State Determinism (M2)** | 100.0% | **100.0%** (Zero state drift across replayed logs) | PASS |
+| **Engine Step Execution Throughput (M2)** | $> 50\text{ steps/s}$ | **1382.8 steps/s** (High-throughput Go worker pool) | PASS |
+| **Disaster Recovery Backup Cycle (M0)** | Verified Manifest | **Automated pg_dump + MinIO object snapshot with SHA-256 manifest** | PASS |
+| **Archive Restoration Integrity (M0)** | 100% Verified | **Verified dry-run and live database/object store restoration** | PASS |
+| **Multi-Service Smoke Readiness (M0)** | < 1.0s Concurrency | **Concurrent health & ready probing across 10 platform microservices** | PASS |
+| **Production Workflows Shipped (M1)** | 5 Shipped Workflows | **nightly-ingest, retrain-promote, weekly-insights, nightly-evals, daily-backup** | PASS |
 
 ---
 

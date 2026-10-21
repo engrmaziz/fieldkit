@@ -373,6 +373,21 @@ async def main() -> None:
             sys.exit(1)
         return
 
+    if args.profile in ("deploy", "p8", "workflow", "workflow-engine", "chaos"):
+        from evals.p8.chaos_eval import run_p8_chaos_eval
+
+        p8_metrics = run_p8_chaos_eval()
+        print(f"\n[SUCCESS] Project 8 Chaos & Durability Benchmark Complete! Report generated at:\n  {p8_metrics.report_path}")
+        print(f"  - Workflows Evaluated: {p8_metrics.completed_workflows}/{p8_metrics.total_workflows} ({p8_metrics.completion_rate_pct:.1f}%)")
+        print(f"  - Duplicate Downstream Side Effects: {p8_metrics.duplicate_side_effects} (Target: Strictly 0)")
+        print(f"  - Tasks Stuck with Expired Lease: {p8_metrics.stuck_tasks} (Target: Strictly 0)")
+        print(f"  - Event Replay State Determinism: {p8_metrics.replay_fidelity_pct:.1f}% (Target: 100.0%)")
+        print(f"  - Step Execution Throughput: {p8_metrics.throughput_steps_per_sec:.1f} steps/s")
+        if not p8_metrics.gate_passed:
+            print("\n[FAILED] CI Gate detected regressions in Project 8 chaos metrics!")
+            sys.exit(1)
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")
