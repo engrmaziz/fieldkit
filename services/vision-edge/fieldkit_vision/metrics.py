@@ -30,6 +30,15 @@ CAMERA_CONNECTED = Gauge(
 VISION_ALERTS_TOTAL = Counter(
     "vision_alerts_total", "Safety and security violation alerts emitted", ["camera_id", "rule_type", "severity"]
 )
+VISION_CAMERA_HEALTH_STATUS = Gauge(
+    "vision_camera_health_status", "Camera health status (1=healthy, 2=degraded, 3=critical, 0=unknown)", ["camera_id"]
+)
+VISION_CAMERA_BLUR_SCORE = Gauge(
+    "vision_camera_blur_score", "Camera Laplacian variance blur score", ["camera_id"]
+)
+VISION_REID_MATCHES_TOTAL = Counter(
+    "vision_reid_matches_total", "Cross-camera person re-identification matches", ["from_camera", "to_camera"]
+)
 
 
 class CameraMetricsTracker:

@@ -169,3 +169,63 @@ async def test_events_and_evaluate_endpoints() -> None:
         assert all(e["camera_id"] == "cam1_press" for e in filt_events)
 
 
+@pytest.mark.asyncio
+async def test_camera_health_and_reid_endpoints() -> None:
+    from fieldkit_vision.main import person_registry
+    from fieldkit_vision.reid import PersonTrackEmbedding
+
+    cfg = CameraConfig(
+        camera_id="cam_health_test",
+        name="Mock Health Camera",
+        rtsp_url="rtsp://dummy",
+    )
+    mock_worker = CameraWorker(config=cfg)
+    dummy_img = np.full((240, 320, 3), 120, dtype=np.uint8)
+    mock_worker._latest_frame = FramePacket(
+        camera_id="cam_health_test",
+        timestamp=300.0,
+        frame_index=1,
+        image=dummy_img,
+        width=320,
+        height=240,
+    )
+    workers["cam_health_test"] = mock_worker
+
+    # Seed mock Re-ID sighting
+    feat = np.ones(512, dtype=np.float32)
+    feat /= np.linalg.norm(feat)
+    t = PersonTrackEmbedding("cam1_press", 42, 10.0, 15.0, feat)
+    pid = person_registry.register_or_match(t)
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. GET /cameras/{id}/health
+        h_resp = await client.get("/cameras/cam_health_test/health")
+        assert h_resp.status_code == 200
+        h_data = h_resp.json()
+        assert h_data["camera_id"] == "cam_health_test"
+        assert "status" in h_data
+        assert "is_frozen" in h_data
+        assert "laplacian_variance" in h_data
+
+        # 2. GET /health/cameras
+        all_h_resp = await client.get("/health/cameras")
+        assert all_h_resp.status_code == 200
+        all_h = all_h_resp.json()
+        assert any(item["camera_id"] == "cam_health_test" for item in all_h)
+
+        # 3. GET /reid/topology
+        topo_resp = await client.get("/reid/topology")
+        assert topo_resp.status_code == 200
+        assert topo_resp.json()["plant_id"] == "DE-HAM"
+
+        # 4. GET /reid/journeys/{pid}
+        j_resp = await client.get(f"/reid/journeys/{pid}")
+        assert j_resp.status_code == 200
+        j_data = j_resp.json()
+        assert len(j_data) >= 1
+        assert j_data[0]["global_person_id"] == pid
+
+    del workers["cam_health_test"]
+
+

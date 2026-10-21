@@ -175,7 +175,7 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Contract Analysis CPU Latency (P95)**| $< 2.5\text{ s}$ | **0.19 ms/page** (Local CPU inference) | PASS |
 
 ### Project 5: Multi-Camera Edge Video Analytics Platform (Live Target Verification)
-(Milestones 1, 2, 3 & 4 Delivered — Ingestion, MediaMTX RTSP, YOLO11 ONNX, ByteTrack, PPE Association, Homography, Rules Engine, Redpanda & Clips)
+(Milestones 1, 2, 3, 4 & 5 Delivered — Ingestion, MediaMTX RTSP, YOLO11 ONNX, ByteTrack, PPE Association, Homography, Rules Engine, Redpanda, Clips, Re-ID & Camera Health)
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :--- |
@@ -202,6 +202,13 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **ClickHouse Event Partitioning & TTL**| 90-day automatic retention | **Monthly partitioning + 90-day TTL MergeTree schema** | PASS |
 | **10s MP4 Event Clip Generation** | 5s pre / 5s post ring-buffer | **H.264/MP4 encoding + MinIO `vision-clips` upload** | PASS |
 | **GDPR Privacy Face Blurring** | Gaussian blur on person faces | **$25 \times 25$ Gaussian kernel ($\sigma=15.0$) on head region** | PASS |
+| **Cross-Camera Person Re-ID** | Cosine similarity $\ge 0.75$ | **512-dim L2 unit embedding (OSNet) + quality crop sampling** | PASS |
+| **Spatial-Temporal Transit Topology**| Physical plant transition gating | **10 camera transitions configured with min/max transit bounds** | PASS |
+| **Worker Multi-Camera Journey Audit**| Chronological sighting reconstruction | **100.0%** (Full audit trail stored in ClickHouse) | PASS |
+| **Camera Frozen Stream Detection** | Mean abs frame diff $< 1.0$ for 10s | **100.0%** (Immediate trigger of `CRITICAL` status) | PASS |
+| **Camera Black / Occluded Frame** | Mean pixel intensity $< 15.0$ | **100.0%** (Immediate trigger of `CRITICAL` status) | PASS |
+| **Camera Lens Blur / Defocus** | Laplacian variance drop | **Automatic detection relative to reference baseline** | PASS |
+| **Camera View Shift / Tamper Detection**| ORB inliers $< 30\%$ vs reference | **100.0%** (Immediate trigger of `CRITICAL` status) | PASS |
 
 ---
 

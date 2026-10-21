@@ -1,0 +1,78 @@
+# Halden Industrie GmbH (DE-HAM) - Plant Inter-Camera Spatial Topology
+plant_id: "DE-HAM"
+
+cameras:
+  - id: "cam1_press"
+    name: "Heavy Stamping Press Zone"
+  - id: "cam2_logistics"
+    name: "Forklift Logistics Corridor"
+  - id: "cam3_assembly"
+    name: "Assembly Bay 4"
+  - id: "cam4_perimeter"
+    name: "South Perimeter & Gate"
+
+transitions:
+  - from_camera: "cam1_press"
+    to_camera: "cam2_logistics"
+    min_transit_time_sec: 3.0
+    max_transit_time_sec: 60.0
+    default_distance_meters: 15.0
+
+  - from_camera: "cam2_logistics"
+    to_camera: "cam1_press"
+    min_transit_time_sec: 3.0
+    max_transit_time_sec: 60.0
+    default_distance_meters: 15.0
+
+  - from_camera: "cam2_logistics"
+    to_camera: "cam3_assembly"
+    min_transit_time_sec: 4.0
+    max_transit_time_sec: 90.0
+    default_distance_meters: 22.0
+
+  - from_camera: "cam3_assembly"
+    to_camera: "cam2_logistics"
+    min_transit_time_sec: 4.0
+    max_transit_time_sec: 90.0
+    default_distance_meters: 22.0
+
+  - from_camera: "cam1_press"
+    to_camera: "cam3_assembly"
+    min_transit_time_sec: 8.0
+    max_transit_time_sec: 120.0
+    default_distance_meters: 35.0
+
+  - from_camera: "cam3_assembly"
+    to_camera: "cam1_press"
+    min_transit_time_sec: 8.0
+    max_transit_time_sec: 120.0
+    default_distance_meters: 35.0
+
+  - from_camera: "cam2_logistics"
+    to_camera: "cam4_perimeter"
+    min_transit_time_sec: 10.0
+    max_transit_time_sec: 150.0
+    default_distance_meters: 45.0
+
+  - from_camera: "cam4_perimeter"
+    to_camera: "cam2_logistics"
+    min_transit_time_sec: 10.0
+    max_transit_time_sec: 150.0
+    default_distance_meters: 45.0
+
+  - from_camera: "cam3_assembly"
+    to_camera: "cam4_perimeter"
+    min_transit_time_sec: 10.0
+    max_transit_time_sec: 180.0
+    default_distance_meters: 50.0
+
+  - from_camera: "cam4_perimeter"
+    to_camera: "cam3_assembly"
+    min_transit_time_sec: 10.0
+    max_transit_time_sec: 180.0
+    default_distance_meters: 50.0
+
+reid_thresholds:
+  cosine_similarity_min: 0.75
+  crop_min_sharpness: 25.0
+  crop_min_area: 2500

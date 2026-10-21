@@ -19,22 +19,42 @@ from fieldkit_vision.clip_generator import FrameRingBuffer, MinIOClipUploader, g
 from fieldkit_vision.config import settings
 from fieldkit_vision.detector import YOLOOnnxDetector
 from fieldkit_vision.events import ClickHouseEventStorage, RedpandaEventPublisher, VisionEvent
+from fieldkit_vision.health import (
+    CameraHealthMonitor,
+    CameraHealthReport,
+    HealthStatus,
+)
 from fieldkit_vision.homography import CameraHomography
-from fieldkit_vision.metrics import VISION_ALERTS_TOTAL
+from fieldkit_vision.metrics import (
+    VISION_ALERTS_TOTAL,
+    VISION_CAMERA_BLUR_SCORE,
+    VISION_CAMERA_HEALTH_STATUS,
+)
 from fieldkit_vision.models import CameraHealthStatus, CameraMetrics, FramePacket, TrackResponse
+from fieldkit_vision.reid import (
+    CameraTopology,
+    GlobalPersonRegistry,
+    OSNetFeatureExtractor,
+    PersonSighting,
+)
 from fieldkit_vision.rules_engine import DeterministicRulesEngine
 from fieldkit_vision.tracker import ByteTracker, associate_ppe_to_tracks
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("fieldkit.vision.main")
 
-# Global workers, trackers, and homographies
+# Global workers, trackers, homographies, health monitors, and reid
 workers: dict[str, CameraWorker] = {}
 trackers: dict[str, ByteTracker] = {}
 homographies: dict[str, CameraHomography] = {}
 rules_engines: dict[str, DeterministicRulesEngine] = {}
 ring_buffers: dict[str, FrameRingBuffer] = {}
+health_monitors: dict[str, CameraHealthMonitor] = {}
 recent_events: deque[VisionEvent] = deque(maxlen=500)
+
+topology = CameraTopology.from_yaml("configs/topology.yaml")
+person_registry = GlobalPersonRegistry(topology=topology)
+reid_extractor = OSNetFeatureExtractor()
 
 event_publisher = RedpandaEventPublisher()
 clickhouse_storage = ClickHouseEventStorage()
@@ -69,6 +89,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
         # Initialize deterministic rules engine with temporal smoothing
         rules_engines[cfg.camera_id] = DeterministicRulesEngine(camera_config=cfg, homography=homog)
+        health_monitors[cfg.camera_id] = CameraHealthMonitor(camera_id=cfg.camera_id)
 
         worker.start()
         logger.info("Spawned worker, tracker, and rules engine for camera %s (%s)", cfg.camera_id, cfg.name)
@@ -84,6 +105,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     homographies.clear()
     rules_engines.clear()
     ring_buffers.clear()
+    health_monitors.clear()
 
 
 app = FastAPI(
@@ -341,5 +363,77 @@ async def evaluate_camera_events(camera_id: str) -> list[VisionEvent]:
         return []
 
     return await process_frame_and_evaluate_rules(camera_id, frame_packet, generate_clips=False)
+
+
+@app.get("/cameras/{camera_id}/health", response_model=CameraHealthReport)
+async def get_camera_health(camera_id: str) -> CameraHealthReport:
+    """Retrieve diagnostic health assessment for a specific camera."""
+    worker = workers.get(camera_id)
+    if not worker:
+        raise HTTPException(status_code=404, detail=f"Camera {camera_id} not found")
+
+    monitor = health_monitors.get(camera_id)
+    if not monitor:
+        monitor = CameraHealthMonitor(camera_id=camera_id)
+        health_monitors[camera_id] = monitor
+
+    metrics_obj = worker.metrics.get_metrics()
+    frame_packet = worker.latest_frame
+    if frame_packet and frame_packet.image is not None:
+        report = monitor.evaluate_frame(
+            frame_packet.image,
+            timestamp=frame_packet.timestamp,
+            processed_fps=metrics_obj.processed_fps,
+            reconnect_count=metrics_obj.reconnects,
+        )
+    else:
+        report = CameraHealthReport(
+            camera_id=camera_id,
+            timestamp=metrics_obj.last_frame_timestamp or 0.0,
+            status=HealthStatus.HEALTHY if metrics_obj.is_connected else HealthStatus.CRITICAL,
+            processed_fps=metrics_obj.processed_fps,
+            reconnect_count=metrics_obj.reconnects,
+        )
+
+    # Update Prometheus gauges
+    status_num = (
+        1.0
+        if report.status == HealthStatus.HEALTHY
+        else (2.0 if report.status == HealthStatus.DEGRADED else 3.0)
+    )
+    VISION_CAMERA_HEALTH_STATUS.labels(camera_id=camera_id).set(status_num)
+    VISION_CAMERA_BLUR_SCORE.labels(camera_id=camera_id).set(report.laplacian_variance)
+    return report
+
+
+@app.get("/health/cameras", response_model=list[CameraHealthReport])
+async def list_all_camera_health() -> list[CameraHealthReport]:
+    """Retrieve diagnostic health reports across all configured cameras."""
+    reports: list[CameraHealthReport] = []
+    for cid in workers.keys():
+        try:
+            rep = await get_camera_health(cid)
+            reports.append(rep)
+        except Exception:
+            pass
+    return reports
+
+
+@app.get("/reid/topology")
+async def get_reid_topology() -> dict[str, Any]:
+    """Retrieve inter-camera spatial-temporal transit topology."""
+    return topology.model_dump()
+
+
+@app.get("/reid/journeys/{person_id}", response_model=list[PersonSighting])
+async def get_person_journey(person_id: str) -> list[PersonSighting]:
+    """Retrieve chronological cross-camera journey history for a global person ID."""
+    journey = person_registry.get_journey(person_id)
+    if not journey:
+        raise HTTPException(
+            status_code=404, detail=f"No sightings recorded for person {person_id}"
+        )
+    return journey
+
 
 
