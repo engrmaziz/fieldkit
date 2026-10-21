@@ -1,0 +1,25 @@
+[project]
+name = "fieldkit-mlops"
+version = "0.1.0"
+description = "Fieldkit MLOps: Dataset Manifests, Anomaly Baselines, Training, and Registry (P6)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fieldkit-common",
+    "pydantic>=2.10.0",
+    "numpy>=1.26.0",
+    "scikit-learn>=1.5.0",
+    "scipy>=1.13.0",
+    "opencv-python-headless>=4.10.0",
+    "pyyaml>=6.0.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fieldkit_mlops"]
+
+[tool.uv.sources]
+fieldkit-common = { workspace = true }

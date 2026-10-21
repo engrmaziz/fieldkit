@@ -1,0 +1,50 @@
+product_id: "screw"
+name: "Precision Threaded Bolt DIN 933"
+category: "machined_fasteners"
+plant_id: "DE-HAM"
+
+image_size:
+  width: 256
+  height: 256
+
+roi:
+  x1: 15
+  y1: 15
+  x2: 240
+  y2: 240
+
+alignment:
+  enabled: true
+  method: "orb"
+  min_inliers: 12
+  reference_image: "configs/inspection/references/screw_ref.png"
+
+anomaly_model:
+  type: "patchcore"
+  backbone: "wide_resnet50_2"
+  coreset_ratio: 0.10
+  feature_layers: ["layer2", "layer3"]
+  threshold_pass: 0.40
+  threshold_reject: 0.68
+  heatmap_sigma: 4.0
+
+classifier_model:
+  enabled: true
+  architecture: "resnet18"
+  input_size: 224
+  temperature_calibration: 1.28
+  classes:
+    - "crazing"
+    - "inclusion"
+    - "patches"
+    - "pitted_surface"
+    - "rolled_in_scale"
+    - "scratches"
+    - "good"
+
+cost_matrix:
+  cost_escape: 50.0
+  cost_false_reject: 1.0
+  cost_review: 0.3
+  max_review_rate: 0.08
+  random_audit_ratio: 0.02

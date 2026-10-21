@@ -1,0 +1,50 @@
+product_id: "tile"
+name: "Ceramic Thermal Protective Tile"
+category: "surface_structures"
+plant_id: "DE-HAM"
+
+image_size:
+  width: 256
+  height: 256
+
+roi:
+  x1: 10
+  y1: 10
+  x2: 246
+  y2: 246
+
+alignment:
+  enabled: true
+  method: "orb"
+  min_inliers: 10
+  reference_image: "configs/inspection/references/tile_ref.png"
+
+anomaly_model:
+  type: "patchcore"
+  backbone: "wide_resnet50_2"
+  coreset_ratio: 0.10
+  feature_layers: ["layer2", "layer3"]
+  threshold_pass: 0.36
+  threshold_reject: 0.62
+  heatmap_sigma: 4.0
+
+classifier_model:
+  enabled: true
+  architecture: "resnet18"
+  input_size: 224
+  temperature_calibration: 1.25
+  classes:
+    - "crazing"
+    - "inclusion"
+    - "patches"
+    - "pitted_surface"
+    - "rolled_in_scale"
+    - "scratches"
+    - "good"
+
+cost_matrix:
+  cost_escape: 50.0
+  cost_false_reject: 1.0
+  cost_review: 0.3
+  max_review_rate: 0.08
+  random_audit_ratio: 0.02

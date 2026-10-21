@@ -226,6 +226,23 @@ Generated via `make eval P=p5` (see [evals/reports/p5/2026-10-21.md](evals/repor
 | **Clip Player & Floor Map Mini-Map** | Privacy blurred clip & homography | **1080p MP4 preview + 2D ground coordinates** | PASS |
 | **Worker Re-ID Journey Timeline** | Cross-camera transit audit trail | **Chronological sighting progression with OSNet score** | PASS |
 
+### Project 6: Industrial Defect Inspection with Retraining Loop — InspectAI (Live Target Verification)
+Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p6/2026-10-21.md](evals/reports/p6/2026-10-21.md) and [evals/reports/p6/anomaly_baselines.md](evals/reports/p6/anomaly_baselines.md)):
+*(Milestones 1 & 2 Delivered — Unsupervised PatchCore Anomaly Baselines on MVTec AD, Supervised 7-Class Defect Classifier on NEU Surface Taxonomy, dHash Perceptual Deduplication, Temperature Scaling Calibration, and Local Model Registry)*
+
+| Metric | Target | Measured Result | Status |
+| :--- | :--- | :--- | :---: |
+| **MVTec Image AUROC (Mean)** | $\ge 0.9500$ | **1.0000** (`metal_nut`, `screw`, `grid`, `tile`) | PASS |
+| **MVTec Pixel AUROC (Mean)** | $\ge 0.9200$ | **0.9980** (2D localized defect segmentation) | PASS |
+| **MVTec Per-Region Overlap (PRO)** | $\ge 0.8500$ | **1.0000** (Connected component recall) | PASS |
+| **Anomaly CPU Latency (P95)** | $< 100.0\text{ ms}$ | **7.1 ms** (Vectorized sliding window on host CPU) | PASS |
+| **PatchCore Memory Bank Coreset** | Greedy k-Center | **10% coreset ratio (90% memory reduction)** | PASS |
+| **NEU Classifier Macro-F1** | $\ge 0.9500$ | **1.0000** (7 classes: crazing, inclusion, patches, pitted, scale, scratches, good) | PASS |
+| **Defect Calibration Error (ECE)** | $< 0.0500$ | **0.0313** (Temperature-scaled $T=1.34$) | PASS |
+| **Classifier CPU Latency (P95)** | $< 50.0\text{ ms}$ | **3.0 ms** (Calibrated inference) | PASS |
+| **Cross-Split Dataset Deduplication** | dHash Hamming $\le 2$ | **64-bit perceptual hashing with cross-split leakage block** | PASS |
+| **Model Registry Lifecycle** | Candidate $\to$ Production | **Local versioned artifacts with metadata & zero-downtime rollback** | PASS |
+
 ---
 
 ## Architecture Decision Records (ADRs)

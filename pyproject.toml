@@ -57,6 +57,7 @@ fieldkit-mock-erp = { workspace = true }
 fieldkit-copilot = { workspace = true }
 fieldkit-docai = { workspace = true }
 fieldkit-vision-edge = { workspace = true }
+fieldkit-mlops = { workspace = true }
 
 [dependency-groups]
 

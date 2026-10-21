@@ -344,6 +344,23 @@ async def main() -> None:
             sys.exit(1)
         return
 
+    if args.profile in ("defect", "p6", "inspection", "inspect", "inspectai"):
+        from evals.p6.eval_suite import run_master_p6_eval
+
+        p6_metrics = run_master_p6_eval()
+        print(f"\n[SUCCESS] Project 6 Defect Inspection Benchmark Complete! Reports generated at:\n  {p6_metrics.master_report_path}\n  {p6_metrics.anomaly_baseline_doc}")
+        print(f"  - Mean Image AUROC: {p6_metrics.anomaly_report.mean_image_auroc:.4f} (Target: >= 0.9500)")
+        print(f"  - Mean Pixel AUROC: {p6_metrics.anomaly_report.mean_pixel_auroc:.4f} (Target: >= 0.9200)")
+        print(f"  - Mean PRO Score: {p6_metrics.anomaly_report.mean_pro_score:.4f} (Target: >= 0.8500)")
+        print(f"  - Anomaly P95 Latency: {p6_metrics.anomaly_report.overall_p95_latency_ms:.1f} ms (Target: < 100 ms)")
+        print(f"  - Classifier Macro-F1: {p6_metrics.classifier_report.macro_f1:.4f} (Target: >= 0.9500)")
+        print(f"  - Calibration ECE: {p6_metrics.classifier_report.expected_calibration_error:.4f} (Target: < 0.0500)")
+        print(f"  - Classifier P95 Latency: {p6_metrics.classifier_report.p95_latency_ms:.1f} ms (Target: < 50 ms)")
+        if not p6_metrics.overall_gate_passed:
+            print("\n[FAILED] CI Gate detected regressions in Project 6 evaluation metrics!")
+            sys.exit(1)
+        return
+
     result = await evaluate_llm_baseline()
     report_path = write_report(args.profile, result)
     print(f"Evaluation complete. Report generated at:\n  {report_path}")
