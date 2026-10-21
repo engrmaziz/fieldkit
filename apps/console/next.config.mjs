@@ -19,6 +19,10 @@ const nextConfig = {
         source: "/api/docai/:path*",
         destination: `${process.env.NEXT_PUBLIC_DOCAI_API_URL || "http://localhost:8004"}/:path*`,
       },
+      {
+        source: "/api/inspect/:path*",
+        destination: `${process.env.NEXT_PUBLIC_VISION_API_URL || "http://localhost:8005"}/inspect/:path*`,
+      },
     ];
   },
 };

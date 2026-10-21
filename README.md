@@ -228,7 +228,7 @@ Generated via `make eval P=p5` (see [evals/reports/p5/2026-10-21.md](evals/repor
 
 ### Project 6: Industrial Defect Inspection with Retraining Loop — InspectAI (Live Target Verification)
 Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p6/2026-10-21.md](evals/reports/p6/2026-10-21.md), [evals/reports/p6/anomaly_baselines.md](evals/reports/p6/anomaly_baselines.md), [evals/reports/p6/decision_engine.md](evals/reports/p6/decision_engine.md), and [evals/reports/p6/retraining_loop.md](evals/reports/p6/retraining_loop.md)):
-*(Milestones 1, 2, 3, 4 & 5 Delivered — Unsupervised PatchCore Anomaly Baselines on MVTec AD, Supervised 7-Class Defect Classifier on NEU Surface Taxonomy, Temperature Scaling Calibration, Cost-Optimized Decision Engine, 2% Seeded Audit Sampling, Real-Time Edge Inspection Service, Blended Jet Colormap Heatmap Overlays, PostgreSQL Inspection Ledger, Review Triage Queue, Manifest Integrity & dHash Deduplication, Closed Retraining Loop, Non-Blocking Shadow Inference, PSI Drift Monitoring, and Instant Rollback)*
+*(Milestones 1, 2, 3, 4, 5 & 6 Delivered — Unsupervised PatchCore Anomaly Baselines on MVTec AD, Supervised 7-Class Defect Classifier on NEU Surface Taxonomy, Temperature Scaling Calibration, Cost-Optimized Decision Engine, 2% Seeded Audit Sampling, Real-Time Edge Inspection Service, Blended Jet Colormap Heatmap Overlays, PostgreSQL Inspection Ledger, Review Triage Queue, Manifest Integrity & dHash Deduplication, Closed Retraining Loop, Non-Blocking Shadow Inference, PSI Drift Monitoring, Instant Rollback, and Next.js 14 Operator Inspection Console UI)*
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :---: |
@@ -256,6 +256,7 @@ Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p
 | **Candidate Model Promotion (M5)** | Gate Check | **`cand_v2.0.0` promoted to Production** | PASS |
 | **Instant Rollback Verification (M5)**| Instantaneous | **Production reverted to `prod_v1.0.0` with audit ledger** | PASS |
 | **Frozen Test Set Immutability (M5)** | 100.0% | **100.0%** (SHA-256 fingerprint verified) | PASS |
+| **Web Console UI (M6)** | 100% Next.js 14 Build | **17/17 routes prerendered, Jet heatmap opacity crossfade, HITL keyboard triage [P/R]** | PASS |
 | **Model Registry Lifecycle** | Candidate $\to$ Production | **Local versioned artifacts with metadata & zero-downtime rollback** | PASS |
 
 ---
@@ -335,6 +336,8 @@ Endpoints:
   - Copilot Support Triage & Human Review: `/copilot`
   - DocAI Document Intelligence & Redline Diff: `/docai`, `/docai/diff`
   - Observe Traces, Prompts, Evals, A/B, Alerts: `/observe`
+  - Multi-Camera Vision Safety Wall: `/vision`
+  - InspectAI Edge Inspection Console: `/inspection`
 - **Grafana Dashboards**: [http://localhost:3001](http://localhost:3001) (admin / admin)
 - **Vision Edge API Docs**: [http://localhost:8005/docs](http://localhost:8005/docs)
   - Safety Vision Analytics: `/events`, `/search/nl`, `/cameras/{id}/zones`
