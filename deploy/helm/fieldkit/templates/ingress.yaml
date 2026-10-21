@@ -1,0 +1,47 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "fieldkit.fullname" . }}-ingress
+  labels:
+    {{- include "fieldkit.labels" . | nindent 4 }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.hosts.console }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "fieldkit.fullname" . }}-console
+                port:
+                  number: {{ .Values.services.console.port }}
+    - host: {{ .Values.ingress.hosts.api }}
+      http:
+        paths:
+          - path: /foundry
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "fieldkit.fullname" . }}-foundry
+                port:
+                  number: {{ .Values.services.foundry.port }}
+          - path: /assistant
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "fieldkit.fullname" . }}-assistant
+                port:
+                  number: {{ .Values.services.assistant.port }}
+          - path: /workflows
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "fieldkit.fullname" . }}-workflow-engine
+                port:
+                  number: {{ .Values.workflowEngine.port }}
+{{- end }}

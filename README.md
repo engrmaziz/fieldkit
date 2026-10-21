@@ -265,7 +265,7 @@ Generated via `uv run python evals/runner.py --profile p6` (see [evals/reports/p
 
 ### Project 8: Air-Gapped Deployment Kit & Durable Workflow Engine (Live Target Verification)
 Generated via `make eval P=deploy` (see [evals/reports/p8/chaos_report.md](evals/reports/p8/chaos_report.md) and [evals/reports/p8/2026-10-21.md](evals/reports/p8/2026-10-21.md)):
-*(Milestones 0, 1, 2 & 3 Delivered — Production Docker Compose Baseline with Healthcheck Gates, Automated Point-in-Time Backup & Verified Restoration Tooling, Multi-Service Readiness Smoke Probe, Pure Go 1.23+ Event-Sourced Orchestrator, Worker Leasing Engine with Heartbeats, Step Executors [HTTP, Wait, Branch, Map, Human Approval], Saga Compensations, Chi REST API on port 8008, 200-Workflow Fault-Injection Chaos Harness, 5 Production Shipped Workflows, and Visual Workflow Builder Console UI)*
+*(Project 8 Fully Completed — Milestones 0 through 6 Delivered: Production Docker Compose Baseline with Healthcheck Gates, Point-in-Time Backup & Verified Restoration Tooling, Multi-Service Readiness Smoke Probe, Pure Go 1.23+ Event-Sourced Orchestrator, Worker Leasing Engine with Heartbeats, Step Executors [HTTP, Wait, Branch, Map, Human Approval], Saga Compensations, Chi REST API on port 8008, 200-Workflow Fault-Injection Chaos Harness, 5 Production Shipped Workflows, Visual Workflow Builder Console UI, Kubernetes Umbrella Helm Chart on k3d, Signed Air-Gapped Release Bundle, Go fieldkit-ctl Management CLI, and Disaster Recovery Drills with ADRs 0022–0024)*
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :---: |
@@ -274,8 +274,12 @@ Generated via `make eval P=deploy` (see [evals/reports/p8/chaos_report.md](evals
 | **Duplicate Downstream Side Effects (M2)** | **Strictly 0** | **0 duplicate side effects** (150 unique keys dispatched) | PASS |
 | **Tasks Stuck with Expired Lease (M2)** | **Strictly 0** | **0 stuck tasks** (Surviving workers re-acquired leases) | PASS |
 | **Event Replay State Determinism (M2)** | 100.0% | **100.0%** (Zero state drift across replayed logs) | PASS |
-| **Engine Step Execution Throughput (M2)** | $> 50\text{ steps/s}$ | **1382.8 steps/s** (High-throughput Go worker pool) | PASS |
+| **Engine Step Execution Throughput (M2)** | $> 50\text{ steps/s}$ | **1163.4 steps/s** (High-throughput Go worker pool) | PASS |
 | **Visual Workflow Builder (M3)** | Next.js 14 Console | **Interactive DAG canvas, bi-directional YAML sync, human approval gate signal** | PASS |
+| **Kubernetes Helm Umbrella Chart (M4)** | 100% Validated | **Helm lint (0 errors) & 1,286 lines rendered manifests with k3d automation** | PASS |
+| **Air-Gap Bundle Packaging (M5)** | Signed .tar.gz | **fieldkit-1.0.0-airgap.tar.gz with Cosign/ECDSA cryptographic signature** | PASS |
+| **fieldkit-ctl Management CLI (M5)** | Go 1.23+ CLI | **preflight, install, status, upgrade, rollback, backup, restore, support-bundle** | PASS |
+| **Disaster Recovery SLA (M6)** | RTO < 60s, RPO = 0 | **RTO = 0.12s, RPO = 0 records lost (100% SHA-256 match)** | PASS |
 | **Disaster Recovery Backup Cycle (M0)** | Verified Manifest | **Automated pg_dump + MinIO object snapshot with SHA-256 manifest** | PASS |
 | **Archive Restoration Integrity (M0)** | 100% Verified | **Verified dry-run and live database/object store restoration** | PASS |
 | **Multi-Service Smoke Readiness (M0)** | < 1.0s Concurrency | **Concurrent health & ready probing across 10 platform microservices** | PASS |
@@ -305,6 +309,9 @@ Generated via `make eval P=deploy` (see [evals/reports/p8/chaos_report.md](evals
 - [ADR 0019: Asymmetric Cost-Based Decision Boundaries vs Symmetric F1 Operating Cutoffs for Automotive Quality Compliance](docs/decisions/0019-asymmetric-cost-matrix-vs-symmetric-f1-thresholds.md)
 - [ADR 0020: Population Stability Index (PSI) with Adaptive Laplace Smoothing vs Wasserstein Distance for Smelting Drift Monitoring](docs/decisions/0020-population-stability-index-psi-drift-vs-wasserstein.md)
 - [ADR 0021: Non-Blocking Shadow Inference and Versioned Manifests for Zero-Downtime Edge Defect Inspection](docs/decisions/0021-shadow-mode-evaluation-and-zero-downtime-model-rollback.md)
+- [ADR 0022: In-House Pure Go Event-Sourced Workflow Engine vs Heavy Temporal/Airflow Cluster](docs/decisions/0022-in-house-go-event-sourced-engine-vs-temporal.md)
+- [ADR 0023: Embedded Lightweight k3s / k3d vs Full-Blown Enterprise Kubernetes for Industrial Air-Gapped OT Plants](docs/decisions/0023-k3s-k3d-vs-full-kubernetes-for-airgap-ot.md)
+- [ADR 0024: Cryptographically Signed Offline Tarball Bundles vs Private Container Registry Infrastructure for Air-Gap Deployments](docs/decisions/0024-cosign-signed-offline-bundles-vs-private-registry.md)
 
 ---
 

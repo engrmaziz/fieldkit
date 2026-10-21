@@ -1,0 +1,25 @@
+========================================================================
+Fieldkit Industrial Forward-Deployed AI Platform (Air-Gapped OT Edition)
+========================================================================
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Plant Identifier: {{ .Values.global.plantId }}
+Air-Gap Mode: {{ .Values.global.airGap }}
+
+1. Web Console Access:
+   Open your browser to:
+   http://{{ .Values.ingress.hosts.console }}
+
+2. Internal Workflow Engine:
+   http://{{ include "fieldkit.fullname" . }}-workflow-engine:{{ .Values.workflowEngine.port }}
+
+3. Multi-Service Ingress Gateway:
+   http://{{ .Values.ingress.hosts.api }}
+
+4. Port-Forward for Local Debugging:
+   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "fieldkit.fullname" . }}-console 3000:3000
+   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "fieldkit.fullname" . }}-workflow-engine 8008:8008
+
+5. Preflight & Health Verification:
+   fieldkit-ctl status --namespace {{ .Release.Namespace }}

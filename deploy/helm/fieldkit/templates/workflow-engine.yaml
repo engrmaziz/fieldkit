@@ -1,0 +1,68 @@
+{{- if .Values.workflowEngine.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fieldkit.fullname" . }}-workflow-engine
+  labels:
+    {{- include "fieldkit.labels" . | nindent 4 }}
+    app.kubernetes.io/component: workflow-engine
+spec:
+  replicas: {{ .Values.workflowEngine.replicas }}
+  selector:
+    matchLabels:
+      {{- include "fieldkit.componentSelector" (dict "root" . "component" "workflow-engine") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "fieldkit.componentSelector" (dict "root" . "component" "workflow-engine") | nindent 8 }}
+    spec:
+      containers:
+        - name: workflow-engine
+          image: {{ .Values.workflowEngine.image }}
+          imagePullPolicy: {{ .Values.workflowEngine.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.workflowEngine.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "fieldkit.fullname" . }}-config
+            - secretRef:
+                name: {{ include "fieldkit.fullname" . }}-secrets
+          env:
+            - name: WORKFLOW_WORKERS
+              value: {{ .Values.workflowEngine.workers | quote }}
+            - name: WORKFLOW_LEASE_SEC
+              value: {{ .Values.workflowEngine.leaseDurationSec | quote }}
+            - name: WORKFLOW_HEARTBEAT_SEC
+              value: {{ .Values.workflowEngine.heartbeatIntervalSec | quote }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.workflowEngine.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fieldkit.fullname" . }}-workflow-engine
+  labels:
+    {{- include "fieldkit.labels" . | nindent 4 }}
+    app.kubernetes.io/component: workflow-engine
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.workflowEngine.port }}
+      targetPort: http
+  selector:
+    {{- include "fieldkit.componentSelector" (dict "root" . "component" "workflow-engine") | nindent 4 }}
+{{- end }}

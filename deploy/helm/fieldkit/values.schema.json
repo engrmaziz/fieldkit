@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "FieldkitValues",
+  "type": "object",
+  "required": ["global", "postgres", "workflowEngine", "services"],
+  "properties": {
+    "global": {
+      "type": "object",
+      "required": ["airGap", "storageClass", "domain"],
+      "properties": {
+        "airGap": { "type": "boolean" },
+        "storageClass": { "type": "string" },
+        "domain": { "type": "string" },
+        "environment": { "type": "string" },
+        "plantId": { "type": "string" }
+      }
+    },
+    "postgres": {
+      "type": "object",
+      "required": ["enabled", "image", "port", "database"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "image": { "type": "string" },
+        "port": { "type": "integer" },
+        "database": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "workflowEngine": {
+      "type": "object",
+      "required": ["enabled", "image", "port", "workers"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "image": { "type": "string" },
+        "port": { "type": "integer" },
+        "workers": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "className": { "type": "string" },
+        "hosts": { "type": "object" }
+      }
+    }
+  }
+}

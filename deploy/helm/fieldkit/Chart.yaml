@@ -1,0 +1,18 @@
+apiVersion: v2
+name: fieldkit
+description: Fieldkit Industrial Forward-Deployed AI Platform Umbrella Chart for Air-Gapped OT Plant Networks
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - industrial-ai
+  - air-gap
+  - offline
+  - rag
+  - nl2sql
+  - vision-edge
+  - workflow-engine
+home: https://github.com/engrmaziz/fieldkit
+maintainers:
+  - name: Tobias Becker & engrmaziz
+    email: io@maziz.me

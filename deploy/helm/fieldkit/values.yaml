@@ -1,0 +1,175 @@
+global:
+  airGap: true
+  storageClass: "local-path"
+  domain: "localtest.me"
+  environment: "production-ot"
+  plantId: "DE-HAM-OT"
+
+postgres:
+  enabled: true
+  image: "pgvector/pgvector:pg16"
+  imagePullPolicy: "IfNotPresent"
+  port: 5432
+  database: "fieldkit"
+  username: "postgres"
+  password: "fieldkit_ot_password"
+  persistence:
+    size: "10Gi"
+  resources:
+    limits:
+      cpu: "2000m"
+      memory: "4096Mi"
+    requests:
+      cpu: "500m"
+      memory: "1024Mi"
+
+minio:
+  enabled: true
+  image: "minio/minio:RELEASE.2024-05-10T01-41-38Z"
+  imagePullPolicy: "IfNotPresent"
+  apiPort: 9000
+  consolePort: 9001
+  rootUser: "minioadmin"
+  rootPassword: "minioadmin_secure_password"
+  persistence:
+    size: "20Gi"
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "2048Mi"
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+
+redis:
+  enabled: true
+  image: "redis:7.2-alpine"
+  imagePullPolicy: "IfNotPresent"
+  port: 6379
+  persistence:
+    size: "2Gi"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+
+clickhouse:
+  enabled: true
+  image: "clickhouse/clickhouse-server:24.3-alpine"
+  imagePullPolicy: "IfNotPresent"
+  httpPort: 8123
+  nativePort: 9000
+  database: "default"
+  username: "default"
+  password: ""
+  persistence:
+    size: "15Gi"
+  resources:
+    limits:
+      cpu: "2000m"
+      memory: "4096Mi"
+    requests:
+      cpu: "500m"
+      memory: "1024Mi"
+
+redpanda:
+  enabled: true
+  image: "redpandadata/redpanda:v24.1.2"
+  imagePullPolicy: "IfNotPresent"
+  kafkaPort: 9092
+  adminPort: 9644
+  persistence:
+    size: "5Gi"
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "2048Mi"
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+
+workflowEngine:
+  enabled: true
+  image: "fieldkit/workflow-engine:1.0.0"
+  imagePullPolicy: "IfNotPresent"
+  replicas: 1
+  port: 8008
+  workers: 4
+  leaseDurationSec: 30
+  heartbeatIntervalSec: 5
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "512Mi"
+    requests:
+      cpu: "200m"
+      memory: "128Mi"
+
+services:
+  foundry:
+    image: "fieldkit/foundry:1.0.0"
+    port: 8001
+    replicas: 1
+    resources:
+      limits: { cpu: "1000m", memory: "1024Mi" }
+      requests: { cpu: "200m", memory: "256Mi" }
+  assistant:
+    image: "fieldkit/assistant:1.0.0"
+    port: 8002
+    replicas: 1
+    resources:
+      limits: { cpu: "1500m", memory: "2048Mi" }
+      requests: { cpu: "250m", memory: "512Mi" }
+  copilot:
+    image: "fieldkit/copilot:1.0.0"
+    port: 8003
+    replicas: 1
+    resources:
+      limits: { cpu: "1000m", memory: "1024Mi" }
+      requests: { cpu: "200m", memory: "256Mi" }
+  docai:
+    image: "fieldkit/docai:1.0.0"
+    port: 8004
+    replicas: 1
+    resources:
+      limits: { cpu: "2000m", memory: "2048Mi" }
+      requests: { cpu: "300m", memory: "512Mi" }
+  visionEdge:
+    image: "fieldkit/vision-edge:1.0.0"
+    port: 8005
+    replicas: 1
+    resources:
+      limits: { cpu: "2000m", memory: "2048Mi" }
+      requests: { cpu: "500m", memory: "1024Mi" }
+  tracehub:
+    image: "fieldkit/tracehub:1.0.0"
+    port: 8006
+    replicas: 1
+    resources:
+      limits: { cpu: "1000m", memory: "1024Mi" }
+      requests: { cpu: "200m", memory: "256Mi" }
+  console:
+    image: "fieldkit/console:1.0.0"
+    port: 3000
+    replicas: 1
+    resources:
+      limits: { cpu: "1000m", memory: "1024Mi" }
+      requests: { cpu: "100m", memory: "256Mi" }
+
+ingress:
+  enabled: true
+  className: "traefik"
+  hosts:
+    console: "console.localtest.me"
+    api: "api.localtest.me"
+
+networkPolicy:
+  enabled: true
+  allowInternalOnly: true
+
+preUpgradeHook:
+  enabled: true
+  image: "fieldkit/foundry:1.0.0"
