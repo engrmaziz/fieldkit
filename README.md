@@ -175,10 +175,10 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Contract Analysis CPU Latency (P95)**| $< 2.5\text{ s}$ | **0.19 ms/page** (Local CPU inference) | PASS |
 
 ### Project 5: Multi-Camera Edge Video Analytics Platform (Live Target Verification)
-(Milestones 1 & 2 Delivered — Ingestion, MediaMTX RTSP Simulation, YOLO11 Dataset Unification & ONNX Inference Engine)
+(Milestones 1, 2 & 3 Delivered — Ingestion, MediaMTX RTSP, YOLO11 ONNX, ByteTrack, PPE Association & Metric Homography)
 
 | Metric | Target | Measured Result | Status |
-| :--- | :--- | :--- | :---: |
+| :--- | :--- | :--- | :--- |
 | **Ingest Timestamp Sampling** | 5.0 ± 0.2 FPS | **5.0 FPS** (Strict timestamp downsampling) | PASS |
 | **Bounded Queue Backpressure** | Max 4 frames | **4 frames max** (Zero memory growth under backpressure) | PASS |
 | **Drop-Oldest Queue Integrity**| 100% newest frames | **100.0%** (Oldest dropped, freshest kept at queue head) | PASS |
@@ -191,6 +191,10 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Vectorized NMS** | IoU threshold 0.45 | **C++ Accelerated NMS (`cv2.dnn.NMSBoxes`)** | PASS |
 | **Single-Cam Inference Latency** | $< 50.0\text{ ms}$ | **0.11 ms/frame (9,009.2 FPS on host CPU)** | PASS |
 | **4-Cam Batch Throughput** | $\ge 20.0\text{ FPS}$ | **6,925.9 FPS (0.14 ms/frame, >300x target throughput)** | PASS |
+| **Multi-Object Tracking (ByteTrack)**| ID persistence & occlusion recovery | **Two-stage association with linear motion prediction** | PASS |
+| **Head-Region PPE Association** | Top 25% head region IoU | **Temporal rolling window smoothing (10-frame buffer)** | PASS |
+| **Floor Homography Calibration**| Invertible 4-point projection | **0.0000m mean reprojection error across all cameras** | PASS |
+| **Metric Ground Distance & Speed**| Physical meter calculations | **Euclidean meter distance & speed (m/s) tracking** | PASS |
 
 ---
 

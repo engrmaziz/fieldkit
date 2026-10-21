@@ -80,3 +80,59 @@ async def test_list_cameras_and_frame() -> None:
 
     # Cleanup
     del workers["cam_api_mock"]
+
+
+@pytest.mark.asyncio
+async def test_camera_homography_and_tracks_endpoints() -> None:
+    from fieldkit_vision.homography import CameraHomography
+    from fieldkit_vision.main import homographies, trackers
+
+    cfg = CameraConfig(
+        camera_id="cam_track_mock",
+        name="Mock Track Camera",
+        rtsp_url="rtsp://dummy",
+    )
+    mock_worker = CameraWorker(config=cfg)
+    dummy_img = np.full((360, 640, 3), 114, dtype=np.uint8)
+    mock_worker._latest_frame = FramePacket(
+        camera_id="cam_track_mock",
+        timestamp=200.0,
+        frame_index=1,
+        image=dummy_img,
+        width=640,
+        height=360,
+    )
+    workers["cam_track_mock"] = mock_worker
+
+    # Provide homography calibration
+    img_pts = [[0.0, 0.0], [640.0, 0.0], [640.0, 360.0], [0.0, 360.0]]
+    flr_pts = [[0.0, 0.0], [10.0, 0.0], [10.0, 15.0], [0.0, 15.0]]
+    homographies["cam_track_mock"] = CameraHomography(img_pts, flr_pts)
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        # Test GET /cameras/{id}/homography
+        h_resp = await client.get("/cameras/cam_track_mock/homography")
+        assert h_resp.status_code == 200
+        h_data = h_resp.json()
+        assert h_data["configured"] is True
+        assert len(h_data["matrix"]) == 3
+
+        # Test GET /cameras/{id}/tracks
+        t_resp = await client.get("/cameras/cam_track_mock/tracks")
+        assert t_resp.status_code == 200
+        t_data = t_resp.json()
+        assert isinstance(t_data, list)
+        # Verify tracked entities have expected schema if any
+        if t_data:
+            assert "track_id" in t_data[0]
+            assert "is_wearing_helmet" in t_data[0]
+            assert "floor_coord" in t_data[0]
+
+    # Cleanup
+    del workers["cam_track_mock"]
+    if "cam_track_mock" in homographies:
+        del homographies["cam_track_mock"]
+    if "cam_track_mock" in trackers:
+        del trackers["cam_track_mock"]
+

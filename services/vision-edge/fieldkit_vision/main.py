@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Any
 
 import cv2
 from fastapi import FastAPI, HTTPException, Response
@@ -13,26 +14,45 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from fieldkit_vision.camera_worker import CameraWorker, load_all_camera_configs
 from fieldkit_vision.config import settings
-from fieldkit_vision.models import CameraHealthStatus, CameraMetrics
+from fieldkit_vision.detector import YOLOOnnxDetector
+from fieldkit_vision.homography import CameraHomography
+from fieldkit_vision.models import CameraHealthStatus, CameraMetrics, TrackResponse
+from fieldkit_vision.tracker import ByteTracker, associate_ppe_to_tracks
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("fieldkit.vision.main")
 
-# Global workers dictionary
+# Global workers, trackers, and homographies
 workers: dict[str, CameraWorker] = {}
+trackers: dict[str, ByteTracker] = {}
+homographies: dict[str, CameraHomography] = {}
+detector: YOLOOnnxDetector | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Startup and shutdown lifecycle for camera workers."""
+    """Startup and shutdown lifecycle for camera workers, trackers, and homographies."""
+    global detector
     logger.info("Initializing Vision Edge camera workers from %s...", settings.config_dir)
     configs = load_all_camera_configs(settings.config_dir)
+
+    # Initialize ONNX detector
+    detector = YOLOOnnxDetector()
 
     for cfg in configs:
         worker = CameraWorker(config=cfg)
         workers[cfg.camera_id] = worker
+        trackers[cfg.camera_id] = ByteTracker(camera_id=cfg.camera_id)
+
+        # Load homography if configured
+        if cfg.homography and cfg.homography.image_points and cfg.homography.floor_points_meters:
+            try:
+                homographies[cfg.camera_id] = CameraHomography.from_config(cfg.homography)
+            except Exception as e:
+                logger.warning("Failed to initialize homography for camera %s: %s", cfg.camera_id, e)
+
         worker.start()
-        logger.info("Spawned worker for camera %s (%s)", cfg.camera_id, cfg.name)
+        logger.info("Spawned worker and tracker for camera %s (%s)", cfg.camera_id, cfg.name)
 
     yield
 
@@ -41,6 +61,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await worker.stop()
         logger.info("Stopped worker for camera %s", cid)
     workers.clear()
+    trackers.clear()
+    homographies.clear()
 
 
 app = FastAPI(
@@ -120,3 +142,75 @@ async def get_camera_frame(camera_id: str) -> Response:
         raise HTTPException(status_code=500, detail="Failed to encode JPEG snapshot")
 
     return Response(content=encoded.tobytes(), media_type="image/jpeg")
+
+
+@app.get("/cameras/{camera_id}/homography")
+async def get_camera_homography(camera_id: str) -> dict[str, Any]:
+    """Retrieve homography calibration matrix and points for a camera."""
+    worker = workers.get(camera_id)
+    if not worker:
+        raise HTTPException(status_code=404, detail=f"Camera {camera_id} not found")
+
+    homog = homographies.get(camera_id)
+    if not homog:
+        return {"configured": False, "camera_id": camera_id}
+
+    return {
+        "configured": True,
+        "camera_id": camera_id,
+        "matrix": homog.matrix.tolist(),
+        "inverse_matrix": homog.inverse_matrix.tolist(),
+        "image_points": homog._image_points,
+        "floor_points_meters": homog._floor_points,
+    }
+
+
+@app.get("/cameras/{camera_id}/tracks", response_model=list[TrackResponse])
+async def get_camera_tracks(camera_id: str) -> list[TrackResponse]:
+    """Retrieve current tracked entities with PPE compliance and metric coordinates."""
+    worker = workers.get(camera_id)
+    if not worker:
+        raise HTTPException(status_code=404, detail=f"Camera {camera_id} not found")
+
+    tracker = trackers.setdefault(camera_id, ByteTracker(camera_id=camera_id))
+    homog = homographies.get(camera_id)
+
+    # If worker has a frame, run detection and tracker update
+    frame_packet = worker.latest_frame
+    if frame_packet and frame_packet.image is not None and detector is not None:
+        detections = detector.detect(frame_packet.image)
+        active_tracks = tracker.update(detections, timestamp=frame_packet.timestamp)
+        associate_ppe_to_tracks(active_tracks, detections)
+    else:
+        active_tracks = list(tracker.tracked_tracks.values())
+
+    results: list[TrackResponse] = []
+    for t in active_tracks:
+        floor_coord = None
+        if homog:
+            try:
+                floor_coord = homog.image_to_floor(t.foot_point)
+            except Exception:
+                pass
+
+        results.append(
+            TrackResponse(
+                track_id=t.track_id,
+                camera_id=t.camera_id,
+                class_id=t.class_id,
+                class_name=t.class_name,
+                box=t.box,
+                confidence=t.confidence,
+                foot_point=t.foot_point,
+                head_region=t.head_region,
+                torso_region=t.torso_region,
+                floor_coord=floor_coord,
+                is_wearing_helmet=t.is_wearing_helmet,
+                is_wearing_vest=t.is_wearing_vest,
+                helmet_compliance_ratio=round(t.helmet_compliance_ratio, 3),
+                vest_compliance_ratio=round(t.vest_compliance_ratio, 3),
+                speed_mps=t.speed_mps,
+            )
+        )
+    return results
+

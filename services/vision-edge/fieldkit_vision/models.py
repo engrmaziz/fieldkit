@@ -117,3 +117,24 @@ class CameraHealthStatus(BaseModel):
     camera_id: str
     status: str  # "healthy", "degraded", "offline"
     metrics: CameraMetrics
+
+
+class TrackResponse(BaseModel):
+    """Active multi-object tracked entity with PPE compliance and metric coordinates."""
+
+    track_id: int
+    camera_id: str
+    class_id: int
+    class_name: str
+    box: list[float]
+    confidence: float
+    foot_point: tuple[float, float]
+    head_region: list[float]
+    torso_region: list[float]
+    floor_coord: tuple[float, float] | None = None
+    is_wearing_helmet: bool = False
+    is_wearing_vest: bool = False
+    helmet_compliance_ratio: float = 0.0
+    vest_compliance_ratio: float = 0.0
+    speed_mps: float = 0.0
+
