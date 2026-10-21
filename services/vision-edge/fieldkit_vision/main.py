@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import cv2
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
@@ -38,6 +38,10 @@ from fieldkit_vision.reid import (
     PersonSighting,
 )
 from fieldkit_vision.rules_engine import DeterministicRulesEngine
+from fieldkit_vision.search import (
+    NLSearchRequest,
+    parse_nl_query_to_filter,
+)
 from fieldkit_vision.tracker import ByteTracker, associate_ppe_to_tracks
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -335,20 +339,119 @@ async def process_frame_and_evaluate_rules(
 
 @app.get("/events", response_model=list[VisionEvent])
 async def list_events(
+    camera: str | None = None,
     camera_id: str | None = None,
+    rule: str | None = None,
     rule_type: str | None = None,
     severity: str | None = None,
+    from_ts: float | None = Query(None, alias="from"),
+    to_ts: float | None = Query(None, alias="to"),
+    person_id: str | None = None,
+    cursor: str | None = None,
     limit: int = 50,
 ) -> list[VisionEvent]:
-    """Retrieve recent safety and security violation events with optional filtering."""
+    """Retrieve recent safety and security violation events with parameterized filtering."""
     results = list(recent_events)
-    if camera_id:
-        results = [e for e in results if e.camera_id == camera_id]
-    if rule_type:
-        results = [e for e in results if e.rule_type == rule_type]
+    cam = camera or camera_id
+    r_type = rule or rule_type
+
+    if cam:
+        results = [e for e in results if e.camera_id == cam]
+    if r_type:
+        results = [e for e in results if e.rule_type == r_type]
     if severity:
         results = [e for e in results if e.severity == severity]
+    if from_ts is not None:
+        results = [e for e in results if e.timestamp >= from_ts]
+    if to_ts is not None:
+        results = [e for e in results if e.timestamp <= to_ts]
+    if person_id:
+        results = [
+            e
+            for e in results
+            if str(e.track_id) == person_id
+            or (e.metadata and str(e.metadata.get("global_person_id")) == person_id)
+        ]
+    if cursor:
+        try:
+            c_ts = float(cursor)
+            results = [e for e in results if e.timestamp < c_ts]
+        except ValueError:
+            pass
     return results[:limit]
+
+
+@app.get("/events/{event_id}", response_model=VisionEvent)
+async def get_event_by_id(event_id: str) -> VisionEvent:
+    """Retrieve single event details by event_id."""
+    for e in recent_events:
+        if e.event_id == event_id:
+            return e
+    raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
+
+
+@app.post("/search/nl")
+async def search_events_natural_language(req: NLSearchRequest) -> dict[str, Any]:
+    """Parse conversational natural language search into structured filters and return matched events."""
+    flt, chips = parse_nl_query_to_filter(req.query)
+    matched = list(recent_events)
+    if flt.camera_id:
+        matched = [e for e in matched if e.camera_id == flt.camera_id]
+    if flt.rule_type:
+        matched = [e for e in matched if e.rule_type == flt.rule_type]
+    if flt.severity:
+        matched = [e for e in matched if e.severity == flt.severity]
+    if flt.person_id:
+        matched = [
+            e
+            for e in matched
+            if str(e.track_id) in flt.person_id or e.camera_id == flt.person_id
+        ]
+
+    return {
+        "original_query": req.query,
+        "parsed_filter": flt.model_dump(),
+        "filter_chips": chips,
+        "results_count": len(matched),
+        "events": matched[:flt.limit],
+    }
+
+
+@app.get("/cameras/{camera_id}/zones")
+async def get_camera_zones(camera_id: str) -> list[dict[str, Any]]:
+    """Retrieve configured detection zones for a camera."""
+    engine = rules_engines.get(camera_id)
+    if not engine:
+        cfg_path = Path("configs/cameras") / f"{camera_id}.yaml"
+        if cfg_path.exists():
+            from fieldkit_vision.camera_worker import load_camera_config_from_yaml
+
+            cfg = load_camera_config_from_yaml(cfg_path)
+            return [z.model_dump() for z in cfg.zones]
+        raise HTTPException(status_code=404, detail=f"Camera {camera_id} not found")
+    return [z.model_dump() for z in engine.zones.values()]
+
+
+@app.post("/cameras/{camera_id}/zones")
+async def update_camera_zones(
+    camera_id: str, zones_data: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Update zone polygons for a camera and re-initialize rules engine zones."""
+    from fieldkit_vision.models import CameraConfig, ZoneConfig
+    from fieldkit_vision.rules_engine import DeterministicRulesEngine
+
+    engine = rules_engines.get(camera_id)
+    if not engine:
+        cfg = CameraConfig(camera_id=camera_id, name=camera_id, rtsp_url="rtsp://dummy")
+        engine = DeterministicRulesEngine(camera_config=cfg)
+        rules_engines[camera_id] = engine
+
+    new_zones: dict[str, ZoneConfig] = {}
+    for zd in zones_data:
+        z = ZoneConfig(**zd)
+        new_zones[z.id] = z
+    engine.zones = new_zones
+    return {"camera_id": camera_id, "zone_count": len(engine.zones), "status": "updated"}
 
 
 @app.post("/cameras/{camera_id}/evaluate", response_model=list[VisionEvent])

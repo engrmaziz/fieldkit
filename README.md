@@ -175,7 +175,7 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Contract Analysis CPU Latency (P95)**| $< 2.5\text{ s}$ | **0.19 ms/page** (Local CPU inference) | PASS |
 
 ### Project 5: Multi-Camera Edge Video Analytics Platform (Live Target Verification)
-(Milestones 1, 2, 3, 4 & 5 Delivered — Ingestion, MediaMTX RTSP, YOLO11 ONNX, ByteTrack, PPE Association, Homography, Rules Engine, Redpanda, Clips, Re-ID & Camera Health)
+(Milestones 1, 2, 3, 4, 5 & 6 Delivered — Ingestion, MediaMTX RTSP, YOLO11 ONNX, ByteTrack, PPE Association, Homography, Rules Engine, Redpanda, Clips, Re-ID, Camera Health, Search API & Console UI)
 
 | Metric | Target | Measured Result | Status |
 | :--- | :--- | :--- | :--- |
@@ -209,6 +209,12 @@ Generated via `make eval P=docai` (see [evals/reports/p4/2026-10-20.md](evals/re
 | **Camera Black / Occluded Frame** | Mean pixel intensity $< 15.0$ | **100.0%** (Immediate trigger of `CRITICAL` status) | PASS |
 | **Camera Lens Blur / Defocus** | Laplacian variance drop | **Automatic detection relative to reference baseline** | PASS |
 | **Camera View Shift / Tamper Detection**| ORB inliers $< 30\%$ vs reference | **100.0%** (Immediate trigger of `CRITICAL` status) | PASS |
+| **Parameterized Event Search API** | Filters by camera, rule, ts, person | **GET /events & GET /events/{event_id} (0.7ms)** | PASS |
+| **Natural Language Query Parsing** | Schema-validated EventFilter JSON | **POST /search/nl with UI chips (Zero SQL injection)** | PASS |
+| **Dynamic Zone Polygon API** | Runtime geometry reconfiguration | **GET/POST /cameras/{camera_id}/zones** | PASS |
+| **4-Camera Live Wall Console UI** | Real-time stream & detection OSD | **/vision (Next.js 14 App Router, static compile)** | PASS |
+| **Clip Player & Floor Map Mini-Map** | Privacy blurred clip & homography | **1080p MP4 preview + 2D ground coordinates** | PASS |
+| **Worker Re-ID Journey Timeline** | Cross-camera transit audit trail | **Chronological sighting progression with OSNet score** | PASS |
 
 ---
 
