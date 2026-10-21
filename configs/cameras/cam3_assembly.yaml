@@ -1,0 +1,46 @@
+camera_id: "cam3_assembly"
+name: "Assembly Line 1 Worker Flow (DE-HAM)"
+plant_id: "DE-HAM"
+rtsp_url: "rtsp://mediamtx:8554/cam3"
+fallback_url: "rtsp://localhost:8554/cam3"
+target_fps: 5.0
+width: 1920
+height: 1080
+reconnect:
+  initial_backoff_sec: 1.0
+  max_backoff_sec: 30.0
+  backoff_multiplier: 2.0
+  timeout_sec: 5.0
+queue:
+  maxsize: 4
+  drop_policy: "drop_oldest"
+
+zones:
+  - id: "zone_assembly_conveyor"
+    name: "Conveyor Line Buffer"
+    type: "work_cell"
+    required_ppe: ["vest"]
+    polygon:
+      - [400, 350]
+      - [1100, 350]
+      - [1250, 850]
+      - [300, 850]
+
+homography:
+  image_points:
+    - [400, 350]
+    - [1100, 350]
+    - [1250, 850]
+    - [300, 850]
+  floor_points_meters:
+    - [0.0, 0.0]
+    - [5.0, 0.0]
+    - [5.0, 6.0]
+    - [0.0, 6.0]
+
+rules:
+  - id: "rule_assembly_dwell"
+    type: "dwell"
+    zone_id: "zone_assembly_conveyor"
+    min_dwell_sec: 120.0
+    cooldown_sec: 60.0

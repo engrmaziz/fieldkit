@@ -1,0 +1,49 @@
+camera_id: "cam2_logistics"
+name: "Logistics Loading Dock & Forklift Lane (DE-HAM)"
+plant_id: "DE-HAM"
+rtsp_url: "rtsp://mediamtx:8554/cam2"
+fallback_url: "rtsp://localhost:8554/cam2"
+target_fps: 5.0
+width: 1920
+height: 1080
+reconnect:
+  initial_backoff_sec: 1.0
+  max_backoff_sec: 30.0
+  backoff_multiplier: 2.0
+  timeout_sec: 5.0
+queue:
+  maxsize: 4
+  drop_policy: "drop_oldest"
+
+zones:
+  - id: "zone_forklift_transit"
+    name: "Forklift High-Speed Transit Lane"
+    type: "transit_lane"
+    required_ppe: ["vest"]
+    polygon:
+      - [180, 300]
+      - [1200, 300]
+      - [1400, 1000]
+      - [100, 1000]
+
+homography:
+  image_points:
+    - [180, 300]
+    - [1200, 300]
+    - [1400, 1000]
+    - [100, 1000]
+  floor_points_meters:
+    - [0.0, 0.0]
+    - [10.0, 0.0]
+    - [10.0, 15.0]
+    - [0.0, 15.0]
+
+rules:
+  - id: "rule_forklift_pedestrian_proximity"
+    type: "proximity"
+    class_a: "person"
+    class_b: "forklift"
+    max_distance_meters: 2.0
+    min_duration_sec: 0.6
+    min_forklift_speed_mps: 0.5
+    cooldown_sec: 30.0

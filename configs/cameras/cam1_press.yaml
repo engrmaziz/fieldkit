@@ -1,0 +1,48 @@
+camera_id: "cam1_press"
+name: "Heavy Stamping Press Zone (DE-HAM)"
+plant_id: "DE-HAM"
+rtsp_url: "rtsp://mediamtx:8554/cam1"
+fallback_url: "rtsp://localhost:8554/cam1"
+target_fps: 5.0
+width: 1920
+height: 1080
+reconnect:
+  initial_backoff_sec: 1.0
+  max_backoff_sec: 30.0
+  backoff_multiplier: 2.0
+  timeout_sec: 5.0
+queue:
+  maxsize: 4
+  drop_policy: "drop_oldest"
+
+zones:
+  - id: "zone_press_danger"
+    name: "Press Bed Hazardous Area"
+    type: "danger_zone"
+    required_ppe: ["helmet", "vest"]
+    polygon:
+      - [350, 420]
+      - [950, 420]
+      - [1120, 920]
+      - [220, 920]
+
+homography:
+  image_points:
+    - [350, 420]
+    - [950, 420]
+    - [1120, 920]
+    - [220, 920]
+  floor_points_meters:
+    - [0.0, 0.0]
+    - [6.0, 0.0]
+    - [6.0, 8.0]
+    - [0.0, 8.0]
+
+rules:
+  - id: "rule_press_helmet"
+    type: "zone_ppe_missing"
+    zone_id: "zone_press_danger"
+    ppe_class: "helmet"
+    min_violation_ratio: 0.70
+    window_sec: 2.0
+    cooldown_sec: 30.0

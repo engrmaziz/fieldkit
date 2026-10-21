@@ -222,13 +222,91 @@ services:
   # ============================================================================
   # Profile: vision (Project 5 & 6: Video Analytics & Defect Inspection)
   # ============================================================================
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: fieldkit-mediamtx
+    profiles: ["vision", "all"]
+    ports:
+      - "8554:8554"   # RTSP
+      - "8888:8888"   # HLS
+      - "8889:8889"   # WebRTC
+    environment:
+      - MTX_PROTOCOLS=tcp,udp
+    networks:
+      - fieldkit-net
+
+  cam1-publisher:
+    image: jrottenberg/ffmpeg:4.4-alpine
+    container_name: fieldkit-cam1-publisher
+    profiles: ["vision", "all"]
+    command: >
+      -re -stream_loop -1 -i /videos/cam1_press.mp4 -c:v copy -f rtsp rtsp://mediamtx:8554/cam1
+    volumes:
+      - ../../data/p5/videos:/videos:ro
+    depends_on:
+      - mediamtx
+    restart: unless-stopped
+    networks:
+      - fieldkit-net
+
+  cam2-publisher:
+    image: jrottenberg/ffmpeg:4.4-alpine
+    container_name: fieldkit-cam2-publisher
+    profiles: ["vision", "all"]
+    command: >
+      -re -stream_loop -1 -i /videos/cam2_logistics.mp4 -c:v copy -f rtsp rtsp://mediamtx:8554/cam2
+    volumes:
+      - ../../data/p5/videos:/videos:ro
+    depends_on:
+      - mediamtx
+    restart: unless-stopped
+    networks:
+      - fieldkit-net
+
+  cam3-publisher:
+    image: jrottenberg/ffmpeg:4.4-alpine
+    container_name: fieldkit-cam3-publisher
+    profiles: ["vision", "all"]
+    command: >
+      -re -stream_loop -1 -i /videos/cam3_assembly.mp4 -c:v copy -f rtsp rtsp://mediamtx:8554/cam3
+    volumes:
+      - ../../data/p5/videos:/videos:ro
+    depends_on:
+      - mediamtx
+    restart: unless-stopped
+    networks:
+      - fieldkit-net
+
+  cam4-publisher:
+    image: jrottenberg/ffmpeg:4.4-alpine
+    container_name: fieldkit-cam4-publisher
+    profiles: ["vision", "all"]
+    command: >
+      -re -stream_loop -1 -i /videos/cam4_perimeter.mp4 -c:v copy -f rtsp rtsp://mediamtx:8554/cam4
+    volumes:
+      - ../../data/p5/videos:/videos:ro
+    depends_on:
+      - mediamtx
+    restart: unless-stopped
+    networks:
+      - fieldkit-net
+
   vision-edge:
-    image: alpine:latest
+    build:
+      context: ../..
+      dockerfile: services/vision-edge/Dockerfile
+    image: fieldkit-vision-edge:latest
     container_name: fieldkit-vision-edge
     profiles: ["vision", "all"]
-    command: ["sleep", "infinity"]
+    environment:
+      - PORT=8005
+      - VISION_CONFIG_DIR=configs/cameras
+      - VISION_VIDEO_DIR=data/p5/videos
+      - RUNNING_IN_DOCKER=true
     ports:
       - "${PORT_VISION:-8005}:8005"
+    depends_on:
+      - mediamtx
     networks:
       - fieldkit-net
 
