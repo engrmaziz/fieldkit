@@ -84,7 +84,7 @@ In high-precision manufacturing (such as hydraulic valves, cylinders, and power 
 ```mermaid
 graph TD
     subgraph Frontend ["Presentation Tier"]
-        UI["Fieldkit Console (Next.js 15, PKCE)"]
+        UI["Fieldkit Console (Next.js 14, PKCE)"]
     end
 
     subgraph Security ["Centralized Identity & Access"]
@@ -99,6 +99,7 @@ graph TD
         S_DocAI["P4: docai (Port 8004)"]
         S_Vision["P5/P6: vision-edge (Port 8005)"]
         S_Trace["P7: tracehub (Port 8006)"]
+        S_Workflow["P8: workflow-engine (Port 8008)"]
         S_Hello["Verification: hello (Port 8000)"]
     end
 
@@ -111,6 +112,7 @@ graph TD
         PG[("Postgres 16 + pgvector")]
         Redis[("Redis 7 Alpine")]
         CH[("ClickHouse Server")]
+        RP[("Redpanda Event Broker")]
         Ollama["Local Ollama (qwen2.5:7b, nomic-embed-text)"]
     end
 
@@ -124,6 +126,7 @@ graph TD
     Services --> PG
     Services --> Redis
     Services --> CH
+    Services --> RP
 ```
 
 ---
@@ -449,13 +452,14 @@ cd apps/console && pnpm run dev
 
 Endpoints:
 - **Web Console**: [http://localhost:3000](http://localhost:3000)
-  - Foundry Explorer & Lineage: `/foundry/explorer`, `/foundry/graph`, `/foundry/lineage`
+  - Foundry Explorer, Graph & Drift: `/foundry/explorer`, `/foundry/graph`, `/foundry/review`, `/foundry/drift`
   - Assistant Chat & Citations: `/assistant`
   - Copilot Support Triage & Human Review: `/copilot`
   - DocAI Document Intelligence & Redline Diff: `/docai`, `/docai/diff`
   - Observe Traces, Prompts, Evals, A/B, Alerts: `/observe`
   - Multi-Camera Vision Safety Wall: `/vision`
   - InspectAI Edge Inspection Console: `/inspection`
+  - Workflows DAG Canvas & Approval Gates: `/workflows`
 - **Grafana Dashboards**: [http://localhost:3001](http://localhost:3001) (admin / admin)
 - **Vision Edge API Docs**: [http://localhost:8005/docs](http://localhost:8005/docs)
   - Safety Vision Analytics: `/events`, `/search/nl`, `/cameras/{id}/zones`
@@ -498,6 +502,9 @@ make demo P=inspect
 
 # Project 7: Tracehub (Observability & Anomaly Alerting)
 make demo P=tracehub
+
+# Project 8: Air-Gapped Deploy Kit & Durable Workflow Engine
+make demo P=deploy
 ```
 
 - **Runbooks**:
@@ -505,6 +512,7 @@ make demo P=tracehub
   - [Project 1 Demo Runbook](docs/runbooks/p1-demo-script.md)
   - [Project 4 Demo Runbook](docs/runbooks/p4-demo-script.md)
   - [Project 7 Demo Runbook](docs/runbooks/p7-demo-script.md)
+  - [Project 8 Disaster Recovery Drills](docs/runbooks/drills.md)
 - **Project Specifications**:
   - [Project 1 Spec](docs/projects/p1.md)
   - [Project 2 Spec](docs/projects/p2.md)
