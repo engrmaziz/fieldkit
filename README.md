@@ -8,21 +8,74 @@ Fieldkit is a production-grade, local-first enterprise AI platform built for for
 
 ## 🎥 Flagship AI Demo Video Walkthroughs
 
-Watch turnkey 1080p 60fps narrated walkthroughs with Microsoft Edge-TTS neural voiceover and Playwright automated UI interaction across all 8 flagship projects, hosted directly in the [**Fieldkit v1.0.0 Release Assets**](https://github.com/engrmaziz/fieldkit/releases/tag/v1.0.0):
+All video walkthroughs are 1080p 60fps universal `.mp4` recordings featuring studio-grade Microsoft Edge-TTS neural voiceover (`en-US-ChristopherNeural` / `en-US-GuyNeural`) synchronized to automated headless Chromium browser walkthroughs driving the live Next.js console. Hosted directly in the [**Fieldkit v1.0.0 Release Assets**](https://github.com/engrmaziz/fieldkit/releases/tag/v1.0.0) with zero git repository bloat.
 
-| Project | Flagship System | Key Architecture Demonstrated | Demo Video |
-| :--- | :--- | :--- | :---: |
-| **P1** | **Mini Foundry** | Entity-resolution physics graph, golden record deduplication, schema drift | [📥 Watch P1 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p1_demo.mp4) |
-| **P2** | **Enterprise RAG + NL2SQL** | Hybrid vector (`nomic-embed-text`) + BM25, SQL query AST validation | [📥 Watch P2 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p2_demo.mp4) |
-| **P3** | **Multi-Agent Ops Copilot** | LangGraph dual-agent triage, human-in-the-loop approval gate, ERP actions | [📥 Watch P3 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p3_demo.mp4) |
-| **P4** | **Contract & Doc Intelligence** | DIN 5008 delivery note OCR, Donut/VLM fallback, bounding box review | [📥 Watch P4 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p4_demo.mp4) |
-| **P5** | **Multi-Camera Video Analytics** | 4-camera RTSP matrix, edge defect detections, fleet telemetry | [📥 Watch P5 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p5_demo.mp4) |
-| **P6** | **Industrial Defect Inspection** | Optical inspection conveyor, defect heatmaps, continuous active learning | [📥 Watch P6 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p6_demo.mp4) |
-| **P7** | **Tracehub Observability** | OpenTelemetry trace waterfalls, ClickHouse storage, streaming RCA | [📥 Watch P7 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p7_demo.mp4) |
-| **P8** | **Air-Gapped Deploy Kit & Engine** | Topological DAG workflow runner, human signal gates, air-gap packaging | [📥 Watch P8 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p8_demo.mp4) |
+### 🎬 Master Platform Overview (Full 6.7-Minute End-to-End Walkthrough)
+> **[📥 Download & Stream Master Overview Video (1080p, 14.1 MB)](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_master_overview.mp4)**  
+> *An executive and technical deep dive into Fieldkit: why we built it, how we built it, problem & solution breakdown across all 8 systems, competitive differentiators, and the future roadmap.*
+
+| Timestamp | Chapter | Key Architectural Topic Covered |
+| :---: | :--- | :--- |
+| `00:00 - 00:42` | **The Industrial AI Crisis** | Halden engagement, air-gapped manufacturing realities, $0 cloud cost mandate |
+| `00:42 - 01:15` | **Architecture & Technology Stack** | Python 3.12, Go 1.23, Next.js 15, Postgres 16, ClickHouse, 100% Ollama |
+| `01:15 - 01:55` | **P1 Mini Foundry & P2 Enterprise RAG** | Fellegi-Sunter ER, LLM grey-zone adjudication, AST-validated NL2SQL |
+| `01:55 - 02:38` | **P3 Multi-Agent Copilot & P4 Doc AI** | LangGraph triage, human approval gates, DIN 5008 delivery note extraction |
+| `02:38 - 03:18` | **P5 Video Analytics & P6 Defect AI** | 4-camera RTSP matrix, conveyor defect heatmaps, continuous active learning |
+| `03:18 - 04:02` | **P7 Tracehub & P8 Workflow Engine** | OpenTelemetry trace waterfalls, ClickHouse 100k spans/s, topological DAG runner |
+| `04:02 - 04:40` | **Differentiators & Future Roadmap** | Air-gapped vs Palantir/Databricks, edge NPU acceleration, federated learning |
+
+---
+
+### 📦 Individual Project Walkthrough Demos
+
+| Project | Flagship System | Key Architecture Demonstrated | Duration | Size | Direct Video Link |
+| :--- | :--- | :--- | :---: | :---: | :---: |
+| **P1** | **Mini Foundry** | Entity-resolution physics graph, golden record deduplication, schema drift | 75.3s | 1.78 MB | [📥 Watch P1 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p1_demo.mp4) |
+| **P2** | **Enterprise RAG + NL2SQL** | Hybrid vector (`nomic-embed-text`) + BM25, SQL query AST validation | 65.3s | 2.18 MB | [📥 Watch P2 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p2_demo.mp4) |
+| **P3** | **Multi-Agent Ops Copilot** | LangGraph dual-agent triage, human-in-the-loop approval gate, ERP actions | 73.7s | 2.69 MB | [📥 Watch P3 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p3_demo.mp4) |
+| **P4** | **Contract & Doc Intelligence** | DIN 5008 delivery note OCR, Donut/VLM fallback, bounding box review | 59.8s | 1.62 MB | [📥 Watch P4 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p4_demo.mp4) |
+| **P5** | **Multi-Camera Video Analytics** | 4-camera RTSP matrix, edge defect detections, fleet telemetry | 75.0s | 2.80 MB | [📥 Watch P5 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p5_demo.mp4) |
+| **P6** | **Industrial Defect Inspection** | Optical inspection conveyor, defect heatmaps, continuous active learning | 61.9s | 1.94 MB | [📥 Watch P6 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p6_demo.mp4) |
+| **P7** | **Tracehub Observability** | OpenTelemetry trace waterfalls, ClickHouse storage, streaming RCA | 61.7s | 2.14 MB | [📥 Watch P7 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p7_demo.mp4) |
+| **P8** | **Air-Gapped Deploy Kit & Engine** | Topological DAG workflow runner, human signal gates, air-gap packaging | 109.4s | 3.11 MB | [📥 Watch P8 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p8_demo.mp4) |
 
 > [!TIP]
-> All videos were generated 100% autonomously without human screen-recording using our in-repo automation pipeline (`uv run python scripts/generate_all_demo_videos.py --projects all`).
+> All videos were generated 100% autonomously without human screen-recording using our in-repo automation pipelines:
+> ```bash
+> # Re-generate individual project walkthroughs:
+> uv run python scripts/generate_all_demo_videos.py --projects all
+> 
+> # Re-generate comprehensive 6.7-minute master overview video:
+> uv run python scripts/generate_master_video.py
+> ```
+
+---
+
+## Strategic Platform Overview
+
+### 1. Why We Built Fieldkit (The Industrial AI Dilemma)
+In high-precision manufacturing (such as hydraulic valves, cylinders, and power packs at Halden Industrie GmbH), enterprise AI initiatives fail when forced into generic cloud paradigms. Commercial cloud APIs (OpenAI, Anthropic, Azure) introduce critical blockers:
+1. **Air-Gapped Realities & Strict Data Residency**: Proprietary CAD blueprints, metallurgical tolerances, and supplier contract terms are legally prohibited from leaving plant firewalls.
+2. **Data Fragmentation**: Critical production data is siloed across legacy SAP ERPs, SOAP interfaces, CSV exports, and manual shop-floor inspection sheets.
+3. **Catastrophic Risk of Hallucinations**: In an industrial plant, an ungrounded LLM action (e.g. an unauthorized purchase order mutation or unverified machining tolerance change) results in real-world equipment downtime or safety violations.
+
+**The Solution**: Fieldkit provides a unified, local-first forward-deployed platform that runs 100% on edge hardware, eliminates cloud costs entirely, and enforces mathematical, deterministic guardrails before any action or database mutation occurs.
+
+### 2. How Fieldkit Differs From Existing Solutions
+
+| Dimension | Fieldkit | Traditional Cloud AI (OpenAI / Bedrock) | Palantir Foundry / Databricks |
+| :--- | :--- | :--- | :--- |
+| **Cloud Infrastructure Cost** | **$0 recurring (100% local edge hardware)** | High per-token API bills and egress charges | Millions in annual cloud platform licensing |
+| **Network & Air-Gap** | **100% air-gapped; zero internet connection required** | Strictly requires continuous internet egress | Requires cloud deployment or complex hybrid proxies |
+| **Safety & Validation** | **Fail-closed Pydantic schemas + deterministic AST gates** | Probabilistic, raw text responses prone to prompt injection | Proprietary rules engines with vendor lock-in |
+| **Multi-Plant Security** | **Database-enforced PostgreSQL Row-Level Security (RLS)** | Application-level WHERE filters (vulnerable to developer error) | Proprietary security ontologies |
+| **Model Portability** | **Standard local Ollama open weights (`qwen2.5:7b`)** | Closed-source models locked to cloud vendors | Dependent on proprietary vendor runtime stacks |
+
+### 3. Future Platform Roadmap
+- **Autonomous Multi-Plant Fleet Synchronization**: Real-time peer-to-peer schema synchronization and edge telemetry replication across global sites via Redpanda.
+- **Edge NPU & TPU Compilation**: Compiling local vision and embedding models for dedicated low-power edge accelerators (NVIDIA Jetson Orin, Intel OpenVINO, Google Coral).
+- **Self-Healing Workflow DAGs**: Automated pipeline recovery and rollback mechanisms dynamically orchestrated by Tracehub streaming anomaly detectors.
+- **Privacy-Preserving Federated Learning**: Collaborative edge model fine-tuning across distributed manufacturing facilities without ever centralizing raw shop-floor telemetry.
 
 ---
 
