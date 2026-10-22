@@ -102,11 +102,45 @@ def build_airgap_bundle(output_dir: Path | None = None) -> tuple[Path, Path]:
     with open(checksum_file, "w", encoding="utf-8") as f:
         f.write(f"{digest}  {archive_path.name}\n")
 
-    # 8. Cryptographic Signing via Go fieldkit-ctl (or native Python fallback)
+    # 8. Cryptographic Signing via Go fieldkit-ctl or Python cryptography
     sig_path = archive_path.with_suffix(archive_path.suffix + ".sig")
-    sig_data = f"ecdsa_p256_sha256:{digest[:32]}:{digest[32:]}"
-    with open(sig_path, "w", encoding="utf-8") as f:
-        f.write(sig_data)
+    pub_path = archive_path.with_suffix(archive_path.suffix + ".pub")
+
+    ctl_exe = ROOT_DIR / "services" / "workflow-engine" / "fieldkit-ctl.exe"
+    if ctl_exe.exists():
+        import subprocess
+
+        res = subprocess.run(
+            [str(ctl_exe), "sign", "--file", str(archive_path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if res.returncode != 0:
+            raise RuntimeError(f"fieldkit-ctl signing failed: {res.stderr}")
+    else:
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
+
+        priv_key = ec.generate_private_key(ec.SECP256R1())
+        pub_key = priv_key.public_key()
+
+        with open(archive_path, "rb") as f:
+            data = f.read()
+
+        der_sig = priv_key.sign(data, ec.ECDSA(hashes.SHA256()))
+        r, s = decode_dss_signature(der_sig)
+        sig_data = f"{r:x}:{s:x}"
+        with open(sig_path, "w", encoding="utf-8") as f:
+            f.write(sig_data)
+
+        pub_pem = pub_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        with open(pub_path, "wb") as f:
+            f.write(pub_pem)
 
     return archive_path, sig_path
 

@@ -29,7 +29,7 @@ All evaluation gates passed with **zero duplicate side effects**, **100% replay 
 | **Idempotency Tracking (M2)** | Unique Dispatch Keys | 1:1 with effects | **150 unique keys** (150 requests) | PASS |
 | **Lease Durability (M2)** | Stuck Tasks (Expired Leases) | **Strictly 0** | **0 stuck tasks** (Automatic recovery) | PASS |
 | **Replay Invariant (M2)** | Event Replay State Determinism | 100.0% | **100.0%** (Zero state drift) | PASS |
-| **Engine Throughput (M2)** | Step Execution Velocity | > 50 steps/s | **1163.4 steps/s** | PASS |
+| **Engine Throughput (M2)** | Step Execution Velocity | > 50 steps/s | **1387.4 steps/s** | PASS |
 | **Helm Umbrella Chart (M4)** | Helm Lint Failure Count | 0 errors | **0 errors (1 chart linted cleanly)** | PASS |
 | **Kubernetes Manifests (M4)** | Rendered Manifest Lines | > 1,000 lines | **1316 lines** (13 workloads) | PASS |
 | **Air-Gap Packager (M5)** | Bundle Checksum & Signature | Valid Cosign | **fieldkit-1.0.0-airgap.tar.gz [VERIFIED]** | PASS |

@@ -326,6 +326,9 @@ def main() -> None:
     elif args.profile in ("inspect", "p6", "inspectai", "defect", "inspection"):
         from scripts.demo_inspection import run_inspection_demo
         asyncio.run(run_inspection_demo())
+    elif args.profile in ("deploy", "p8", "workflow", "workflow-engine", "airgap"):
+        from scripts.demo_p8 import run_deploy_demo
+        asyncio.run(run_deploy_demo())
     else:
         asyncio.run(run_hello_demo())
 

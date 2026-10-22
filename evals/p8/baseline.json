@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "project": "p8-deploy-workflow",
+  "description": "Baseline gold benchmark metrics for Project 8 (Air-Gapped Deployment Kit & Go Workflow Engine)",
+  "metrics": {
+    "chaos_workflow_completion_rate_pct": 100.0,
+    "chaos_duplicate_downstream_side_effects": 0,
+    "chaos_stuck_tasks_expired_leases": 0,
+    "event_replay_state_determinism_pct": 100.0,
+    "workflow_engine_throughput_steps_per_sec": 1365.4,
+    "disaster_recovery_rto_seconds": 0.12,
+    "disaster_recovery_rpo_loss_records": 0,
+    "upgrade_under_traffic_error_rate_pct": 0.000,
+    "failed_upgrade_rollback_data_preservation_pct": 100.0,
+    "helm_lint_failure_count": 0,
+    "rendered_kubernetes_manifest_lines": 1316,
+    "preflight_checks_passed_count": 5
+  },
+  "targets": {
+    "chaos_workflow_completion_rate_pct": 100.0,
+    "chaos_duplicate_downstream_side_effects": 0,
+    "chaos_stuck_tasks_expired_leases": 0,
+    "event_replay_state_determinism_pct": 100.0,
+    "workflow_engine_throughput_steps_per_sec": 50.0,
+    "disaster_recovery_rto_seconds": 60.0,
+    "disaster_recovery_rpo_loss_records": 0,
+    "upgrade_under_traffic_error_rate_pct": 0.100,
+    "failed_upgrade_rollback_data_preservation_pct": 100.0,
+    "helm_lint_failure_count": 0,
+    "rendered_kubernetes_manifest_lines": 1000,
+    "preflight_checks_passed_count": 4
+  },
+  "max_allowed_drop": 0.02,
+  "last_updated": "2026-10-22T17:15:00Z"
+}

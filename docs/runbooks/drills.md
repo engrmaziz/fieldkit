@@ -133,3 +133,92 @@ This generates `fieldkit-support-<YYYYMMDD_HHMMSS>.tar.gz` containing:
 - Redacted application service logs (passwords, tokens, and PII stripped)
 - Storage volume capacity and PVC mount states
 Transfer the resulting archive to the support jump-box for analysis.
+
+---
+
+## 6. Secret Rotation Procedure
+
+When plant cybersecurity policy requires rotating cryptographic secrets:
+
+### Step 1: Database & Redis Passwords
+```bash
+# 1. Update Kubernetes Secret or .env file
+kubectl create secret generic fieldkit-credentials \
+  --from-literal=POSTGRES_PASSWORD="$(openssl rand -base64 32)" \
+  --from-literal=REDIS_PASSWORD="$(openssl rand -base64 32)" \
+  -n fieldkit --dry-run=client -o yaml | kubectl apply -f -
+
+# 2. Trigger rolling restart of consuming microservices
+kubectl rollout restart deployment/fieldkit-foundry -n fieldkit
+kubectl rollout restart deployment/fieldkit-workflow-engine -n fieldkit
+```
+
+### Step 2: JWT Signing Keys & Keycloak Tokens
+```bash
+# Generate new 2048-bit RSA keypair in Keycloak Realm
+curl -s -X POST http://localhost:8080/admin/realms/halden/components \
+  -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"rsa-rot-2026","providerId":"rsa-generated","providerType":"org.keycloak.keys.KeyProvider"}'
+```
+
+---
+
+## 7. GPU Node Provisioning & Acceleration
+
+For edge plants with dedicated NVIDIA RTX/A-series accelerators:
+
+### Step 1: NVIDIA Container Toolkit Installation
+```bash
+# On Ubuntu edge host:
+sudo apt-get install -y nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=containerd
+sudo systemctl restart containerd
+```
+
+### Step 2: Enable GPU in Helm Values
+In `deploy/helm/fieldkit/values.yaml`:
+```yaml
+ollama:
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+  nodeSelector:
+    accelerator: nvidia-gpu
+```
+
+### Step 3: Apply Updated Configuration
+```bash
+helm upgrade fieldkit ./deploy/helm/fieldkit -n fieldkit --reuse-values -f deploy/helm/fieldkit/values.yaml
+```
+
+---
+
+## 8. 10 Common Industrial Alarms with Exact Remediation Commands
+
+| # | Alert Identifier | Symptom & Condition | Exact Remediation Command |
+| :- | :--- | :--- | :--- |
+| **1** | `DiskStorageCritical80` | Host PVC or `/var/lib/docker` free space $< 20\%$ | `docker system prune -af --volumes` and purge ClickHouse parts: `ALTER TABLE traces_spans DROP PARTITION '2026-09';` |
+| **2** | `ClickHouseMemoryPressure` | ClickHouse consuming $> 85\%$ max server memory | `clickhouse-client --query "SYSTEM FLUSH AND RELOAD CONFIG;"` and reduce background merges in `config.xml`. |
+| **3** | `PostgresReplicationLag` | Standby replica lagging $> 100\text{ MB}$ behind primary | `psql -U postgres -c "SELECT client_addr, pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn) FROM pg_stat_replication;"` |
+| **4** | `WorkerLeaseExpired` | Workflow task leased $> 30\text{s}$ without heartbeat renewal | Engine auto-reclaims task; restart stuck worker pool: `kubectl rollout restart deployment/fieldkit-workflow-engine -n fieldkit` |
+| **5** | `OllamaVRAMSpillover` | Model weights swapped to CPU RAM causing inference latency spikes | Offload context cache: `curl -X POST http://localhost:11434/api/generate -d '{"model": "qwen2.5:7b", "keep_alive": 0}'` |
+| **6** | `KeycloakCertificateExpiring` | OIDC realm TLS certificate expiring in $< 7\text{ days}` | Rotate cert: `kubectl create secret tls keycloak-tls --cert=tls.crt --key=tls.key -n fieldkit --dry-run=client -o yaml \| kubectl apply -f -` |
+| **7** | `RedpandaUnderReplicatedPartitions` | Raft partition leader disconnected or lagging | Inspect partitions: `rpk cluster status` and check disk: `rpk cluster logdirs describe` |
+| **8** | `WorkflowSuspendedApprovalTimeout` | Workflow parked on human approval gate $> 24\text{ hours}` | Deliver signal or abort: `fieldkit-ctl signal --run-id <ID> --signal approve` or `POST /runs/<ID>/cancel` |
+| **9** | `NetworkPolicyEgressBlocked` | Pod attempting unexpected outbound network egress | Verify OT zero-trust policy: `kubectl describe networkpolicy fieldkit-ot-segmentation -n fieldkit` |
+| **10** | `ModelInferenceLatencySLAExceeded` | Defect inspection P95 latency $> 50\text{ ms}` | Check CPU throttling: `kubectl top pod -l app=vision-edge -n fieldkit` and scale replicas to 2. |
+
+---
+
+## 9. Runbook PDF Compilation via Pandoc
+
+To produce a single, self-contained PDF release manual:
+```bash
+pandoc docs/runbooks/drills.md \
+  -o dist/fieldkit-runbook.pdf \
+  --toc \
+  --pdf-engine=xelatex \
+  -V geometry:margin=1in
+```
+
