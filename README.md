@@ -6,6 +6,26 @@ Fieldkit is a production-grade, local-first enterprise AI platform built for for
 
 ---
 
+## 🎥 Flagship AI Demo Video Walkthroughs
+
+Watch turnkey 1080p 60fps narrated walkthroughs with Microsoft Edge-TTS neural voiceover and Playwright automated UI interaction across all 8 flagship projects, hosted directly in the [**Fieldkit v1.0.0 Release Assets**](https://github.com/engrmaziz/fieldkit/releases/tag/v1.0.0):
+
+| Project | Flagship System | Key Architecture Demonstrated | Demo Video |
+| :--- | :--- | :--- | :---: |
+| **P1** | **Mini Foundry** | Entity-resolution physics graph, golden record deduplication, schema drift | [📥 Watch P1 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p1_demo.mp4) |
+| **P2** | **Enterprise RAG + NL2SQL** | Hybrid vector (`nomic-embed-text`) + BM25, SQL query AST validation | [📥 Watch P2 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p2_demo.mp4) |
+| **P3** | **Multi-Agent Ops Copilot** | LangGraph dual-agent triage, human-in-the-loop approval gate, ERP actions | [📥 Watch P3 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p3_demo.mp4) |
+| **P4** | **Contract & Doc Intelligence** | DIN 5008 delivery note OCR, Donut/VLM fallback, bounding box review | [📥 Watch P4 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p4_demo.mp4) |
+| **P5** | **Multi-Camera Video Analytics** | 4-camera RTSP matrix, edge defect detections, fleet telemetry | [📥 Watch P5 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p5_demo.mp4) |
+| **P6** | **Industrial Defect Inspection** | Optical inspection conveyor, defect heatmaps, continuous active learning | [📥 Watch P6 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p6_demo.mp4) |
+| **P7** | **Tracehub Observability** | OpenTelemetry trace waterfalls, ClickHouse storage, streaming RCA | [📥 Watch P7 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p7_demo.mp4) |
+| **P8** | **Air-Gapped Deploy Kit & Engine** | Topological DAG workflow runner, human signal gates, air-gap packaging | [📥 Watch P8 Demo](https://github.com/engrmaziz/fieldkit/releases/download/v1.0.0/fieldkit_p8_demo.mp4) |
+
+> [!TIP]
+> All videos were generated 100% autonomously without human screen-recording using our in-repo automation pipeline (`uv run python scripts/generate_all_demo_videos.py --projects all`).
+
+---
+
 ## Architecture Overview
 
 ```mermaid
